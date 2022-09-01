@@ -1,7 +1,9 @@
 import type Joi from 'joi'
 
+import type { ZManifestObject } from '../manifest'
+import type { ZType } from '../type'
 import type { ZUtils } from '../utils'
-import type { AnyZ } from '../z/z'
+import type { AnyZ, ZOutput } from '../z/z'
 import type { ZIssueCode } from './issue-map'
 
 /* ----------------------------------------------------- ZIssue ----------------------------------------------------- */
@@ -21,20 +23,28 @@ export class ZError<Z extends AnyZ> extends Error {
   override readonly name: 'ZError'
   override readonly message: string
 
-  readonly typeDef: string
   readonly issues: ReadonlyArray<ZIssue<Z>>
+
+  readonly typeName: ZType
+  readonly typeHint: string
+  readonly typeManifest: ZManifestObject<ZOutput<Z>>
 
   private constructor(_z: Z, private readonly _original: Joi.ValidationError) {
     super()
+
     this.name = 'ZError'
     this.message = _original.message
-    this.typeDef = _z.name
+
     this.issues = _original.details.map(({ type, message, path, context }) => ({
       code: type as ZIssueCode<Z>,
       message: message,
       path: path,
       received: context?.value,
     }))
+
+    this.typeName = _z.name
+    this.typeHint = _z.hint
+    this.typeManifest = _z.manifest
   }
 
   annotate(): string {
@@ -45,8 +55,10 @@ export class ZError<Z extends AnyZ> extends Error {
     return {
       name: this.name,
       message: this.message,
-      typeDef: this.typeDef,
       issues: this.issues,
+      typeName: this.typeName,
+      typeHint: this.typeHint,
+      typeManifest: this.typeManifest,
       annotate: () => this.annotate(),
     }
   }

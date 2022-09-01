@@ -13,7 +13,7 @@ import { AnyZ, Z, ZInput, ZOutput } from './z'
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export type ZFunctionDef<P extends AnyZ[], R extends AnyZ> = ZDef<
-  { type: ZType.Function; validator: Joi.FunctionSchema },
+  { validator: Joi.FunctionSchema },
   { parameters: ZTuple<P>; returnType: R }
 >
 
@@ -22,8 +22,9 @@ export class ZFunction<P extends AnyZ[], R extends AnyZ> extends Z<
   ZFunctionDef<P, R>,
   F.Function<ZUtils.MapToZInput<P>, ZInput<R>>
 > {
-  readonly name = `(${this._def.parameters.elements.map((z, idx) => `args_${idx}: ${z.name}`).join(', ')}) => ${
-    this._def.returnType.name
+  readonly name = ZType.Function
+  readonly hint = `(${this._def.parameters.elements.map((z, idx) => `args_${idx}: ${z.hint}`).join(', ')}) => ${
+    this._def.returnType.hint
   }`
 
   get parameters(): ZTuple<P> {
@@ -66,19 +67,16 @@ export class ZFunction<P extends AnyZ[], R extends AnyZ> extends Z<
     parameters?: F.Narrow<P>,
     returnType?: R
   ): ZFunction<P, R> | ZFunction<[], ZUnknown> => {
-    const type = ZType.Function
     const validator = Joi.function().required()
 
     if (parameters && returnType) {
       return new ZFunction({
-        type,
         validator,
         parameters: ZTuple.create(parameters),
         returnType: returnType,
       })
     } else {
       return new ZFunction({
-        type,
         validator,
         parameters: ZTuple.create([]),
         returnType: ZUnknown.create(),

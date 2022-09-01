@@ -1,9 +1,9 @@
 import { ZDate } from './date'
 
 describe('ZDate', () => {
-  it("should have a name of 'Date'", () => {
+  it("should have a hint of 'Date'", () => {
     const z = ZDate.create()
-    expect(z.name).toBe('Date')
+    expect(z.hint).toBe('Date')
   })
 
   describe('.before()', () => {

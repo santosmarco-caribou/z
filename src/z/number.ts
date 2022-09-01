@@ -8,10 +8,11 @@ import { Z } from './z'
 /*                                                       ZNumber                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZNumberDef = ZDef<{ type: ZType.Number; validator: Joi.NumberSchema }>
+export type ZNumberDef = ZDef<{ validator: Joi.NumberSchema }>
 
 export class ZNumber extends Z<number, ZNumberDef> {
-  readonly name = 'number'
+  readonly name = ZType.Number
+  readonly hint = 'number'
 
   /**
    * Requires the number to be an integer (no floating point).
@@ -143,7 +144,6 @@ export class ZNumber extends Z<number, ZNumberDef> {
 
   static create = (): ZNumber => {
     return new ZNumber({
-      type: ZType.Number,
       validator: Joi.number().required(),
     })
   }

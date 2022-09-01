@@ -21,6 +21,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-return': 'off',
     '@typescript-eslint/prefer-as-const': 'off',
     'simple-import-sort/imports': 'warn',
     'simple-import-sort/exports': 'warn',

@@ -8,10 +8,11 @@ import { Z } from './z'
 /*                                                      ZBoolean                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZBooleanDef = ZDef<{ type: ZType.Boolean; validator: Joi.Schema<boolean> }>
+export type ZBooleanDef = ZDef<{ validator: Joi.Schema<boolean> }>
 
 export class ZBoolean extends Z<boolean, ZBooleanDef> {
-  readonly name = 'boolean'
+  readonly name = ZType.Boolean
+  readonly hint = 'boolean'
 
   truthy(): ZTrue {
     return ZTrue.create()
@@ -23,7 +24,6 @@ export class ZBoolean extends Z<boolean, ZBooleanDef> {
 
   static create = (): ZBoolean => {
     return new ZBoolean({
-      type: ZType.Boolean,
       validator: Joi.boolean().required(),
     })
   }
@@ -32,11 +32,11 @@ export class ZBoolean extends Z<boolean, ZBooleanDef> {
 /* ------------------------------------------------------ ZTrue ----------------------------------------------------- */
 
 export class ZTrue extends Z<true, ZBooleanDef> {
-  readonly name = 'true'
+  readonly name = ZType.True
+  readonly hint = 'true'
 
   static create = (): ZTrue => {
     return new ZTrue({
-      type: ZType.Boolean,
       validator: Joi.boolean().strict().valid(true).required(),
     })
   }
@@ -45,11 +45,11 @@ export class ZTrue extends Z<true, ZBooleanDef> {
 /* ----------------------------------------------------- ZFalse ----------------------------------------------------- */
 
 export class ZFalse extends Z<false, ZBooleanDef> {
-  readonly name = 'false'
+  readonly name = ZType.False
+  readonly hint = 'false'
 
   static create = (): ZFalse => {
     return new ZFalse({
-      type: ZType.Boolean,
       validator: Joi.boolean().strict().valid(false).required(),
     })
   }

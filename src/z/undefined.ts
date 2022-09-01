@@ -8,14 +8,14 @@ import { Z } from './z'
 /*                                                     ZUndefined                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZUndefinedDef = ZDef<{ type: ZType.Undefined; validator: Joi.AnySchema<undefined> }>
+export type ZUndefinedDef = ZDef<{ validator: Joi.AnySchema<undefined> }>
 
 export class ZUndefined extends Z<undefined, ZUndefinedDef> {
-  readonly name = 'undefined'
+  readonly name = ZType.Undefined
+  readonly hint = 'undefined'
 
   static create = (): ZUndefined => {
     return new ZUndefined({
-      type: ZType.Undefined,
       validator: Joi.optional(),
     })
   }

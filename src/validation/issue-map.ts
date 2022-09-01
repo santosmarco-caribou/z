@@ -4,10 +4,12 @@ import type { L, S } from 'ts-toolbelt'
 import type { ZUtils } from '../utils'
 import type { AnyZ, ZValidator } from '../z/z'
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                      ZIssueMap                                                     */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 export const Z_ISSUE_MAP = {
-  /* ---------------------------------------------------------------------------------------------------------------- */
-  /*                                                      Default                                                     */
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------- Joi defaults ------------------------------------------------- */
 
   'alternatives.all': '{{#label}} does not match all of the required types',
   'alternatives.any': '{{#label}} does not match any of the allowed types',
@@ -138,34 +140,45 @@ export const Z_ISSUE_MAP = {
 
   'symbol.base': '{{#label}} must be a symbol',
   'symbol.map': '{{#label}} must be one of {{#map}}',
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  'bigint.base': '{{#label}} must be a bigint',
+
+  'nan.base': '{{#label}} must be a NaN',
 } as const
 
 export type ZIssueMap = typeof Z_ISSUE_MAP
 
 /* --------------------------------------------------- ZIssueCode --------------------------------------------------- */
 
-export type ZIssueCode<Z extends AnyZ> = ZUtils.Simplify<
+export type ZIssueCode<
+  T extends Joi.Schema | AnyZ,
+  V extends T extends Joi.Schema ? T : ZValidator<T extends AnyZ ? T : never> = T extends Joi.Schema
+    ? T
+    : ZValidator<T extends AnyZ ? T : never>
+> = ZUtils.Simplify<
   Extract<
     keyof ZIssueMap,
-    `${ZValidator<Z> extends Joi.AlternativesSchema
+    `${V extends Joi.AlternativesSchema
       ? 'alternatives'
-      : ZValidator<Z> extends Joi.ArraySchema
+      : V extends Joi.ArraySchema
       ? 'array'
-      : ZValidator<Z> extends Joi.BinarySchema
+      : V extends Joi.BinarySchema
       ? 'binary'
-      : ZValidator<Z> extends Joi.BooleanSchema
+      : V extends Joi.BooleanSchema
       ? 'boolean'
-      : ZValidator<Z> extends Joi.DateSchema
+      : V extends Joi.DateSchema
       ? 'date'
-      : ZValidator<Z> extends Joi.FunctionSchema
+      : V extends Joi.FunctionSchema
       ? 'function'
-      : ZValidator<Z> extends Joi.ObjectSchema
+      : V extends Joi.ObjectSchema
       ? 'object'
-      : ZValidator<Z> extends Joi.NumberSchema
+      : V extends Joi.NumberSchema
       ? 'number'
-      : ZValidator<Z> extends Joi.StringSchema
+      : V extends Joi.StringSchema
       ? 'string'
-      : ZValidator<Z> extends Joi.SymbolSchema
+      : V extends Joi.SymbolSchema
       ? 'symbol'
       : S.Split<keyof ZIssueMap, '.'>[0]}.${string}`
   >
@@ -182,10 +195,7 @@ export type ZIssueLocalContext<T extends AnyZIssueCode> = ZUtils.Simplify<
         S.Replace<L.Select<S.Split<ZIssueMap[K], ' '>, `{{#${string}}}`>[number], '{{#', ''>,
         '}}',
         ''
-      >]: ({
-        label: string
-        limit: number
-      } & Record<string, any>)[KK]
+      >]: ({ label: string; limit: number } & Record<string, any>)[KK]
     }
   }[T]
 >

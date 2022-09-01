@@ -8,14 +8,14 @@ import { Z } from './z'
 /*                                                        ZNull                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZNullDef = ZDef<{ type: ZType.Null; validator: Joi.AnySchema<null> }>
+export type ZNullDef = ZDef<{ validator: Joi.AnySchema<null> }>
 
 export class ZNull extends Z<null, ZNullDef> {
-  readonly name = 'null'
+  readonly name = ZType.Null
+  readonly hint = 'null'
 
   static create = (): ZNull => {
     return new ZNull({
-      type: ZType.Null,
       validator: Joi.allow(null),
     })
   }

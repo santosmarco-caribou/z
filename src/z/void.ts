@@ -8,14 +8,14 @@ import { Z } from './z'
 /*                                                        ZVoid                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZVoidDef = ZDef<{ type: ZType.Void; validator: Joi.Schema<void> }>
+export type ZVoidDef = ZDef<{ validator: Joi.Schema<void> }>
 
 export class ZVoid extends Z<void, ZVoidDef> {
-  readonly name = 'void'
+  readonly name = ZType.Void
+  readonly hint = 'void'
 
   static create = (): ZVoid => {
     return new ZVoid({
-      type: ZType.Void,
       validator: Joi.any(),
     })
   }

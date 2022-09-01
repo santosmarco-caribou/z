@@ -1,9 +1,9 @@
 import { ZBoolean, ZFalse, ZTrue } from './boolean'
 
 describe('ZBoolean', () => {
-  it("should have a name of 'boolean'", () => {
+  it("should have a hint of 'boolean'", () => {
     const z = ZBoolean.create()
-    expect(z.name).toBe('boolean')
+    expect(z.hint).toBe('boolean')
   })
 
   it('.truthy() should return an instance of ZTrue', () => {
@@ -32,9 +32,9 @@ describe('ZBoolean', () => {
   })
 
   describe('ZTrue', () => {
-    it("should have a name of 'true'", () => {
+    it("should have a hint of 'true'", () => {
       const z = ZTrue.create()
-      expect(z.name).toBe('true')
+      expect(z.hint).toBe('true')
     })
 
     it('should parse `true`', () => {
@@ -49,9 +49,9 @@ describe('ZBoolean', () => {
   })
 
   describe('ZFalse', () => {
-    it("should have a name of 'false'", () => {
+    it("should have a hint of 'false'", () => {
       const z = ZFalse.create()
-      expect(z.name).toBe('false')
+      expect(z.hint).toBe('false')
     })
 
     it('should parse `false`', () => {

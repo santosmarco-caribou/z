@@ -15,7 +15,8 @@ type ZDateCheckInput = Date | typeof __NOW__
 export type ZDateDef = ZDef<{ type: ZType.Date; validator: Joi.DateSchema }>
 
 export class ZDate extends Z<Date, ZDateDef, Date | number | string> {
-  readonly name = 'Date'
+  readonly name = ZType.Date
+  readonly hint = 'Date'
 
   before(date: ZDateCheckInput): ZDate {
     return this._parser.addCheck(v => v.max(this._parseCheckInput(date)))

@@ -24,15 +24,11 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
   /**
    * @hidden
    */
-  _type: Def['type']
-  /**
-   * @hidden
-   */
   _validator: Def['validator']
   /**
    * @hidden
    */
-  _def: Omit<Def, 'type' | 'validator'>
+  _def: Omit<Def, 'validator'>
 
   /**
    * @hidden
@@ -43,19 +39,15 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
    */
   protected readonly _manifest: ZManifest<this>
 
-  abstract readonly name: string
+  abstract readonly name: ZType
+  abstract readonly hint: string
 
-  protected constructor({ type, validator, ...def }: Def) {
-    this._type = type
+  protected constructor({ validator, ...def }: Def) {
     this._validator = validator
     this._def = def
 
     this._parser = ZParser.create(this)
     this._manifest = ZManifest.create(this)
-  }
-
-  get type(): Def['type'] {
-    return this._type
   }
 
   get manifest(): ZManifestObject<Output> {
@@ -157,10 +149,11 @@ export type ZValidator<Z extends AnyZ> = Z['_validator']
 /*                                                      ZOptional                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZOptionalDef<T extends AnyZ> = ZDef<{ type: ZType.Optional; validator: ZValidator<T> }, { inner: T }>
+export type ZOptionalDef<T extends AnyZ> = ZDef<{ validator: ZValidator<T> }, { inner: T }>
 
 export class ZOptional<T extends AnyZ> extends Z<ZOutput<T> | undefined, ZOptionalDef<T>, ZInput<T> | undefined> {
-  readonly name = `${this._def.inner.name} | undefined`
+  readonly name = ZType.Optional
+  readonly hint = `${this._def.inner.hint} | undefined`
 
   unwrap(): T {
     return this._def.inner
@@ -168,7 +161,6 @@ export class ZOptional<T extends AnyZ> extends Z<ZOutput<T> | undefined, ZOption
 
   static create = <T extends AnyZ>(inner: T): ZOptional<T> => {
     return new ZOptional({
-      type: ZType.Optional,
       validator: inner._validator.optional(),
       inner,
     })
@@ -179,10 +171,11 @@ export class ZOptional<T extends AnyZ> extends Z<ZOutput<T> | undefined, ZOption
 /*                                                      ZNullable                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZNullableDef<T extends AnyZ> = ZDef<{ type: ZType.Nullable; validator: ZValidator<T> }, { inner: T }>
+export type ZNullableDef<T extends AnyZ> = ZDef<{ validator: ZValidator<T> }, { inner: T }>
 
 export class ZNullable<T extends AnyZ> extends Z<ZOutput<T> | null, ZNullableDef<T>, ZInput<T> | null> {
-  readonly name = `${this._def.inner.name} | null`
+  readonly name = ZType.Nullable
+  readonly hint = `${this._def.inner.hint} | null`
 
   unwrap(): T {
     return this._def.inner
@@ -190,7 +183,6 @@ export class ZNullable<T extends AnyZ> extends Z<ZOutput<T> | null, ZNullableDef
 
   static create = <T extends AnyZ>(inner: T): ZNullable<T> => {
     return new ZNullable({
-      type: ZType.Nullable,
       validator: inner._validator.allow(null),
       inner,
     })
@@ -201,14 +193,15 @@ export class ZNullable<T extends AnyZ> extends Z<ZOutput<T> | null, ZNullableDef
 /*                                                      ZNullish                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZNullishDef<T extends AnyZ> = ZDef<{ type: ZType.Nullish; validator: ZValidator<T> }, { inner: T }>
+export type ZNullishDef<T extends AnyZ> = ZDef<{ validator: ZValidator<T> }, { inner: T }>
 
 export class ZNullish<T extends AnyZ> extends Z<
   ZOutput<T> | null | undefined,
   ZNullishDef<T>,
   ZInput<T> | null | undefined
 > {
-  readonly name = `${this._def.inner.name} | null | undefined`
+  readonly name = ZType.Nullish
+  readonly hint = `${this._def.inner.hint} | null | undefined`
 
   unwrap(): T {
     return this._def.inner
@@ -216,7 +209,6 @@ export class ZNullish<T extends AnyZ> extends Z<
 
   static create = <T extends AnyZ>(inner: T): ZNullish<T> => {
     return new ZNullish({
-      type: ZType.Nullish,
       validator: inner._validator.optional().allow(null),
       inner,
     })
@@ -227,10 +219,11 @@ export class ZNullish<T extends AnyZ> extends Z<
 /*                                                       ZUnion                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZUnionDef<T extends AnyZ[]> = ZDef<{ type: ZType.Union; validator: Joi.AlternativesSchema }, { options: T }>
+export type ZUnionDef<T extends AnyZ[]> = ZDef<{ validator: Joi.AlternativesSchema }, { options: T }>
 
 export class ZUnion<T extends AnyZ[]> extends Z<ZOutput<T[number]>, ZUnionDef<T>, ZInput<T[number]>> {
-  readonly name = this._def.options.map(option => option.name).join(' | ')
+  readonly name = ZType.Union
+  readonly hint = this._def.options.map(option => option.hint).join(' | ')
 
   get options(): T {
     return this._def.options
@@ -238,7 +231,6 @@ export class ZUnion<T extends AnyZ[]> extends Z<ZOutput<T[number]>, ZUnionDef<T>
 
   static create = <T extends AnyZ[]>(...options: F.Narrow<T>): ZUnion<T> => {
     return new ZUnion({
-      type: ZType.Union,
       validator: Joi.alternatives(options.map(option => option._validator)).required(),
       options: options as T,
     })
@@ -249,10 +241,11 @@ export class ZUnion<T extends AnyZ[]> extends Z<ZOutput<T[number]>, ZUnionDef<T>
 /*                                                       ZArray                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZArrayDef<T extends AnyZ> = ZDef<{ type: ZType.Array; validator: Joi.ArraySchema }, { element: T }>
+export type ZArrayDef<T extends AnyZ> = ZDef<{ validator: Joi.ArraySchema }, { element: T }>
 
 export class ZArray<T extends AnyZ> extends Z<ZOutput<T>[], ZArrayDef<T>, ZInput<T>[]> {
-  readonly name = `${this._def.element.name}[]`
+  readonly name = ZType.Array
+  readonly hint = `${this._def.element.hint}[]`
 
   /**
    * Retrieves the schema of the array's element.
@@ -303,7 +296,6 @@ export class ZArray<T extends AnyZ> extends Z<ZOutput<T>[], ZArrayDef<T>, ZInput
 
   static create = <T extends AnyZ>(element: T): ZArray<T> => {
     return new ZArray({
-      type: ZType.Array,
       validator: Joi.array().items(element._validator).required(),
       element,
     })

@@ -8,14 +8,14 @@ import { Z } from './z'
 /*                                                      ZUnknown                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZUnknownDef = ZDef<{ type: ZType.Unknown; validator: Joi.AnySchema<unknown> }>
+export type ZUnknownDef = ZDef<{ validator: Joi.AnySchema<unknown> }>
 
 export class ZUnknown extends Z<unknown, ZUnknownDef> {
-  readonly name = 'unknown'
+  readonly name = ZType.Unknown
+  readonly hint = 'unknown'
 
   static create = (): ZUnknown => {
     return new ZUnknown({
-      type: ZType.Unknown,
       validator: Joi.any(),
     })
   }

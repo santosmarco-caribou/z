@@ -13,17 +13,15 @@ import { AnyZ, Z, ZInput, ZOutput } from './z'
 
 export type AnyZObjectShape = Record<string, AnyZ>
 
-export type ZObjectDef<Shape extends AnyZObjectShape> = ZDef<
-  { type: ZType.Object; validator: Joi.ObjectSchema },
-  { shape: Shape }
->
+export type ZObjectDef<Shape extends AnyZObjectShape> = ZDef<{ validator: Joi.ObjectSchema }, { shape: Shape }>
 
 export class ZObject<Shape extends AnyZObjectShape> extends Z<
   { [K in keyof Shape]: ZOutput<Shape[K]> },
   ZObjectDef<Shape>,
   { [K in keyof Shape]: ZInput<Shape[K]> }
 > {
-  readonly name = ZObjectHelpers.generateName(this._def.shape)
+  readonly name = ZType.Object
+  readonly hint = ZObjectHelpers.generateHint(this._def.shape)
 
   get shape(): Shape {
     return this._def.shape
@@ -45,7 +43,6 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
 
   extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Shape & S> {
     return new ZObject({
-      type: ZType.Object,
       validator: this._validator.append(ZObjectHelpers.zShapeToJoiShape(incomingShape)),
       shape: ZUtils.merge(this._def.shape, incomingShape),
     })
@@ -59,7 +56,6 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
 
   static create = <Shape extends AnyZObjectShape>(shape: Shape): ZObject<Shape> => {
     return new ZObject({
-      type: ZType.Object,
       validator: Joi.object(ZObjectHelpers.zShapeToJoiShape(shape)).required(),
       shape: shape,
     })
@@ -71,20 +67,20 @@ export type AnyZObject = ZObject<AnyZObjectShape>
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 class ZObjectHelpers {
-  static generateName = <Shape extends AnyZObjectShape>(shape: Shape): string => {
-    const _generateName = (shape: AnyZObjectShape, indentation = 2): string =>
+  static generateHint = <Shape extends AnyZObjectShape>(shape: Shape): string => {
+    const _generateHint = (shape: AnyZObjectShape, indentation = 2): string =>
       '{\n' +
       Object.entries(shape)
         .map(
           ([key, z]) =>
             `${' '.repeat(indentation)}${key}${z.isOptional() ? '?' : ''}: ${
-              z instanceof ZObject ? _generateName(z.shape as AnyZObjectShape, indentation + 2) : z.name
+              z instanceof ZObject ? _generateHint(z.shape as AnyZObjectShape, indentation + 2) : z.hint
             },`
         )
         .join('\n') +
       `\n${' '.repeat(indentation - 2)}}`
 
-    return _generateName(shape)
+    return _generateHint(shape)
   }
 
   static zShapeToJoiShape = <Shape extends AnyZObjectShape>(shape: Shape): Joi.SchemaMap => {

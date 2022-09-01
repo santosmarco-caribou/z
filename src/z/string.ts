@@ -52,10 +52,11 @@ export type ZStringPatternOptions = {
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZStringDef = ZDef<{ type: ZType.String; validator: Joi.StringSchema }>
+export type ZStringDef = ZDef<{ validator: Joi.StringSchema }>
 
 export class ZString extends Z<string, ZStringDef> {
-  readonly name = 'string'
+  readonly name = ZType.String
+  readonly hint = 'string'
 
   /**
    * Requires the string to only contain `a-z`, `A-Z`, and `0-9`.
@@ -195,7 +196,6 @@ export class ZString extends Z<string, ZStringDef> {
 
   static create = (): ZString => {
     return new ZString({
-      type: ZType.String,
       validator: Joi.string().required(),
     })
   }

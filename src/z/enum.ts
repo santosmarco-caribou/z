@@ -9,10 +9,11 @@ import { Z } from './z'
 /*                                                       ZEnum                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZEnumDef<T extends string> = ZDef<{ type: ZType.Enum; validator: Joi.StringSchema }, { values: T[] }>
+export type ZEnumDef<T extends string> = ZDef<{ validator: Joi.StringSchema }, { values: T[] }>
 
 export class ZEnum<T extends string> extends Z<T, ZEnumDef<T>> {
-  readonly name = this._def.values.map(value => `'${value}'`).join(' | ')
+  readonly name = ZType.Enum
+  readonly hint = this._def.values.map(value => `'${value}'`).join(' | ')
 
   get values(): T[] {
     return this._def.values
@@ -20,7 +21,6 @@ export class ZEnum<T extends string> extends Z<T, ZEnumDef<T>> {
 
   static create = <T extends string>(...values: F.Narrow<T>[]): ZEnum<T> => {
     return new ZEnum({
-      type: ZType.Enum,
       validator: Joi.string()
         .strict()
         .valid(...values)

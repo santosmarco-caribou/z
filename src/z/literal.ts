@@ -10,10 +10,11 @@ import { Z } from './z'
 /*                                                      ZLiteral                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZLiteralDef<T extends Primitive> = ZDef<{ type: ZType.Literal; validator: Joi.AnySchema }, { value: T }>
+export type ZLiteralDef<T extends Primitive> = ZDef<{ validator: Joi.AnySchema }, { value: T }>
 
 export class ZLiteral<T extends Primitive> extends Z<T, ZLiteralDef<T>> {
-  readonly name = typeof this._def.value === 'string' ? `'${this._def.value}'` : String(this._def.value)
+  readonly name = ZType.Literal
+  readonly hint = typeof this._def.value === 'string' ? `'${this._def.value}'` : String(this._def.value)
 
   get value(): T {
     return this._def.value
@@ -21,7 +22,6 @@ export class ZLiteral<T extends Primitive> extends Z<T, ZLiteralDef<T>> {
 
   static create = <T extends Primitive>(value: F.Narrow<T>): ZLiteral<T> => {
     return new ZLiteral({
-      type: ZType.Literal,
       validator: Joi.valid(value).required(),
       value: value as T,
     })

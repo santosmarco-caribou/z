@@ -1,0 +1,26 @@
+import { ZDate } from './date'
+
+describe('ZDate', () => {
+  it("should have a name of 'Date'", () => {
+    const z = ZDate.create()
+    expect(z.name).toBe('Date')
+  })
+
+  describe('.before()', () => {
+    const targetValue = new Date('December 30, 2017 11:20:00')
+
+    it('should parse a valid value correctly', () => {
+      const z = ZDate.create()
+      const testValue = new Date('December 28, 2017 11:20:00')
+      expect(z.before(targetValue).parse(testValue)).toMatchObject(testValue)
+    })
+
+    it('should not parse an invalid value', () => {
+      const z = ZDate.create()
+      const testValue = new Date('December 31, 2017 11:20:00')
+      expect(() => z.before(targetValue).parse(testValue)).toThrowError(
+        new Error(`"value" must be less than or equal to "${targetValue.toISOString()}"`)
+      )
+    })
+  })
+})

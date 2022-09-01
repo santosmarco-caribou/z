@@ -8,18 +8,18 @@ import { Z } from './z'
 /*                                                      ZBoolean                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZBooleanDef = ZDef<{ validator: Joi.Schema<boolean> }>
+export type ZBooleanDef = ZDef<{ validator: Joi.BooleanSchema }>
 
 export class ZBoolean extends Z<boolean, ZBooleanDef> {
   readonly name = ZType.Boolean
   readonly hint = 'boolean'
 
   truthy(): ZTrue {
-    return ZTrue.create()
+    return ZTrue.$_create(this._validator)
   }
 
   falsy(): ZFalse {
-    return ZFalse.create()
+    return ZFalse.$_create(this._validator)
   }
 
   static create = (): ZBoolean => {
@@ -35,10 +35,14 @@ export class ZTrue extends Z<true, ZBooleanDef> {
   readonly name = ZType.True
   readonly hint = 'true'
 
-  static create = (): ZTrue => {
+  static $_create = (previousValidator: Joi.BooleanSchema): ZTrue => {
     return new ZTrue({
-      validator: Joi.boolean().strict().valid(true).required(),
+      validator: previousValidator.strict().valid(true),
     })
+  }
+
+  static create = (): ZTrue => {
+    return this.$_create(Joi.boolean().required())
   }
 }
 
@@ -48,9 +52,13 @@ export class ZFalse extends Z<false, ZBooleanDef> {
   readonly name = ZType.False
   readonly hint = 'false'
 
-  static create = (): ZFalse => {
+  static $_create = (previousValidator: Joi.BooleanSchema): ZFalse => {
     return new ZFalse({
-      validator: Joi.boolean().strict().valid(false).required(),
+      validator: previousValidator.strict().valid(false),
     })
+  }
+
+  static create = (): ZFalse => {
+    return this.$_create(Joi.boolean().required())
   }
 }

@@ -23,6 +23,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/playground.ts"]
+  "include": ["src/**/*.ts"]
 }

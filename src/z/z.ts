@@ -130,6 +130,8 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
     return ZUnion.create(this, alternative)
   }
 
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
   isOptional(): boolean {
     return !this.safeParse(undefined).error
   }

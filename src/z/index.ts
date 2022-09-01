@@ -1,6 +1,6 @@
 import { type ZAnyDef, ZAny } from './any'
 import { type ZBigIntDef, ZBigInt } from './bigint'
-import { type ZBooleanDef, ZBoolean } from './boolean'
+import { type ZBooleanDef, ZBoolean, ZFalse, ZTrue } from './boolean'
 import { type ZDateDef, ZDate } from './date'
 import { type AnyZEnum, type ZEnumDef, ZEnum } from './enum'
 import { type AnyZFunction, type ZFunctionDef, ZFunction } from './function'
@@ -47,16 +47,22 @@ const bigIntType = ZBigInt.create
 const booleanType = ZBoolean.create
 const dateType = ZDate.create
 const enumType = ZEnum.create
+const falseType = ZFalse.create
 const functionType = ZFunction.create
 const literalType = ZLiteral.create
 const nanType = ZNaN.create
 const neverType = ZNever.create
+const nullableType = ZNullable.create
+const nullishType = ZNullish.create
 const nullType = ZNull.create
 const numberType = ZNumber.create
 const objectType = ZObject.create
+const optionalType = ZOptional.create
 const stringType = ZString.create
+const trueType = ZTrue.create
 const tupleType = ZTuple.create
 const undefinedType = ZUndefined.create
+const unionType = ZUnion.create
 const unknownType = ZUnknown.create
 const voidType = ZVoid.create
 
@@ -67,16 +73,22 @@ export {
   booleanType as boolean,
   dateType as date,
   enumType as enum,
+  falseType as false,
   functionType as function,
   literalType as literal,
   nanType as nan,
   neverType as never,
   nullType as null,
+  nullableType as nullable,
+  nullishType as nullish,
   numberType as number,
   objectType as object,
+  optionalType as optional,
   stringType as string,
+  trueType as true,
   tupleType as tuple,
   undefinedType as undefined,
+  unionType as union,
   unknownType as unknown,
   voidType as void,
 }
@@ -87,6 +99,7 @@ export {
   ZBoolean,
   ZDate,
   ZEnum,
+  ZFalse,
   ZFunction,
   ZLiteral,
   ZNaN,
@@ -98,6 +111,7 @@ export {
   ZObject,
   ZOptional,
   ZString,
+  ZTrue,
   ZTuple,
   ZUndefined,
   ZUnion,

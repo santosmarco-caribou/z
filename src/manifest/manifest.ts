@@ -1,6 +1,6 @@
 import { merge } from 'lodash'
 
-import type { AnyZ, ZOutput } from './z/z'
+import type { _ZOutput, AnyZ } from '../z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZManifest                                                     */
@@ -22,6 +22,18 @@ export type ZManifestObject<T> = ManifestBasicInfo & {
   tags?: ManifestBasicInfoWithValue<string>[]
   notes?: ManifestBasicInfoWithValue<string>[]
   unit?: string
+  deprecated?: boolean
+  /* ---------------------------------------------------- OpenAPI --------------------------------------------------- */
+  // Strings
+  minLength?: number
+  maxLength?: number
+  pattern?: string
+  // Numbers
+  minimum?: number
+  exclusiveMinimum?: number
+  maximum?: number
+  exclusiveMaximum?: number
+  multipleOf?: number
 }
 
 export type AnyZManifestObject = ZManifestObject<any>
@@ -29,16 +41,16 @@ export type AnyZManifestObject = ZManifestObject<any>
 export class ZManifest<Z extends AnyZ> {
   private constructor(private readonly _z: Z) {}
 
-  get(): ZManifestObject<ZOutput<Z>> {
-    if (!this._z._validator.$_terms['metas'][0]) {
-      this._z._validator = this._z._validator.meta({})
-    }
-    return this._z._validator.$_terms['metas'][0]
+  get(): ZManifestObject<_ZOutput<Z>> {
+    const metas = this._z._validator.$_terms['metas'] as ZManifestObject<_ZOutput<Z>>[]
+    if (!metas[0]) metas[0] = {}
+    return metas[0]
   }
 
-  set<K extends keyof AnyZManifestObject>(key: K, value: NonNullable<ZManifestObject<ZOutput<Z>>[K]>): Z {
-    const prevValue = this.get()[key]
-    this._z._validator.$_terms['metas'][0] = merge(this.get(), {
+  set<K extends keyof AnyZManifestObject>(key: K, value: NonNullable<ZManifestObject<_ZOutput<Z>>[K]>): Z {
+    let meta = this.get()
+    const prevValue = meta[key]
+    meta = merge(meta, {
       [key]: Array.isArray(prevValue) ? [...prevValue, ...(Array.isArray(value) ? value : [value])] : value,
     })
     return this._z
@@ -46,7 +58,5 @@ export class ZManifest<Z extends AnyZ> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = <Z extends AnyZ>(z: Z): ZManifest<Z> => {
-    return new ZManifest(z)
-  }
+  static create = <Z extends AnyZ>(z: Z): ZManifest<Z> => new ZManifest(z)
 }

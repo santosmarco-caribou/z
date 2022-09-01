@@ -1,4 +1,4 @@
-import { ZBoolean, ZFalse, ZTrue } from './boolean'
+import { ZBoolean, ZFalse, ZTrue } from './z'
 
 describe('ZBoolean', () => {
   it("should have a hint of 'boolean'", () => {

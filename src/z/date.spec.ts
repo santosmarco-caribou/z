@@ -1,4 +1,4 @@
-import { ZDate } from './date'
+import { ZDate } from './z'
 
 describe('ZDate', () => {
   it("should have a hint of 'Date'", () => {

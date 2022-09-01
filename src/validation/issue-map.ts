@@ -2,7 +2,7 @@ import type Joi from 'joi'
 import type { L, S } from 'ts-toolbelt'
 
 import type { ZUtils } from '../utils'
-import type { AnyZ, ZValidator } from '../z/z'
+import type { _ZValidator, AnyZ } from '../z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZIssueMap                                                     */
@@ -154,9 +154,9 @@ export type ZIssueMap = typeof Z_ISSUE_MAP
 
 export type ZIssueCode<
   T extends Joi.Schema | AnyZ,
-  V extends T extends Joi.Schema ? T : ZValidator<T extends AnyZ ? T : never> = T extends Joi.Schema
+  V extends T extends Joi.Schema ? T : _ZValidator<T extends AnyZ ? T : never> = T extends Joi.Schema
     ? T
-    : ZValidator<T extends AnyZ ? T : never>
+    : _ZValidator<T extends AnyZ ? T : never>
 > = ZUtils.Simplify<
   Extract<
     keyof ZIssueMap,

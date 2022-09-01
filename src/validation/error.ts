@@ -1,9 +1,9 @@
 import type Joi from 'joi'
 
-import type { ZManifestObject } from '../manifest'
+import type { ZManifestObject } from '../manifest/manifest'
 import type { ZType } from '../type'
 import type { ZUtils } from '../utils'
-import type { AnyZ, ZOutput } from '../z/z'
+import type { _ZOutput, AnyZ } from '../z/z'
 import type { ZIssueCode } from './issue-map'
 
 /* ----------------------------------------------------- ZIssue ----------------------------------------------------- */
@@ -27,7 +27,7 @@ export class ZError<Z extends AnyZ> extends Error {
 
   readonly typeName: ZType
   readonly typeHint: string
-  readonly typeManifest: ZManifestObject<ZOutput<Z>>
+  readonly typeManifest: ZManifestObject<_ZOutput<Z>>
 
   private constructor(_z: Z, private readonly _original: Joi.ValidationError) {
     super()

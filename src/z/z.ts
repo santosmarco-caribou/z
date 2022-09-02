@@ -605,7 +605,6 @@ export class ZNumber extends Z<number, ZNumberDef> {
   positive(): this {
     return this._parser.addCheck(v => v.positive())
   }
-
   /**
    * Requires the number to be less than or equal to 0.
    */
@@ -619,7 +618,6 @@ export class ZNumber extends Z<number, ZNumberDef> {
   negative(): this {
     return this._parser.addCheck(v => v.negative())
   }
-
   /**
    * Requires the number to be greater than or equal to 0.
    */
@@ -700,7 +698,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
    * Requires the number to be a TCP port, i.e., between `0` and `65535`.
    */
   port(): this {
-    return this._parser.addCheck(v => v.port())
+    return this._parser.addCheck(v => v.port())._manifest.set('format', 'port')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -858,7 +856,7 @@ export class ZString extends Z<string, ZStringDef> {
    * Requires the string to only contain `a-z`, `A-Z`, and `0-9`.
    */
   alphanumeric(): this {
-    return this._parser.addCheck(v => v.alphanum())
+    return this._parser.addCheck(v => v.alphanum())._manifest.set('format', 'alphanumeric')
   }
   /**
    * {@inheritDoc ZString#alphanumeric}
@@ -878,7 +876,7 @@ export class ZString extends Z<string, ZStringDef> {
    * Requires the string to be a valid hexadecimal string.
    */
   hexadecimal(): this {
-    return this._parser.addCheck(v => v.hex())
+    return this._parser.addCheck(v => v.hex())._manifest.set('format', 'hexadecimal')
   }
   /**
    * {@inheritDoc ZString#hexadecimal}
@@ -900,11 +898,11 @@ export class ZString extends Z<string, ZStringDef> {
   }
 
   uri(options?: ZStringUriOptions): this {
-    return this._parser.addCheck(v => v.uri(options))
+    return this._parser.addCheck(v => v.uri(options))._manifest.set('format', 'uri')
   }
 
   dataUri(): this {
-    return this._parser.addCheck(v => v.dataUri())
+    return this._parser.addCheck(v => v.dataUri())._manifest.set('format', 'data-uri')
   }
 
   email(options?: ZStringEmailOptions): this {

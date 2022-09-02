@@ -16,7 +16,18 @@ export type ManifestBasicInfoWithValue<T> = ManifestBasicInfo & {
   value: T
 }
 
+export type ManifestFormat =
+  | 'alphanumeric'
+  | 'data-uri'
+  | 'date-time'
+  | 'email'
+  | 'hexadecimal'
+  | 'port'
+  | 'uri'
+  | 'uuid'
+
 export type ZManifestObject<T> = ManifestBasicInfo & {
+  format?: ManifestFormat
   default?: ManifestBasicInfoWithValue<T>
   examples?: ManifestBasicInfoWithValue<T>[]
   tags?: ManifestBasicInfoWithValue<string>[]
@@ -36,7 +47,7 @@ export class ZManifest<Z extends AnyZ> {
     return metas[0].swagger
   }
 
-  set<K extends keyof AnyZManifestObject>(key: K, value: NonNullable<ZManifestObject<_ZOutput<Z>>[K]>): Z {
+  set<K extends keyof ZManifestObject<_ZOutput<Z>>>(key: K, value: NonNullable<ZManifestObject<_ZOutput<Z>>[K]>): Z {
     const meta = this.get()
     const prevValue = meta[key]
     merge(this.get(), {

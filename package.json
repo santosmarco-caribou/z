@@ -10,6 +10,7 @@
   "dependencies": {
     "deepdash": "^5.3.9",
     "joi": "^17.6.0",
+    "joi-to-swagger": "^6.1.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

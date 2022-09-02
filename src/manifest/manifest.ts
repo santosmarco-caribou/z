@@ -23,17 +23,6 @@ export type ZManifestObject<T> = ManifestBasicInfo & {
   notes?: ManifestBasicInfoWithValue<string>[]
   unit?: string
   deprecated?: boolean
-  /* ---------------------------------------------------- OpenAPI --------------------------------------------------- */
-  // Strings
-  minLength?: number
-  maxLength?: number
-  pattern?: string
-  // Numbers
-  minimum?: number
-  exclusiveMinimum?: number
-  maximum?: number
-  exclusiveMaximum?: number
-  multipleOf?: number
 }
 
 export type AnyZManifestObject = ZManifestObject<any>
@@ -42,15 +31,15 @@ export class ZManifest<Z extends AnyZ> {
   private constructor(private readonly _z: Z) {}
 
   get(): ZManifestObject<_ZOutput<Z>> {
-    const metas = this._z._validator.$_terms['metas'] as ZManifestObject<_ZOutput<Z>>[]
-    if (!metas[0]) metas[0] = {}
-    return metas[0]
+    const metas = this._z._validator.$_terms['metas'] as { swagger: ZManifestObject<_ZOutput<Z>> }[]
+    if (!metas[0]) metas[0] = { swagger: {} }
+    return metas[0].swagger
   }
 
   set<K extends keyof AnyZManifestObject>(key: K, value: NonNullable<ZManifestObject<_ZOutput<Z>>[K]>): Z {
-    let meta = this.get()
+    const meta = this.get()
     const prevValue = meta[key]
-    meta = merge(meta, {
+    merge(this.get(), {
       [key]: Array.isArray(prevValue) ? [...prevValue, ...(Array.isArray(value) ? value : [value])] : value,
     })
     return this._z

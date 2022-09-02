@@ -82,7 +82,5 @@ export class ZParser<Z extends AnyZ> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = <Z extends AnyZ>(z: Z): ZParser<Z> => {
-    return new ZParser(z)
-  }
+  static create = <Z extends AnyZ>(z: Z): ZParser<Z> => new ZParser(z)
 }

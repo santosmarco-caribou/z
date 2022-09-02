@@ -1,9 +1,11 @@
 import Joi from 'joi'
+import type { OpenAPIV3 } from 'openapi-types'
 import type { F } from 'ts-toolbelt'
 import type { Primitive } from 'type-fest'
 
 import type { AnyZDef, ZDef } from '../def'
 import { ManifestBasicInfoWithValue, ZManifest, ZManifestObject } from '../manifest/manifest'
+import { ZOpenApi } from '../manifest/openapi'
 import { ZType } from '../type'
 import { ZUtils } from '../utils'
 import { type ParseOptions, type ParseResult, ZParser } from '../validation/parser'
@@ -40,6 +42,10 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
    * @internal
    */
   protected readonly _manifest: ZManifest<this>
+  /**
+   * @internal
+   */
+  protected readonly _openApi: ZOpenApi<this>
 
   abstract readonly name: ZType
   abstract readonly hint: string
@@ -50,10 +56,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
 
     this._parser = ZParser.create(this)
     this._manifest = ZManifest.create(this)
-  }
-
-  get manifest(): ZManifestObject<Output> {
-    return this._manifest.get()
+    this._openApi = ZOpenApi.create(this)
   }
 
   /* ---------------------------------------------------- Parsing --------------------------------------------------- */
@@ -70,7 +73,43 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
     return this._parser.parseAsync(input, options)
   }
 
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  optional(): ZOptional<this> {
+    return ZOptional.create(this)
+  }
+
+  nullable(): ZNullable<this> {
+    return ZNullable.create(this)
+  }
+
+  nullish(): ZNullish<this> {
+    return ZNullish.create(this)
+  }
+
+  array(): ZArray<this> {
+    return ZArray.create(this)
+  }
+
+  or<T extends AnyZ>(alternative: T): ZUnion<[this, T]> {
+    return ZUnion.create(this, alternative)
+  }
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  isOptional(): boolean {
+    return !this.safeParse(undefined).error
+  }
+
+  isNullable(): boolean {
+    return !this.safeParse(null).error
+  }
+
   /* --------------------------------------------------- Manifest --------------------------------------------------- */
+
+  get manifest(): ZManifestObject<Output> {
+    return this._manifest.get()
+  }
 
   title(title: string): this {
     return this._manifest.set('title', title)
@@ -114,36 +153,10 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
     return this._manifest.set('deprecated', deprecated)
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ---------------------------------------------------- OpenAPI --------------------------------------------------- */
 
-  optional(): ZOptional<this> {
-    return ZOptional.create(this)
-  }
-
-  nullable(): ZNullable<this> {
-    return ZNullable.create(this)
-  }
-
-  nullish(): ZNullish<this> {
-    return ZNullish.create(this)
-  }
-
-  array(): ZArray<this> {
-    return ZArray.create(this)
-  }
-
-  or<T extends AnyZ>(alternative: T): ZUnion<[this, T]> {
-    return ZUnion.create(this, alternative)
-  }
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  isOptional(): boolean {
-    return !this.safeParse(undefined).error
-  }
-
-  isNullable(): boolean {
-    return !this.safeParse(null).error
+  toOpenApi(): OpenAPIV3.SchemaObject {
+    return this._openApi.generate()
   }
 }
 
@@ -620,7 +633,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
    * @param value - The minimum value allowed.
    */
   min(value: number): this {
-    return this._parser.addCheck(v => v.min(value))._manifest.set('minimum', value)
+    return this._parser.addCheck(v => v.min(value))
   }
   /**
    * {@inheritDoc ZNumber#min}
@@ -635,7 +648,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
    * @param value - The minimum value allowed (exclusive).
    */
   greater(value: number): this {
-    return this._parser.addCheck(v => v.greater(value))._manifest.set('exclusiveMinimum', value)
+    return this._parser.addCheck(v => v.greater(value))
   }
   /**
    * {@inheritDoc ZNumber#greater}
@@ -650,7 +663,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
    * @param value - The maximum value allowed.
    */
   max(value: number): this {
-    return this._parser.addCheck(v => v.max(value))._manifest.set('maximum', value)
+    return this._parser.addCheck(v => v.max(value))
   }
   /**
    * {@inheritDoc ZNumber#max}
@@ -665,7 +678,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
    * @param value - The maximum value allowed (exclusive).
    */
   less(value: number): this {
-    return this._parser.addCheck(v => v.less(value))._manifest.set('exclusiveMaximum', value)
+    return this._parser.addCheck(v => v.less(value))
   }
   /**
    * {@inheritDoc ZNumber#less}
@@ -680,7 +693,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
    * @param value - The value of which the number must be a multiple.
    */
   multiple(value: number): this {
-    return this._parser.addCheck(v => v.multiple(value))._manifest.set('multipleOf', value)
+    return this._parser.addCheck(v => v.multiple(value))
   }
 
   /**
@@ -926,18 +939,15 @@ export class ZString extends Z<string, ZStringDef> {
   }
 
   min(min: number): this {
-    return this._parser.addCheck(v => v.min(min))._manifest.set('minLength', min)
+    return this._parser.addCheck(v => v.min(min))
   }
 
   max(max: number): this {
-    return this._parser.addCheck(v => v.max(max))._manifest.set('maxLength', max)
+    return this._parser.addCheck(v => v.max(max))
   }
 
   length(length: number): this {
-    return this._parser
-      .addCheck(v => v.length(length))
-      ._manifest.set('minLength', length)
-      ._manifest.set('maxLength', length)
+    return this._parser.addCheck(v => v.length(length))
   }
 
   /**
@@ -947,7 +957,7 @@ export class ZString extends Z<string, ZStringDef> {
    * @param options - Rule options
    */
   pattern(regex: RegExp, options?: ZStringPatternOptions): this {
-    return this._parser.addCheck(v => v.pattern(regex, options))._manifest.set('pattern', String(regex))
+    return this._parser.addCheck(v => v.pattern(regex, options))
   }
   /**
    * {@inheritDoc ZString#pattern}

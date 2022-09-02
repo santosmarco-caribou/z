@@ -2208,6 +2208,13 @@ jju@~1.4.0:
   resolved "https://registry.yarnpkg.com/jju/-/jju-1.4.0.tgz#a3abe2718af241a2b2904f84a625970f389ae32a"
   integrity sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==
 
+joi-to-swagger@^6.1.1:
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/joi-to-swagger/-/joi-to-swagger-6.1.1.tgz#a9bf0f525be4bc2bb02f7219e6ae7894ed02b5ef"
+  integrity sha512-72aGlOdo+eF55MGK3E/GW8AhA0hSHpSeoBO9/k27N6gfHOcJT/ZFjtHIbIosJxbzxSKRkeGNyFk0EJtfpeuccw==
+  dependencies:
+    lodash "^4.17.21"
+
 joi@^17.6.0:
   version "17.6.0"
   resolved "https://registry.yarnpkg.com/joi/-/joi-17.6.0.tgz#0bb54f2f006c09a96e75ce687957bd04290054b2"

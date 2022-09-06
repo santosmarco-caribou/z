@@ -9,17 +9,17 @@ describe('ZDate', () => {
   describe('.before()', () => {
     const targetValue = new Date('December 30, 2017 11:20:00')
 
-    it('should parse a valid value correctly', () => {
+    it('should parse a valid date', () => {
       const z = ZDate.create()
       const testValue = new Date('December 28, 2017 11:20:00')
       expect(z.before(targetValue).parse(testValue)).toMatchObject(testValue)
     })
 
-    it('should not parse an invalid value', () => {
+    it('should not parse an invalid date', () => {
       const z = ZDate.create()
       const testValue = new Date('December 31, 2017 11:20:00')
       expect(() => z.before(targetValue).parse(testValue)).toThrowError(
-        new Error(`"value" must be less than or equal to "${targetValue.toISOString()}"`)
+        `"value" must be less than or equal to "${targetValue.toISOString()}"`
       )
     })
   })

@@ -59,6 +59,10 @@ export class ZParser<Z extends AnyZ> {
     })
   }
 
+  isValid(input: unknown, options: ParseOptions | undefined): input is _ZOutput<Z> {
+    return !this._validate(input, options).error
+  }
+
   /* ---------------------------------------------------- Checks ---------------------------------------------------- */
 
   addCheck(fn: (validator: _ZValidator<Z>) => _ZValidator<Z>): Z {

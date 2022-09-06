@@ -73,6 +73,10 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
     return this._parser.parseAsync(input, options)
   }
 
+  isValid(input: unknown, options?: ParseOptions): input is Output {
+    return this._parser.isValid(input, options)
+  }
+
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   optional(): ZOptional<this> {

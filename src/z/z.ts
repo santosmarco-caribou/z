@@ -865,7 +865,9 @@ export class ZString extends Z<string, ZStringDef> {
    * Requires the string to only contain `a-z`, `A-Z`, and `0-9`.
    */
   alphanumeric(): this {
-    return this._parser.addCheck(v => v.alphanum())._manifest.set('format', 'alphanumeric')
+    this._parser.addCheck(v => v.alphanum())
+    this._manifest.set('format', 'alphanumeric')
+    return this
   }
   /**
    * {@inheritDoc ZString#alphanumeric}
@@ -885,7 +887,9 @@ export class ZString extends Z<string, ZStringDef> {
    * Requires the string to be a valid hexadecimal string.
    */
   hexadecimal(): this {
-    return this._parser.addCheck(v => v.hex())._manifest.set('format', 'hexadecimal')
+    this._parser.addCheck(v => v.hex())
+    this._manifest.set('format', 'hexadecimal')
+    return this
   }
   /**
    * {@inheritDoc ZString#hexadecimal}
@@ -907,15 +911,21 @@ export class ZString extends Z<string, ZStringDef> {
   }
 
   uri(options?: ZStringUriOptions): this {
-    return this._parser.addCheck(v => v.uri(options))._manifest.set('format', 'uri')
+    this._parser.addCheck(v => v.uri(options))
+    this._manifest.set('format', 'uri')
+    return this
   }
 
   dataUri(): this {
-    return this._parser.addCheck(v => v.dataUri())._manifest.set('format', 'data-uri')
+    this._parser.addCheck(v => v.dataUri())
+    this._manifest.set('format', 'data-uri')
+    return this
   }
 
   email(options?: ZStringEmailOptions): this {
-    return this._parser.addCheck(v => v.email(options))
+    this._parser.addCheck(v => v.email(options))
+    this._manifest.set('format', 'email')
+    return this
   }
 
   /**
@@ -924,7 +934,9 @@ export class ZString extends Z<string, ZStringDef> {
    * @param options - Rule options
    */
   uuid(options?: ZStringUuidOptions): this {
-    return this._parser.addCheck(v => v.uuid(options))
+    this._parser.addCheck(v => v.uuid(options))
+    this._manifest.set('format', 'uuid')
+    return this
   }
   /**
    * {@inheritDoc ZString#uuid}
@@ -934,7 +946,9 @@ export class ZString extends Z<string, ZStringDef> {
   }
 
   isoDate(): this {
-    return this._parser.addCheck(v => v.isoDate())
+    this._parser.addCheck(v => v.isoDate())
+    this._manifest.set('format', 'date-time')
+    return this
   }
 
   isoDuration(): this {

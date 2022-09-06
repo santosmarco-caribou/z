@@ -115,14 +115,29 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
     return this._manifest.get()
   }
 
+  /**
+   * Annotates the schema with a title.
+   *
+   * @param title - The schema's title.
+   */
   title(title: string): this {
     return this._manifest.set('title', title)
   }
 
+  /**
+   * Annotates the schema with a brief summary.
+   *
+   * @param summary - The schema's summary.
+   */
   summary(summary: string): this {
     return this._manifest.set('summary', summary)
   }
 
+  /**
+   * Annotates the schema with a description.
+   *
+   * @param description - The schema's description.
+   */
   description(description: string): this {
     return this._manifest.set('description', description)
   }
@@ -179,10 +194,16 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
     return this.notes(note)
   }
 
+  /**
+   * Annotates the schema with a unit.
+   */
   unit(unit: string): this {
     return this._manifest.set('unit', unit)
   }
 
+  /**
+   * Marks the schema as deprecated.
+   */
   deprecated(deprecated: boolean): this {
     return this._manifest.set('deprecated', deprecated)
   }

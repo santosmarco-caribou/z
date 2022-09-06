@@ -1,4 +1,4 @@
-import { merge as _merge, omit as _omit, pick as _pick } from 'lodash'
+import { isObject as _isObject, merge as _merge, omit as _omit, pick as _pick } from 'lodash'
 import type { A, O } from 'ts-toolbelt'
 
 import type { _ZInput, _ZOutput, AnyZ } from './z/z'
@@ -28,6 +28,9 @@ export namespace ZUtils {
 
   export type MapToZOutput<T> = Simplify<{ [K in keyof T]: T[K] extends AnyZ ? _ZOutput<T[K]> : never }>
   export type MapToZInput<T> = Simplify<{ [K in keyof T]: T[K] extends AnyZ ? _ZInput<T[K]> : never }>
+
+  export const hasProp = <T, P extends string>(obj: T, prop: P): obj is T & Record<P, any> =>
+    _isObject(obj) && prop in obj
 
   export const pick = _pick
   export const omit = _omit

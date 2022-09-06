@@ -5,7 +5,8 @@
   "author": "santosmarco",
   "main": "index.js",
   "scripts": {
-    "docs": "typedoc"
+    "docs": "rm -rf docs && typedoc",
+    "test": "jest --watch --verbose src"
   },
   "dependencies": {
     "deepdash": "^5.3.9",

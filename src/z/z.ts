@@ -386,14 +386,19 @@ export class ZEnum<T extends string> extends Z<T, ZEnumDef<T>> {
     return this._def.values
   }
 
-  static create = <T extends string>(...values: F.Narrow<T>[]): ZEnum<T> =>
-    new ZEnum({
+  static create: {
+    <T extends string>(values: F.Narrow<T>[]): ZEnum<T>
+    <T extends string>(...values: F.Narrow<T>[]): ZEnum<T>
+  } = <T extends string>(...values: T[] | [T[]]): ZEnum<T> => {
+    const _values = (Array.isArray(values[0]) ? values[0] : values) as T[]
+    return new ZEnum({
       validator: Joi.string()
         .strict()
-        .valid(...values)
+        .valid(..._values)
         .required(),
-      values: values as T[],
+      values: _values,
     })
+  }
 }
 
 export type AnyZEnum = ZEnum<string>

@@ -1,5 +1,4 @@
-import { merge } from 'lodash'
-
+import { ZUtils } from '../utils'
 import type { _ZOutput, AnyZ } from '../z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -50,7 +49,7 @@ export class ZManifest<Z extends AnyZ> {
   set<K extends keyof ZManifestObject<_ZOutput<Z>>>(key: K, value: NonNullable<ZManifestObject<_ZOutput<Z>>[K]>): Z {
     const meta = this.get()
     const prevValue = meta[key]
-    merge(this.get(), {
+    ZUtils.merge(this.get(), {
       [key]: Array.isArray(prevValue) ? [...prevValue, ...(Array.isArray(value) ? value : [value])] : value,
     })
     return this._z

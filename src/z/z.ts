@@ -758,7 +758,9 @@ export class ZNumber extends Z<number, ZNumberDef> {
    * Requires the number to be a TCP port, i.e., between `0` and `65535`.
    */
   port(): this {
-    return this._parser.addCheck(v => v.port())._manifest.set('format', 'port')
+    this._parser.addCheck(v => v.port())
+    this._manifest.set('format', 'port')
+    return this
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */

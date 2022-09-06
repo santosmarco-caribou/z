@@ -127,26 +127,56 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
     return this._manifest.set('description', description)
   }
 
-  default(value: ManifestBasicInfoWithValue<Output>): this {
-    return this._manifest.set('default', value)
+  default(value: Output | ManifestBasicInfoWithValue<Output>): this {
+    return this._manifest.set('default', ZUtils.hasProp(value, 'value') ? value : { value: value })
   }
 
-  examples(...examples: ManifestBasicInfoWithValue<Output>[]): this {
-    return this._manifest.set('examples', examples)
+  /**
+   * Adds one or more examples to the schema's manifest.
+   */
+  examples(...examples: Array<Output | ManifestBasicInfoWithValue<Output>>): this {
+    return this._manifest.set(
+      'examples',
+      examples.map(example => (ZUtils.hasProp(example, 'value') ? example : { value: example }))
+    )
+  }
+  /**
+   * Adds one example to the schema's manifest.
+   */
+  example(example: Output | ManifestBasicInfoWithValue<Output>): this {
+    return this.examples(example)
   }
 
+  /**
+   * Adds one or more tags to the schema's manifest.
+   */
   tags(...tags: (string | ManifestBasicInfoWithValue<string>)[]): this {
     return this._manifest.set(
       'tags',
       tags.map(tag => (typeof tag === 'string' ? { value: tag } : tag))
     )
   }
+  /**
+   * Adds one tag to the schema's manifest.
+   */
+  tag(tag: string | ManifestBasicInfoWithValue<string>): this {
+    return this.tags(tag)
+  }
 
+  /**
+   * Adds one or more notes to the schema's manifest.
+   */
   notes(...notes: (string | ManifestBasicInfoWithValue<string>)[]): this {
     return this._manifest.set(
       'notes',
       notes.map(note => (typeof note === 'string' ? { value: note } : note))
     )
+  }
+  /**
+   * Adds one note to the schema's manifest.
+   */
+  note(note: string | ManifestBasicInfoWithValue<string>): this {
+    return this.notes(note)
   }
 
   unit(unit: string): this {

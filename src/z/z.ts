@@ -808,7 +808,11 @@ class ZObjectHelpers {
         .map(
           ([key, z]) =>
             `${' '.repeat(indentation)}${key}${z.isOptional() ? '?' : ''}: ${
-              z instanceof ZObject ? _generateHint(z.shape as AnyZObjectShape, indentation + 2) : z.hint
+              z instanceof ZObject
+                ? _generateHint(z.shape as AnyZObjectShape, indentation + 2)
+                : z instanceof ZArray && z.element instanceof ZObject
+                ? `Array<${_generateHint(z.element.shape as AnyZObjectShape, indentation + 2)}>`
+                : z.hint
             },`
         )
         .join('\n') +

@@ -754,9 +754,9 @@ export type AnyZObjectShape = Record<string, AnyZ>
 export type ZObjectDef<Shape extends AnyZObjectShape> = ZDef<{ validator: Joi.ObjectSchema }, { shape: Shape }>
 
 export class ZObject<Shape extends AnyZObjectShape> extends Z<
-  ZUtils.MapToZOutput<Shape>,
+  ZUtils.WithQuestionMarks<ZUtils.MapToZOutput<Shape>>,
   ZObjectDef<Shape>,
-  ZUtils.MapToZInput<Shape>
+  ZUtils.WithQuestionMarks<ZUtils.MapToZInput<Shape>>
 > {
   readonly name = ZType.Object
   readonly hint = ZObjectHelpers.generateHint(this._def.shape)

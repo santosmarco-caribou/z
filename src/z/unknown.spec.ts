@@ -8,4 +8,7 @@ ZSpec.create('ZUnknown', {
   shouldParse: {
     values: ZSpec.ALL,
   },
+  shouldNotParse: {
+    values: [{ value: 'undefined', errorCode: 'any.required', errorMessage: '"value" is required' }],
+  },
 }).build()

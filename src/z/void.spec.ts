@@ -9,4 +9,7 @@ ZSpec.create('ZVoid', {
     values: ZSpec.ALL,
     defaultCastTo: undefined,
   },
+  shouldNotParse: {
+    values: [{ value: 'undefined', errorCode: 'any.required', errorMessage: '"value" is required' }],
+  },
 }).build()

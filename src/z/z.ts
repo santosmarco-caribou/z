@@ -1,5 +1,5 @@
 import type { OpenAPIV3 } from 'openapi-types'
-import type { F } from 'ts-toolbelt'
+import type { A, F, U } from 'ts-toolbelt'
 import type { Primitive } from 'type-fest'
 
 import type { AnyZDef, ZDef } from '../def'
@@ -95,23 +95,27 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   optional(): ZOptional<this> {
-    return ZOptional.create(this)
+    return this._manifest.copyAndReturn(ZOptional.create(this))
   }
 
   nullable(): ZNullable<this> {
-    return ZNullable.create(this)
+    return this._manifest.copyAndReturn(ZNullable.create(this))
   }
 
   nullish(): ZNullish<this> {
-    return ZNullish.create(this)
+    return this._manifest.copyAndReturn(ZNullish.create(this))
   }
 
   array(): ZArray<this> {
-    return ZArray.create(this)
+    return this._manifest.copyAndReturn(ZArray.create(this))
   }
 
   or<T extends AnyZ>(alternative: T): ZUnion<[this, T]> {
-    return ZUnion.create(this, alternative)
+    return this._manifest.copyAndReturn(ZUnion.create(this, alternative))
+  }
+
+  and<T extends AnyZ>(incoming: T): ZIntersection<[this, T]> {
+    return this._manifest.copyAndReturn(ZIntersection.create(this, incoming))
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -136,7 +140,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
    * @param title - The schema's title.
    */
   title(title: string): this {
-    return this._manifest.set('title', title)
+    return this._manifest.setKey('title', title)
   }
 
   /**
@@ -153,7 +157,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
    * ```
    */
   summary(summary: string): this {
-    return this._manifest.set('summary', summary)
+    return this._manifest.setKey('summary', summary)
   }
 
   /**
@@ -171,18 +175,18 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
    * ```
    */
   description(description: string): this {
-    return this._manifest.set('description', description)
+    return this._manifest.setKey('description', description)
   }
 
   default(value: Output | ManifestBasicInfoWithValue<Output>): this {
-    return this._manifest.set('default', ZUtils.hasProp(value, 'value') ? value : { value: value })
+    return this._manifest.setKey('default', ZUtils.hasProp(value, 'value') ? value : { value: value })
   }
 
   /**
    * Adds one or more examples to the schema's manifest.
    */
   examples(...examples: Array<Output | ManifestBasicInfoWithValue<Output>>): this {
-    return this._manifest.set(
+    return this._manifest.setKey(
       'examples',
       examples.map(example => (ZUtils.hasProp(example, 'value') ? example : { value: example }))
     )
@@ -198,7 +202,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
    * Adds one or more tags to the schema's manifest.
    */
   tags(...tags: (string | ManifestBasicInfoWithValue<string>)[]): this {
-    return this._manifest.set(
+    return this._manifest.setKey(
       'tags',
       tags.map(tag => (typeof tag === 'string' ? { value: tag } : tag))
     )
@@ -214,7 +218,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
    * Adds one or more notes to the schema's manifest.
    */
   notes(...notes: (string | ManifestBasicInfoWithValue<string>)[]): this {
-    return this._manifest.set(
+    return this._manifest.setKey(
       'notes',
       notes.map(note => (typeof note === 'string' ? { value: note } : note))
     )
@@ -230,14 +234,14 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
    * Annotates the schema with a unit.
    */
   unit(unit: string): this {
-    return this._manifest.set('unit', unit)
+    return this._manifest.setKey('unit', unit)
   }
 
   /**
    * Marks the schema as deprecated.
    */
   deprecated(deprecated: boolean): this {
-    return this._manifest.set('deprecated', deprecated)
+    return this._manifest.setKey('deprecated', deprecated)
   }
 
   /* ---------------------------------------------------- OpenAPI --------------------------------------------------- */
@@ -272,7 +276,11 @@ export class ZAny extends Z<any, ZAnyDef> {
 
 export type ZArrayDef<T extends AnyZ> = ZDef<{ validator: ZArraySchema }, { element: T }>
 
-export class ZArray<T extends AnyZ> extends Z<_ZOutput<T>[], ZArrayDef<T>, _ZInput<T>[]> {
+export class ZArray<T extends AnyZ, Arr extends T[] = T[]> extends Z<
+  ZUtils.MapToZOutput<Arr>,
+  ZArrayDef<T>,
+  ZUtils.MapToZInput<Arr>
+> {
   readonly name = ZType.Array
   readonly hint = `${this._def.element.hint}[]`
 
@@ -321,13 +329,17 @@ export class ZArray<T extends AnyZ> extends Z<_ZOutput<T>[], ZArrayDef<T>, _ZInp
     return this._parser.addCheck(v => v.length(length))
   }
 
+  nonempty(): ZArray<T, [T, ...T[]]> {
+    return ZArray.create<T, [T, ...T[]]>(this._def.element)
+  }
+
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = <T extends AnyZ>(element: T): ZArray<T> =>
-    new ZArray({ validator: ZValidator.array(element._validator), element })
+  static create = <T extends AnyZ, Arr extends T[] = T[]>(element: T): ZArray<T, Arr> =>
+    new ZArray<T, Arr>({ validator: ZValidator.array(element._validator), element })
 }
 
-export type AnyZArray = ZArray<AnyZ>
+export type AnyZArray = ZArray<AnyZ, AnyZ[]>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZBigInt                                                      */
@@ -427,7 +439,7 @@ export class ZTruthy extends Z<true, ZTruthyDef> {
   /**
    * @internal
    */
-  static $_create = <Z extends AnyZ>(parentZ: Z): ZTruthy =>
+  static $_create = (parentZ: AnyZ): ZTruthy =>
     new ZTruthy({
       validator: ZValidator.custom(parentZ._validator, (value, { OK, FAIL }) =>
         value ? OK(true) : FAIL('truthy.base')
@@ -610,6 +622,32 @@ export class ZFunction<P extends AnyZ[], R extends AnyZ> extends Z<
 }
 
 export type AnyZFunction = ZFunction<AnyZ[], AnyZ>
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                    ZIntersection                                                   */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type ZIntersectionDef<T extends AnyZ[]> = ZDef<{ validator: ZAlternativesSchema }, { components: T }>
+
+export class ZIntersection<T extends AnyZ[]> extends Z<
+  U.IntersectOf<_ZOutput<T[number]>>,
+  ZIntersectionDef<T>,
+  U.IntersectOf<_ZInput<T[number]>>
+> {
+  readonly name = ZType.Intersection
+  readonly hint = this._def.components.map(z => z.hint).join(' & ')
+
+  get components(): T {
+    return this._def.components
+  }
+
+  static create = <T extends AnyZ[]>(...components: F.Narrow<T>): ZIntersection<T> => {
+    return new ZIntersection({
+      validator: ZValidator.alternatives(components.map(component => component._validator)).match('all'),
+      components: components as T,
+    })
+  }
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZLiteral                                                      */
@@ -848,7 +886,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
    */
   port(): this {
     this._parser.addCheck(v => v.port())
-    this._manifest.set('format', 'port')
+    this._manifest.setKey('format', 'port')
     return this
   }
 
@@ -884,11 +922,11 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
   }
 
   pick<K extends keyof Shape>(keys: K[]): ZObject<Pick<Shape, K>> {
-    return ZObject.create(ZUtils.pick(this._def.shape, keys))
+    return this._manifest.copyAndReturn(ZObject.create(ZUtils.pick(this._def.shape, keys)))
   }
 
   omit<K extends keyof Shape>(keys: K[]): ZObject<Omit<Shape, K>> {
-    return ZObject.create(ZUtils.omit(this._def.shape, keys))
+    return this._manifest.copyAndReturn(ZObject.create(ZUtils.omit(this._def.shape, keys)))
   }
 
   extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Shape & S> {
@@ -990,7 +1028,7 @@ export class ZString extends Z<string, ZStringDef> {
    */
   alphanumeric(): this {
     this._parser.addCheck(v => v.alphanum())
-    this._manifest.set('format', 'alphanumeric')
+    this._manifest.setKey('format', 'alphanumeric')
     return this
   }
   /**
@@ -1012,7 +1050,7 @@ export class ZString extends Z<string, ZStringDef> {
    */
   hexadecimal(): this {
     this._parser.addCheck(v => v.hex())
-    this._manifest.set('format', 'hexadecimal')
+    this._manifest.setKey('format', 'hexadecimal')
     return this
   }
   /**
@@ -1036,19 +1074,19 @@ export class ZString extends Z<string, ZStringDef> {
 
   uri(options?: ZStringUriOptions): this {
     this._parser.addCheck(v => v.uri(options))
-    this._manifest.set('format', 'uri')
+    this._manifest.setKey('format', 'uri')
     return this
   }
 
   dataUri(): this {
     this._parser.addCheck(v => v.dataUri())
-    this._manifest.set('format', 'data-uri')
+    this._manifest.setKey('format', 'data-uri')
     return this
   }
 
   email(options?: ZStringEmailOptions): this {
     this._parser.addCheck(v => v.email(options))
-    this._manifest.set('format', 'email')
+    this._manifest.setKey('format', 'email')
     return this
   }
 
@@ -1059,7 +1097,7 @@ export class ZString extends Z<string, ZStringDef> {
    */
   uuid(options?: ZStringUuidOptions): this {
     this._parser.addCheck(v => v.uuid(options))
-    this._manifest.set('format', 'uuid')
+    this._manifest.setKey('format', 'uuid')
     return this
   }
   /**
@@ -1071,7 +1109,7 @@ export class ZString extends Z<string, ZStringDef> {
 
   isoDate(): this {
     this._parser.addCheck(v => v.isoDate())
-    this._manifest.set('format', 'date-time')
+    this._manifest.setKey('format', 'date-time')
     return this
   }
 
@@ -1268,4 +1306,4 @@ export class ZVoid extends Z<void, ZVoidDef> {
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type TypeOf<Z extends AnyZ> = ZUtils.Simplify<_ZOutput<Z>>
+export type TypeOf<Z extends AnyZ> = A.Compute<_ZOutput<Z>, 'deep'>

@@ -1,4 +1,4 @@
-import { ZUtils } from '../utils'
+import { ZObjectUtils } from '../utils'
 import type { _ZOutput, AnyZ } from '../z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -46,13 +46,18 @@ export class ZManifest<Z extends AnyZ> {
     return metas[0].swagger
   }
 
-  set<K extends keyof ZManifestObject<_ZOutput<Z>>>(key: K, value: NonNullable<ZManifestObject<_ZOutput<Z>>[K]>): Z {
+  setKey<K extends keyof ZManifestObject<_ZOutput<Z>>>(key: K, value: NonNullable<ZManifestObject<_ZOutput<Z>>[K]>): Z {
     const meta = this.get()
     const prevValue = meta[key]
-    ZUtils.merge(this.get(), {
+    ZObjectUtils.merge(this.get(), {
       [key]: Array.isArray(prevValue) ? [...prevValue, ...(Array.isArray(value) ? value : [value])] : value,
     })
     return this._z
+  }
+
+  copyAndReturn<Z extends AnyZ>(receiving: Z): Z {
+    ZObjectUtils.merge(receiving.manifest, this.get())
+    return receiving
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */

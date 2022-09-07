@@ -39,10 +39,12 @@ export namespace ZUtils {
 }
 
 export namespace ZSpecUtils {
+  export const _NaN = NaN as unknown as A.x
+
   const TYPE_SPEC_BASE_VALUES = [
     undefined,
     null,
-    NaN,
+    _NaN,
     -1,
     0,
     1,
@@ -64,22 +66,27 @@ export namespace ZSpecUtils {
     typeName: string
     typeHint: string
     shouldParse: ShouldParseValues
-    shouldNotParse: FixedLengthArray<
-      [value: Exclude<TypeSpecBaseValue, ShouldParseValues[number]>, errorMessage: string],
-      N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']>
-    >
+    shouldNotParse: N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']> extends 0
+      ? [value: never, errorMessage: string][]
+      : FixedLengthArray<
+          [value: Exclude<TypeSpecBaseValue, ShouldParseValues[number]>, errorMessage: string],
+          N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']>
+        >
   }
 
-  const getSpecName = (value: any): string =>
-    typeof value === 'number' && isNaN(value)
+  const getSpecName = (value: any, subTitle?: string): string =>
+    (value === undefined
+      ? 'undefined'
+      : typeof value === 'number' && isNaN(value)
       ? 'NaN'
       : typeof value === 'bigint'
       ? `BigInt(${value})`
       : Array.isArray(value)
       ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
       : JSON.stringify(value)
+    ).padEnd(13) + (subTitle ? ` ${subTitle}` : '')
 
-  export const buildTypeSpec = <ShouldParseValues extends TypeSpecBaseValue[]>(
+  export const buildBaseSpec = <ShouldParseValues extends TypeSpecBaseValue[]>(
     config: F.Narrow<TypeSpecConfig<ShouldParseValues>>
   ) => {
     const {
@@ -117,8 +124,9 @@ export namespace ZSpecUtils {
     /* -------------------------------------------------------------------------------------------------------------- */
 
     describe('should not parse:', () => {
-      shouldNotParse.forEach(([value, errorMessage]) => {
-        it(getSpecName(value), () => {
+      const _shouldNotParse = shouldNotParse as [value: TypeSpecBaseValue, errorMessage: string][]
+      _shouldNotParse.forEach(([value, errorMessage]) => {
+        it(getSpecName(value, `w/ msg: ${errorMessage}`), () => {
           expect(() => type.parse(value)).toThrowError(errorMessage)
         })
       })

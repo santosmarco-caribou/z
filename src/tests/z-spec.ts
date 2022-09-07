@@ -2,9 +2,11 @@ import type { Promisable } from 'type-fest'
 
 import { ZArrayUtils, ZObjectUtils } from '../utils'
 import type { AnyZ } from '../z/z'
+import { ZNullableSpecChild, ZOptionalSpecChild } from './common-children'
 
 const Z_SPEC_ALL_VALUES = Symbol('Z_SPEC_ALL_VALUES')
 const Z_SPEC_UNIQUE_SYMBOL = Symbol('Z_SPEC_UNIQUE_SYMBOL')
+const Z_SPEC_BYPASS_CASTING = Symbol('Z_SPEC_BYPASS_CASTING')
 
 const Z_SPEC_VALUE_MAP = {
   // Nil
@@ -49,10 +51,8 @@ type ZSpecShouldParseValueConfig = {
   castTo?: any
 }
 
-type ShouldParseValues = Array<ZSpecValueKey | ZSpecShouldParseValueConfig> | typeof Z_SPEC_ALL_VALUES
-
-type ZSpecShouldParseConfig<V extends ShouldParseValues> = {
-  values: V
+type ZSpecShouldParseConfig = {
+  values: Array<ZSpecValueKey | ZSpecShouldParseValueConfig> | typeof Z_SPEC_ALL_VALUES
   defaultCastTo?: any
 }
 
@@ -64,39 +64,32 @@ type ZSpecShouldNotParseValueConfig = {
   errorMessage: string
 }
 
-type ShouldNotParseValues = Array<ZSpecValueKey | ZSpecShouldNotParseValueConfig>
-
-type ZSpecShouldNotParseConfig<V extends ShouldNotParseValues> = {
-  defaultErrorCode: string
-  defaultErrorMessage: string
-  values?: V
+type ZSpecShouldNotParseConfig = {
+  defaultErrorCode?: string
+  defaultErrorMessage?: string
+  values?: Array<ZSpecValueKey | ZSpecShouldNotParseValueConfig>
 }
 
 /* ----------------------------------------------------- Config ----------------------------------------------------- */
 
-type ZSpecConfig<Z extends AnyZ, SPV extends ShouldParseValues> = {
+type ZSpecConfig<Z extends AnyZ> = {
   type: { create: () => Z }
   typeName: string
   typeHint: string
-  shouldParse: ZSpecShouldParseConfig<SPV>
-} & (SPV extends typeof Z_SPEC_ALL_VALUES
-  ? {
-      shouldNotParse?: {
-        [K in keyof ZSpecShouldNotParseConfig<ShouldNotParseValues>]?: never
-      }
-    }
-  : { shouldNotParse: ZSpecShouldNotParseConfig<Exclude<ShouldNotParseValues, Exclude<SPV, symbol>[number]>> })
+  shouldParse: ZSpecShouldParseConfig
+  shouldNotParse?: ZSpecShouldNotParseConfig
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZSpec                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZSpec<Z extends AnyZ, SPV extends ShouldParseValues> {
-  private readonly _specs: Array<{ name: string; fn: (z: Z) => Promisable<void> }> = []
+export class ZSpec<Z extends AnyZ> {
+  private readonly _specs: Array<{ name: string; fn: <_Z extends Z = Z>(z: _Z) => Promisable<void> }> = []
   private readonly _children: AnyZSpec[] = []
 
-  private constructor(private readonly _name: string, private readonly _config: ZSpecConfig<Z, SPV>) {
-    const { typeName, typeHint } = this._config
+  constructor(readonly name: string, readonly config: ZSpecConfig<Z>) {
+    const { typeName, typeHint } = this.config
 
     this.addSpec(`should have a name of ${typeName}`, z => expect(z.name).toStrictEqual(typeName))
     this.addSpec(`should have a hint of '${typeHint}'`, z => expect(z.hint).toStrictEqual(typeHint))
@@ -106,15 +99,12 @@ export class ZSpec<Z extends AnyZ, SPV extends ShouldParseValues> {
     const {
       type: { create },
       shouldParse,
-    } = this._config
+    } = this.config
 
     const shouldParseValueConfigs = this._getShouldParseValueConfigs()
-    const shouldParseValueKeys = this._getValueKeys(shouldParseValueConfigs)
-
     const shouldNotParseValueConfigs = this._getShouldNotParseValueConfigs()
-    const shouldNotParseValueKeys = this._getValueKeys(shouldNotParseValueConfigs)
 
-    describe(this._name, () => {
+    describe(this.name, () => {
       let z: Z
 
       beforeEach(() => {
@@ -123,44 +113,56 @@ export class ZSpec<Z extends AnyZ, SPV extends ShouldParseValues> {
 
       this._specs.forEach(({ name, fn }) => it(name, async () => fn(z)))
 
-      shouldParseValueKeys.length &&
-        it(`should parse ${
-          this._isAllKeys(shouldParseValueConfigs) ? 'everything' : `{ ${shouldParseValueKeys.join(', ')} }`
-        }`, () =>
-          shouldParseValueConfigs.forEach(config =>
-            expect(z.safeParse(Z_SPEC_VALUE_MAP[config.value]).value).toStrictEqual(
+      describe('should parse', () =>
+        shouldParseValueConfigs.forEach(({ value, ...config }) =>
+          it(value, () =>
+            expect(z.safeParse(Z_SPEC_VALUE_MAP[value]).value).toStrictEqual(
               'castTo' in config
-                ? config.castTo
+                ? config.castTo === Z_SPEC_BYPASS_CASTING
+                  ? Z_SPEC_VALUE_MAP[value]
+                  : config.castTo
                 : 'defaultCastTo' in shouldParse
-                ? shouldParse.defaultCastTo
-                : Z_SPEC_VALUE_MAP[config.value]
+                ? shouldParse.defaultCastTo === Z_SPEC_BYPASS_CASTING
+                  ? Z_SPEC_VALUE_MAP[value]
+                  : shouldParse.defaultCastTo
+                : Z_SPEC_VALUE_MAP[value]
             )
-          ))
+          )
+        ))
 
-      shouldNotParseValueKeys.length &&
-        it(`should not parse ${
-          this._isAllKeys(shouldNotParseValueConfigs) ? 'anything' : `{ ${shouldNotParseValueKeys.join(', ')} }`
-        }`, () =>
-          shouldNotParseValueConfigs.forEach(({ value, errorCode, errorMessage }) => {
+      describe('should not parse', () =>
+        shouldNotParseValueConfigs.forEach(({ value, errorCode, errorMessage }) =>
+          it(value, () => {
             const { error } = z.safeParse(Z_SPEC_VALUE_MAP[value])
             expect(error?.issues).toHaveLength(1)
             expect(error?.issues[0]?.code).toStrictEqual(errorCode)
             expect(error?.issues[0]?.message).toStrictEqual(errorMessage)
-          }))
+          })
+        ))
 
       this._children.forEach(child => child.build())
     })
   }
 
-  child<_Z extends AnyZ, _SPV extends ShouldParseValues>(
+  child<_Z extends AnyZ>(spec: ZSpec<_Z>): ZSpec<_Z>
+  child<_Z extends AnyZ>(
     name: string,
-    config: ZObjectUtils.PartialKeys<ZSpecConfig<_Z, _SPV>, 'typeName' | 'typeHint'>
-  ): ZSpec<_Z, _SPV> {
-    const child = ZSpec.create(name, {
-      ...config,
-      typeName: config.typeName ?? this._config.typeName,
-      typeHint: config.typeHint ?? this._config.typeHint,
-    } as unknown as ZSpecConfig<_Z, _SPV>)
+    config: ZObjectUtils.PartialKeys<ZSpecConfig<_Z>, 'typeName' | 'typeHint'>
+  ): ZSpec<_Z>
+  child<_Z extends AnyZ>(
+    specOrName: ZSpec<_Z> | string,
+    config?: ZObjectUtils.PartialKeys<ZSpecConfig<_Z>, 'typeName' | 'typeHint'>
+  ): ZSpec<_Z> {
+    let child: ZSpec<_Z>
+
+    if (typeof specOrName === 'string' && config) {
+      child = new ZSpec(specOrName, { typeName: this.config.typeName, typeHint: this.config.typeHint, ...config })
+    } else if (specOrName instanceof ZSpec) {
+      child = specOrName
+    } else {
+      throw new Error('Invalid arguments')
+    }
+
     this._children.push(child)
     return child
   }
@@ -171,37 +173,56 @@ export class ZSpec<Z extends AnyZ, SPV extends ShouldParseValues> {
   }
 
   private _getShouldParseValueConfigs(): ZSpecShouldParseValueConfig[] {
-    return this._config.shouldParse.values === Z_SPEC_ALL_VALUES
-      ? ZObjectUtils.keys(Z_SPEC_VALUE_MAP).map(value => ({ value }))
-      : this._config.shouldParse.values.map(value => (typeof value === 'string' ? { value } : value))
+    const shouldParseValues = this.config.shouldParse.values
+    const shouldParseValueKeys = [
+      ...new Set(
+        shouldParseValues === Z_SPEC_ALL_VALUES
+          ? ZObjectUtils.keys(Z_SPEC_VALUE_MAP)
+          : shouldParseValues.map(value => (typeof value === 'string' ? value : value.value))
+      ),
+    ].filter(
+      value =>
+        !this.config.shouldNotParse?.values?.map(val => (typeof val === 'string' ? val : val.value)).includes(value)
+    )
+    return shouldParseValueKeys
+      .map(key => {
+        if (typeof shouldParseValues === 'symbol') return { value: key }
+        const keyOrConfig = shouldParseValues.find(
+          keyOrConfig => keyOrConfig === key || (typeof keyOrConfig !== 'string' && keyOrConfig.value === key)
+        )
+        return typeof keyOrConfig === 'string' ? { value: keyOrConfig } : keyOrConfig
+      })
+      .filter((val): val is NonNullable<typeof val> => !!val)
   }
 
   private _getShouldNotParseValueConfigs(): ZSpecShouldNotParseValueConfig[] {
-    const { shouldNotParse } = this._config
-
+    const { shouldNotParse } = this.config
     if (!shouldNotParse) return []
-    else
-      return ZArrayUtils.concat(
-        ZObjectUtils.keys(Z_SPEC_VALUE_MAP).filter(
-          value =>
-            !ZArrayUtils.includes(
-              ZArrayUtils.concat(
-                this._getValueKeys(this._getShouldParseValueConfigs()),
-                (shouldNotParse.values ?? []).map(value => (typeof value === 'string' ? value : value.value))
-              ),
-              value
-            )
-        ),
-        shouldNotParse.values ?? []
-      ).map(value =>
-        typeof value === 'string'
-          ? {
-              value,
-              errorCode: shouldNotParse.defaultErrorCode ?? '',
-              errorMessage: shouldNotParse.defaultErrorMessage ?? '',
-            }
-          : value
-      )
+    return [
+      ...new Set(
+        ZArrayUtils.concat(
+          ZObjectUtils.keys(Z_SPEC_VALUE_MAP).filter(
+            value =>
+              !ZArrayUtils.includes(
+                ZArrayUtils.concat(
+                  this._getValueKeys(this._getShouldParseValueConfigs()),
+                  (shouldNotParse.values ?? []).map(value => (typeof value === 'string' ? value : value.value))
+                ),
+                value
+              )
+          ),
+          shouldNotParse.values ?? []
+        )
+      ),
+    ].map(value =>
+      typeof value === 'string'
+        ? {
+            value,
+            errorCode: shouldNotParse.defaultErrorCode ?? '',
+            errorMessage: shouldNotParse.defaultErrorMessage ?? '',
+          }
+        : value
+    )
   }
 
   private _getValueKeys(
@@ -210,21 +231,22 @@ export class ZSpec<Z extends AnyZ, SPV extends ShouldParseValues> {
     return valueConfigs.map(({ value }) => value)
   }
 
-  private _isAllKeys(valueConfigs: Array<ZSpecShouldParseValueConfig | ZSpecShouldNotParseValueConfig>): boolean {
-    return valueConfigs.length === ZObjectUtils.keys(Z_SPEC_VALUE_MAP).length
-  }
-
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = <Z extends AnyZ, SPV extends ShouldParseValues>(
-    name: string,
-    config: ZSpecConfig<Z, SPV>
-  ): ZSpec<Z, SPV> => new ZSpec(name, config)
+  static create = <Z extends AnyZ>(name: string, config: ZSpecConfig<Z>): ZSpec<Z> => {
+    const spec = new ZSpec(name, config)
+
+    spec.child(ZOptionalSpecChild(spec))
+    spec.child(ZNullableSpecChild(spec))
+
+    return spec
+  }
 
   static ALL: typeof Z_SPEC_ALL_VALUES = Z_SPEC_ALL_VALUES
   static UNIQUE_SYMBOL: typeof Z_SPEC_UNIQUE_SYMBOL = Z_SPEC_UNIQUE_SYMBOL
+  static BYPASS_CASTING: typeof Z_SPEC_BYPASS_CASTING = Z_SPEC_BYPASS_CASTING
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type AnyZSpec = ZSpec<any, any>
+export type AnyZSpec = ZSpec<AnyZ>

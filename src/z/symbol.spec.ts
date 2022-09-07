@@ -25,6 +25,14 @@ describe('ZSymbol', () => {
       [BigInt(0), 'symbol.base', '"value" must be a symbol'],
       [BigInt(1), 'symbol.base', '"value" must be a symbol'],
     ],
+    extra: {
+      '.': [
+        [
+          '.unique() should return an instance of ZUniqueSymbol',
+          z => expect(z.unique(ZSpecUtils._UniqueSymbol)).toBeInstanceOf(ZUniqueSymbol),
+        ],
+      ],
+    },
   })
 
   describe('ZUniqueSymbol', () => {
@@ -52,6 +60,9 @@ describe('ZSymbol', () => {
         [BigInt(1), 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
         [Symbol(), 'any.only', '"value" must be [Symbol(uniq)]'],
       ],
+      extra: {
+        '.': [['.symbol should return the symbol', z => expect(z.symbol).toStrictEqual(ZSpecUtils._UniqueSymbol)]],
+      },
     })
   })
 })

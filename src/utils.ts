@@ -124,11 +124,11 @@ export namespace ZSpecUtils {
     })
 
     it(`should have a name of '${typeName}'`, () => {
-      expect(z.name).toBe(typeName)
+      expect(z.name).toStrictEqual(typeName)
     })
 
     it(`should have a hint of '${typeHint}'`, () => {
-      expect(z.hint).toBe(typeHint)
+      expect(z.hint).toStrictEqual(typeHint)
     })
 
     extra?.['.']?.forEach(([name, fn]) => it(name, async () => fn(z)))
@@ -153,8 +153,8 @@ export namespace ZSpecUtils {
         it(getSpecName(value, { 'w/ code': errorCode, msg: errorMessage }), () => {
           const { error } = z.safeParse(value)
           expect(error?.issues).toHaveLength(1)
-          expect(error?.issues[0]?.code).toBe(errorCode)
-          expect(error?.issues[0]?.message).toBe(errorMessage)
+          expect(error?.issues[0]?.code).toStrictEqual(errorCode)
+          expect(error?.issues[0]?.message).toStrictEqual(errorMessage)
         })
       })
     })

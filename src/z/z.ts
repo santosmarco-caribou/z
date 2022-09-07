@@ -571,7 +571,8 @@ export class ZNever extends Z<never, ZNeverDef> {
   readonly name = ZType.Never
   readonly hint = 'never'
 
-  static create = (): ZNever => new ZNever({ validator: Joi.forbidden().required() })
+  static create = (): ZNever =>
+    new ZNever({ validator: ZValidator.custom(Joi.required(), (_, { FAIL }) => FAIL('any.unknown')) })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

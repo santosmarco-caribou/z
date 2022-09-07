@@ -95,7 +95,8 @@ export namespace ZSpecUtils {
   }
 
   const stringifySpecValue = (value: any): string =>
-    value === undefined
+    '`' +
+    (value === undefined
       ? 'undefined'
       : (typeof value === 'number' && isNaN(value)) || typeof value === 'symbol'
       ? value.toString()
@@ -103,12 +104,13 @@ export namespace ZSpecUtils {
       ? `BigInt(${value})`
       : Array.isArray(value)
       ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
-      : JSON.stringify(value)
+      : JSON.stringify(value)) +
+    '`'
 
   const getSpecName = (value: any, subTitles?: Record<string, string>): string =>
-    stringifySpecValue(value).padEnd(13) +
+    stringifySpecValue(value) +
     (subTitles
-      ? ` ${Object.entries(subTitles)
+      ? `, ${Object.entries(subTitles)
           .map(([k, v]) => `${k}: ${v}`)
           .join('; ')}`
       : '')

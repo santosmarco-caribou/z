@@ -310,7 +310,7 @@ export class ZBigInt extends Z<bigint, ZBigIntDef> {
   static create = (): ZBigInt =>
     new ZBigInt({
       validator: ZValidator.custom(Joi.any(), (value, { OK, FAIL }) =>
-        typeof value === 'bigint' ? OK() : FAIL('bigint.base')
+        typeof value === 'bigint' ? OK(value) : FAIL('bigint.base')
       ).required(),
     })
 }
@@ -350,8 +350,10 @@ export class ZTrue extends Z<true, ZBooleanDef> {
   /**
    * @internal
    */
-  static $_create = (previousValidator: Joi.BooleanSchema): ZTrue =>
-    new ZTrue({ validator: previousValidator.strict().valid(true) })
+  static $_create = (prevValidator: Joi.BooleanSchema): ZTrue =>
+    new ZTrue({
+      validator: prevValidator.valid(true).prefs({ abortEarly: true }),
+    })
 
   static create = (): ZTrue => this.$_create(Joi.boolean().required())
 }
@@ -365,8 +367,8 @@ export class ZFalse extends Z<false, ZBooleanDef> {
   /**
    * @internal
    */
-  static $_create = (previousValidator: Joi.BooleanSchema): ZFalse =>
-    new ZFalse({ validator: previousValidator.strict().valid(false) })
+  static $_create = (prevValidator: Joi.BooleanSchema): ZFalse =>
+    new ZFalse({ validator: prevValidator.valid(false).prefs({ abortEarly: true }) })
 
   static create = (): ZFalse => this.$_create(Joi.boolean().required())
 }
@@ -556,7 +558,7 @@ export class ZNaN extends Z<number, ZNaNDef> {
   static create = (): ZNaN =>
     new ZNaN({
       validator: ZValidator.custom(Joi.any(), (value, { OK, FAIL }) =>
-        Number.isNaN(value) ? OK() : FAIL('nan.base')
+        Number.isNaN(value) ? OK(value) : FAIL('nan.base')
       ).required(),
     })
 }
@@ -1158,7 +1160,7 @@ export class ZVoid extends Z<void, ZVoidDef> {
   readonly name = ZType.Void
   readonly hint = 'void'
 
-  static create = (): ZVoid => new ZVoid({ validator: Joi.any() })
+  static create = (): ZVoid => new ZVoid({ validator: ZValidator.custom(Joi.any(), (_, { OK }) => OK(undefined)) })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

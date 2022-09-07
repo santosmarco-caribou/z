@@ -1,40 +1,27 @@
+import { ZSpecUtils } from '../utils'
 import { ZNever } from './z'
 
 describe('ZNever', () => {
-  it("should have a hint of 'never'", () => {
-    const z = ZNever.create()
-    expect(z.hint).toBe('never')
-  })
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  it('should not parse `undefined`', () => {
-    const z = ZNever.create()
-    expect(() => z.parse(undefined)).toThrowError('"value" is required')
-  })
-
-  it('should not parse `null`', () => {
-    const z = ZNever.create()
-    expect(() => z.parse(null)).toThrowError('"value" is not allowed')
-  })
-
-  it('should not parse a non-zero number', () => {
-    const z = ZNever.create()
-    expect(() => z.parse(1)).toThrowError('"value" is not allowed')
-  })
-
-  it('should not parse `0`', () => {
-    const z = ZNever.create()
-    expect(() => z.parse(0)).toThrowError('"value" is not allowed')
-  })
-
-  it('should not parse a string', () => {
-    const z = ZNever.create()
-    expect(() => z.parse('test')).toThrowError('"value" is not allowed')
-  })
-
-  it('should not parse an empty string', () => {
-    const z = ZNever.create()
-    expect(() => z.parse('')).toThrowError('"value" is not allowed')
+  ZSpecUtils.buildTypeSpec({
+    type: ZNever,
+    typeName: 'ZNever',
+    typeHint: 'never',
+    shouldParse: [],
+    shouldNotParse: [
+      [undefined, '"value" is required'],
+      [null, '"value" is not allowed'],
+      [NaN, '"value" is not allowed'],
+      [-1, '"value" is not allowed'],
+      [0, '"value" is not allowed'],
+      [1, '"value" is not allowed'],
+      ['', '"value" is not allowed'],
+      ['test', '"value" is not allowed'],
+      [[], '"value" is not allowed'],
+      [[-1, 0, 1], '"value" is not allowed'],
+      [['', 'test'], '"value" is not allowed'],
+      [BigInt(-1), '"value" is not allowed'],
+      [BigInt(0), '"value" is not allowed'],
+      [BigInt(1), '"value" is not allowed'],
+    ],
   })
 })

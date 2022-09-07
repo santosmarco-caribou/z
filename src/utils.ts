@@ -1,5 +1,6 @@
 import { isObject as _isObject, merge as _merge, omit as _omit, pick as _pick } from 'lodash'
-import type { A, O } from 'ts-toolbelt'
+import type { A, F, N, O } from 'ts-toolbelt'
+import type { FixedLengthArray } from 'type-fest'
 
 import type { _ZInput, _ZOutput, AnyZ } from './z/z'
 
@@ -35,4 +36,97 @@ export namespace ZUtils {
   export const pick = _pick
   export const omit = _omit
   export const merge = _merge
+}
+
+export namespace ZSpecUtils {
+  const TYPE_SPEC_BASE_VALUES = [
+    undefined,
+    null,
+    NaN,
+    -1,
+    0,
+    1,
+    '',
+    'test',
+    [],
+    [-1, 0, 1],
+    ['', 'test'],
+    BigInt(-1),
+    BigInt(0),
+    BigInt(1),
+  ] as const
+
+  type TypeSpecBaseValues = typeof TYPE_SPEC_BASE_VALUES
+  type TypeSpecBaseValue = TypeSpecBaseValues[number]
+
+  type TypeSpecConfig<ShouldParseValues extends TypeSpecBaseValue[]> = {
+    type: { create: () => AnyZ }
+    typeName: string
+    typeHint: string
+    shouldParse: ShouldParseValues
+    shouldNotParse: FixedLengthArray<
+      [value: Exclude<TypeSpecBaseValue, ShouldParseValues[number]>, errorMessage: string],
+      N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']>
+    >
+  }
+
+  export const buildTypeSpec = <ShouldParseValues extends TypeSpecBaseValue[]>(
+    config: F.Narrow<TypeSpecConfig<ShouldParseValues>>
+  ) => {
+    const {
+      type: { create },
+      typeName,
+      typeHint,
+      shouldParse,
+      shouldNotParse,
+    } = config
+
+    let type: AnyZ
+
+    beforeEach(() => {
+      type = create()
+    })
+
+    it(`should have a name of '${typeName}'`, () => {
+      expect(type.name).toBe(typeName)
+    })
+
+    it(`should have a hint of '${typeHint}'`, () => {
+      expect(type.hint).toBe(typeHint)
+    })
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+
+    describe('should parse:', () => {
+      shouldParse.forEach(value => {
+        it(
+          typeof value === 'bigint'
+            ? `BigInt(${value})`
+            : Array.isArray(value)
+            ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
+            : JSON.stringify(value),
+          () => {
+            expect(type.parse(value)).toBe(value)
+          }
+        )
+      })
+    })
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+
+    describe('should not parse:', () => {
+      shouldNotParse.forEach(([value, errorMessage]) => {
+        it(
+          typeof value === 'bigint'
+            ? `BigInt(${value})`
+            : Array.isArray(value)
+            ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
+            : JSON.stringify(value),
+          () => {
+            expect(() => type.parse(value)).toThrowError(errorMessage)
+          }
+        )
+      })
+    })
+  }
 }

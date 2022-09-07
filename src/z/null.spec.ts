@@ -1,32 +1,16 @@
-import { ZSpecUtils } from '../utils'
+import { ZSpec } from '../tests/z-spec'
 import { ZNull } from './z'
 
-describe('ZNull', () => {
-  ZSpecUtils.buildBaseSpec({
-    type: ZNull,
-    typeName: 'ZNull',
-    typeHint: 'null',
-    shouldParse: [[null]],
-    shouldNotParse: [
-      [undefined, 'any.required', '"value" is required'],
-      [ZSpecUtils._NaN, 'any.only', '"value" must be [null]'],
-      [false, 'any.only', '"value" must be [null]'],
-      [true, 'any.only', '"value" must be [null]'],
-      [-1, 'any.only', '"value" must be [null]'],
-      [-0.5, 'any.only', '"value" must be [null]'],
-      [0, 'any.only', '"value" must be [null]'],
-      [0.5, 'any.only', '"value" must be [null]'],
-      [1, 'any.only', '"value" must be [null]'],
-      ['', 'any.only', '"value" must be [null]'],
-      ['test', 'any.only', '"value" must be [null]'],
-      [[], 'any.only', '"value" must be [null]'],
-      [[-1, 0, 1], 'any.only', '"value" must be [null]'],
-      [['', 'test'], 'any.only', '"value" must be [null]'],
-      [BigInt(-1), 'any.only', '"value" must be [null]'],
-      [BigInt(0), 'any.only', '"value" must be [null]'],
-      [BigInt(1), 'any.only', '"value" must be [null]'],
-      [Symbol(), 'any.only', '"value" must be [null]'],
-      [ZSpecUtils._UniqueSymbol, 'any.only', '"value" must be [null]'],
-    ],
-  })
-})
+ZSpec.create('ZNull', {
+  type: ZNull,
+  typeName: 'ZNull',
+  typeHint: 'null',
+  shouldParse: {
+    values: ['null'],
+  },
+  shouldNotParse: {
+    defaultErrorCode: 'any.only',
+    defaultErrorMessage: '"value" must be [null]',
+    values: [{ value: 'undefined', errorCode: 'any.required', errorMessage: '"value" is required' }],
+  },
+}).build()

@@ -1,32 +1,15 @@
-import { ZSpecUtils } from '../utils'
+import { ZSpec } from '../tests/z-spec'
 import { ZUndefined } from './z'
 
-describe('ZUndefined', () => {
-  ZSpecUtils.buildBaseSpec({
-    type: ZUndefined,
-    typeName: 'ZUndefined',
-    typeHint: 'undefined',
-    shouldParse: [[undefined]],
-    shouldNotParse: [
-      [null, 'any.unknown', '"value" is not allowed'],
-      [ZSpecUtils._NaN, 'any.unknown', '"value" is not allowed'],
-      [false, 'any.unknown', '"value" is not allowed'],
-      [true, 'any.unknown', '"value" is not allowed'],
-      [-1, 'any.unknown', '"value" is not allowed'],
-      [-0.5, 'any.unknown', '"value" is not allowed'],
-      [0, 'any.unknown', '"value" is not allowed'],
-      [0.5, 'any.unknown', '"value" is not allowed'],
-      [1, 'any.unknown', '"value" is not allowed'],
-      ['', 'any.unknown', '"value" is not allowed'],
-      ['test', 'any.unknown', '"value" is not allowed'],
-      [[], 'any.unknown', '"value" is not allowed'],
-      [[-1, 0, 1], 'any.unknown', '"value" is not allowed'],
-      [['', 'test'], 'any.unknown', '"value" is not allowed'],
-      [BigInt(-1), 'any.unknown', '"value" is not allowed'],
-      [BigInt(0), 'any.unknown', '"value" is not allowed'],
-      [BigInt(1), 'any.unknown', '"value" is not allowed'],
-      [Symbol(), 'any.unknown', '"value" is not allowed'],
-      [ZSpecUtils._UniqueSymbol, 'any.unknown', '"value" is not allowed'],
-    ],
-  })
-})
+ZSpec.create('ZUndefined', {
+  type: ZUndefined,
+  typeName: 'ZUndefined',
+  typeHint: 'undefined',
+  shouldParse: {
+    values: ['undefined'],
+  },
+  shouldNotParse: {
+    defaultErrorCode: 'any.unknown',
+    defaultErrorMessage: '"value" is not allowed',
+  },
+}).build()

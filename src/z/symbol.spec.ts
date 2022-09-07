@@ -1,81 +1,42 @@
-import { ZSpecUtils } from '../utils'
+import { ZSpec } from '../tests/z-spec'
 import { ZSymbol, ZUniqueSymbol } from './z'
 
-describe('ZSymbol', () => {
-  ZSpecUtils.buildBaseSpec({
-    type: ZSymbol,
-    typeName: 'ZSymbol',
-    typeHint: 'symbol',
-    shouldParse: [[Symbol()], [ZSpecUtils._UniqueSymbol]],
-    shouldNotParse: [
-      [undefined, 'any.required', '"value" is required'],
-      [null, 'symbol.base', '"value" must be a symbol'],
-      [ZSpecUtils._NaN, 'symbol.base', '"value" must be a symbol'],
-      [false, 'symbol.base', '"value" must be a symbol'],
-      [true, 'symbol.base', '"value" must be a symbol'],
-      [-1, 'symbol.base', '"value" must be a symbol'],
-      [-0.5, 'symbol.base', '"value" must be a symbol'],
-      [0, 'symbol.base', '"value" must be a symbol'],
-      [0.5, 'symbol.base', '"value" must be a symbol'],
-      [1, 'symbol.base', '"value" must be a symbol'],
-      ['', 'symbol.base', '"value" must be a symbol'],
-      ['test', 'symbol.base', '"value" must be a symbol'],
-      [[], 'symbol.base', '"value" must be a symbol'],
-      [[-1, 0, 1], 'symbol.base', '"value" must be a symbol'],
-      [['', 'test'], 'symbol.base', '"value" must be a symbol'],
-      [BigInt(-1), 'symbol.base', '"value" must be a symbol'],
-      [BigInt(0), 'symbol.base', '"value" must be a symbol'],
-      [BigInt(1), 'symbol.base', '"value" must be a symbol'],
-    ],
-    extra: {
-      '.': [
-        [
-          '.unique() should return an instance of ZUniqueSymbol',
-          z => expect(z.unique(ZSpecUtils._UniqueSymbol)).toBeInstanceOf(ZUniqueSymbol),
-        ],
+const spec = ZSpec.create('ZSymbol', {
+  type: ZSymbol,
+  typeName: 'ZSymbol',
+  typeHint: 'symbol',
+  shouldParse: {
+    values: ['symbol', 'unique symbol'],
+  },
+  shouldNotParse: {
+    defaultErrorCode: 'symbol.base',
+    defaultErrorMessage: '"value" must be a symbol',
+    values: [{ value: 'undefined', errorCode: 'any.required', errorMessage: '"value" is required' }],
+  },
+}).addSpec('.unique() should return an instance of ZUniqueSymbol', z =>
+  expect(z.unique(ZSpec.UNIQUE_SYMBOL)).toBeInstanceOf(ZUniqueSymbol)
+)
+
+spec
+  .child('ZUniqueSymbol', {
+    type: { create: () => ZUniqueSymbol.create(ZSpec.UNIQUE_SYMBOL) },
+    typeName: 'ZUniqueSymbol',
+    typeHint: 'Symbol(Z_SPEC_UNIQUE_SYMBOL)',
+    shouldParse: {
+      values: ['unique symbol'],
+    },
+    shouldNotParse: {
+      defaultErrorCode: 'symbol.map',
+      defaultErrorMessage: '"value" must be one of [Z_SPEC_UNIQUE_SYMBOL -> Symbol(Z_SPEC_UNIQUE_SYMBOL)]',
+      values: [
+        { value: 'undefined', errorCode: 'any.required', errorMessage: '"value" is required' },
+        { value: 'symbol', errorCode: 'any.only', errorMessage: '"value" must be [Symbol(Z_SPEC_UNIQUE_SYMBOL)]' },
       ],
     },
   })
+  .addSpec('.symbol should return the symbol', z => expect(z.symbol).toStrictEqual(ZSpec.UNIQUE_SYMBOL))
+  .addSpec('should throw an error when the symbol has no description', () =>
+    expect(() => ZUniqueSymbol.create(Symbol())).toThrowError('The provided symbol must have a description')
+  )
 
-  describe('ZUniqueSymbol', () => {
-    ZSpecUtils.buildBaseSpec({
-      type: { create: () => ZUniqueSymbol.create(ZSpecUtils._UniqueSymbol) },
-      typeName: 'ZUniqueSymbol',
-      typeHint: 'Symbol(uniq)',
-      shouldParse: [[ZSpecUtils._UniqueSymbol]],
-      shouldNotParse: [
-        [undefined, 'any.required', '"value" is required'],
-        [null, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [ZSpecUtils._NaN, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [false, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [true, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [-1, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [-0.5, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [0, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [0.5, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [1, 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        ['', 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        ['test', 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [[], 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [[-1, 0, 1], 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [['', 'test'], 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [BigInt(-1), 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [BigInt(0), 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [BigInt(1), 'symbol.map', '"value" must be one of [uniq -> Symbol(uniq)]'],
-        [Symbol(), 'any.only', '"value" must be [Symbol(uniq)]'],
-      ],
-      extra: {
-        '.': [
-          ['.symbol should return the symbol', z => expect(z.symbol).toStrictEqual(ZSpecUtils._UniqueSymbol)],
-          [
-            'should throw an error when the symbol has no description',
-            () => {
-              const uniqSymbol = Symbol()
-              expect(() => ZUniqueSymbol.create(uniqSymbol)).toThrowError('The provided symbol must have a description')
-            },
-          ],
-        ],
-      },
-    })
-  })
-})
+spec.build()

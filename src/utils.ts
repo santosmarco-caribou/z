@@ -1,6 +1,5 @@
 import { isObject as _isObject, merge as _merge, omit as _omit, pick as _pick } from 'lodash'
-import type { A, F, L, N, O } from 'ts-toolbelt'
-import type { FixedLengthArray, LiteralUnion, Promisable } from 'type-fest'
+import type { A, L, O } from 'ts-toolbelt'
 
 import type { _ZInput, _ZOutput, AnyZ } from './z/z'
 
@@ -40,142 +39,26 @@ export namespace ZUtils {
   export const merge = _merge
 }
 
-export namespace ZSpecUtils {
-  export const _NaN = NaN as A.Type<number, 'NaN'>
-  export const _UniqueSymbol = Symbol('uniq')
+export namespace ZArrayUtils {
+  export type AnyArray = any[] | readonly any[]
 
-  const TYPE_SPEC_BASE_VALUES = [
-    undefined,
-    null,
-    _NaN,
-    false,
-    true,
-    -1,
-    -0.5,
-    0,
-    0.5,
-    1,
-    '',
-    'test',
-    [],
-    [-1, 0, 1],
-    ['', 'test'],
-    BigInt(-1),
-    BigInt(0),
-    BigInt(1),
-    Symbol(),
-    _UniqueSymbol,
-  ] as const
+  export type Concat<Arrs extends AnyArray[]> = Arrs extends [infer Head, ...infer Rest]
+    ? [
+        ...(Head extends AnyArray ? Head : []),
+        ...(Rest extends AnyArray[] ? Concat<Rest> : Rest extends AnyArray ? Rest : [])
+      ]
+    : []
 
-  type TypeSpecBaseValues = typeof TYPE_SPEC_BASE_VALUES
-  type TypeSpecBaseValue = TypeSpecBaseValues[number]
+  export const concat = <T extends [AnyArray, ...AnyArray[]]>(...arrs: T): Concat<T> =>
+    arrs[0].concat(...arrs.slice(1)) as Concat<T>
 
-  type ShouldParse<ShouldParseValues extends TypeSpecBaseValue[]> = {
-    [K in keyof ShouldParseValues]: [value: ShouldParseValues[K], parseTo?: any]
-  }
-  type ShouldNotParse<ShouldParseValues extends TypeSpecBaseValue[]> = N.Sub<
-    TypeSpecBaseValues['length'],
-    ShouldParseValues['length']
-  > extends 0
-    ? never[]
-    : FixedLengthArray<
-        [value: Exclude<TypeSpecBaseValue, ShouldParseValues[number]>, errorCode: string, errorMessage: string],
-        N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']>
-      >
+  export const includes = <T extends AnyArray, U>(arr: T, value: U): value is T[number] => arr.includes(value)
+}
 
-  type TypeSpecConfig<Z extends AnyZ, ShouldParseValues extends TypeSpecBaseValue[]> = {
-    type: { create: () => Z }
-    typeName: string
-    typeHint: string
-    shouldParse: ShouldParse<ShouldParseValues>
-    shouldNotParse: ShouldNotParse<ShouldParseValues>
-    extra?: {
-      [K in LiteralUnion<'.', string>]?: [name: string, fn: (z: Z) => Promisable<void>][]
-    }
-  }
+export namespace ZObjectUtils {
+  export type AnyStringRecord = Record<string, any>
 
-  const stringifySpecValue = (value: any): string =>
-    '`' +
-    (value === undefined
-      ? 'undefined'
-      : (typeof value === 'number' && isNaN(value)) || typeof value === 'symbol'
-      ? value.toString()
-      : typeof value === 'bigint'
-      ? `BigInt(${value})`
-      : Array.isArray(value)
-      ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
-      : JSON.stringify(value)) +
-    '`'
+  export type PartialKeys<T extends AnyStringRecord, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>
 
-  const getSpecName = (value: any, subTitles?: Record<string, string>): string =>
-    stringifySpecValue(value) +
-    (subTitles
-      ? `, ${Object.entries(subTitles)
-          .map(([k, v]) => `${k}: ${v}`)
-          .join('; ')}`
-      : '')
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  export const buildBaseSpec = <Z extends AnyZ, ShouldParseValues extends TypeSpecBaseValue[]>(
-    config: F.Narrow<TypeSpecConfig<Z, ShouldParseValues>>
-  ): void => {
-    const {
-      type: { create },
-      typeName,
-      typeHint,
-      shouldParse,
-      shouldNotParse,
-      extra,
-    } = config
-
-    let z: Z
-
-    beforeEach(() => {
-      z = create()
-    })
-
-    it(`should have a name of '${typeName}'`, () => {
-      expect(z.name).toStrictEqual(typeName)
-    })
-
-    it(`should have a hint of '${typeHint}'`, () => {
-      expect(z.hint).toStrictEqual(typeHint)
-    })
-
-    extra?.['.']?.forEach(([name, fn]) => it(name, async () => fn(z)))
-
-    /* -------------------------------------------------------------------------------------------------------------- */
-
-    describe('should parse:', () => {
-      shouldParse.forEach(def => {
-        const [value, parseTo] = def
-        const containsParseTo = def.length === 2
-        it(getSpecName(value, containsParseTo ? { to: stringifySpecValue(parseTo) } : undefined), () => {
-          expect(z.safeParse(value).value).toStrictEqual(containsParseTo ? parseTo : value)
-        })
-      })
-    })
-
-    /* -------------------------------------------------------------------------------------------------------------- */
-
-    describe('should not parse:', () => {
-      const _shouldNotParse = shouldNotParse as [value: TypeSpecBaseValue, errorCode: string, errorMessage: string][]
-      _shouldNotParse.forEach(([value, errorCode, errorMessage]) => {
-        it(getSpecName(value, { 'w/ code': errorCode, msg: errorMessage }), () => {
-          const { error } = z.safeParse(value)
-          expect(error?.issues).toHaveLength(1)
-          expect(error?.issues[0]?.code).toStrictEqual(errorCode)
-          expect(error?.issues[0]?.message).toStrictEqual(errorMessage)
-        })
-      })
-    })
-
-    /* -------------------------------------------------------------------------------------------------------------- */
-
-    extra &&
-      Object.entries(extra)
-        .filter(([key]) => key !== '.')
-        .forEach(([, specs]) => specs?.forEach(([name, fn]) => it(name, async () => fn(z))))
-  }
+  export const keys = <T extends AnyStringRecord>(obj: T): (keyof T)[] => Object.keys(obj) as (keyof T)[]
 }

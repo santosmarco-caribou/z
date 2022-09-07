@@ -346,13 +346,13 @@ export class ZBoolean extends Z<boolean, ZBooleanDef> {
    * Requires the boolean to be `true`.
    */
   truthy(): ZTrue {
-    return ZTrue.$_create(this._validator)
+    return ZTrue.$_create(this)
   }
   /**
    * Requires the boolean to be `false`.
    */
   falsy(): ZFalse {
-    return ZFalse.$_create(this._validator)
+    return ZFalse.$_create(this)
   }
 
   static create = (): ZBoolean => new ZBoolean({ validator: Joi.boolean().required() })
@@ -367,12 +367,10 @@ export class ZTrue extends Z<true, ZBooleanDef> {
   /**
    * @internal
    */
-  static $_create = (prevValidator: Joi.BooleanSchema): ZTrue =>
-    new ZTrue({
-      validator: prevValidator.valid(true).prefs({ abortEarly: true }),
-    })
+  static $_create = (parentZ: ZBoolean): ZTrue =>
+    new ZTrue({ validator: parentZ._validator.valid(true).prefs({ abortEarly: true }) })
 
-  static create = (): ZTrue => this.$_create(Joi.boolean().required())
+  static create = (): ZTrue => this.$_create(ZBoolean.create())
 }
 
 /* ----------------------------------------------------- ZFalse ----------------------------------------------------- */
@@ -384,10 +382,10 @@ export class ZFalse extends Z<false, ZBooleanDef> {
   /**
    * @internal
    */
-  static $_create = (prevValidator: Joi.BooleanSchema): ZFalse =>
-    new ZFalse({ validator: prevValidator.valid(false).prefs({ abortEarly: true }) })
+  static $_create = (parentZ: ZBoolean): ZFalse =>
+    new ZFalse({ validator: parentZ._validator.valid(false).prefs({ abortEarly: true }) })
 
-  static create = (): ZFalse => this.$_create(Joi.boolean().required())
+  static create = (): ZFalse => this.$_create(ZBoolean.create())
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

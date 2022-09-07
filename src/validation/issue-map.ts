@@ -51,6 +51,8 @@ export const Z_ISSUE_MAP = {
   'binary.min': '{{#label}} must be at least {{#limit}} bytes',
 
   'boolean.base': '{{#label}} must be a boolean',
+  'truthy.base': '{{#label}} must be truthy',
+  'falsy.base': '{{#label}} must be falsy',
 
   'date.base': '{{#label}} must be a valid date',
   'date.format': '{{#label}} must be in {msg("date.format." + #format) || #format} format',

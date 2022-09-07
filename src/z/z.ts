@@ -248,7 +248,7 @@ export class ZAny extends Z<any, ZAnyDef> {
   readonly name = ZType.Any
   readonly hint = 'any'
 
-  static create = (): ZAny => new ZAny({ validator: Joi.any() })
+  static create = (): ZAny => new ZAny({ validator: Joi.any().required() })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -345,14 +345,27 @@ export class ZBoolean extends Z<boolean, ZBooleanDef> {
   /**
    * Requires the boolean to be `true`.
    */
-  truthy(): ZTrue {
+  true(): ZTrue {
     return ZTrue.$_create(this)
   }
   /**
    * Requires the boolean to be `false`.
    */
-  falsy(): ZFalse {
+  false(): ZFalse {
     return ZFalse.$_create(this)
+  }
+
+  /**
+   * Requires the value to be truthy.
+   */
+  truthy(): ZTruthy {
+    return ZTruthy.$_create(this)
+  }
+  /**
+   * Requires the value to be falsy.
+   */
+  falsy(): ZFalsy {
+    return ZFalsy.$_create(this)
   }
 
   static create = (): ZBoolean => new ZBoolean({ validator: Joi.boolean().required() })
@@ -386,6 +399,50 @@ export class ZFalse extends Z<false, ZBooleanDef> {
     new ZFalse({ validator: parentZ._validator.valid(false).prefs({ abortEarly: true }) })
 
   static create = (): ZFalse => this.$_create(ZBoolean.create())
+}
+
+/* ----------------------------------------------------- ZTruthy ---------------------------------------------------- */
+
+export type ZTruthyDef = ZDef<{ validator: Joi.Schema<true> }>
+
+export class ZTruthy extends Z<true, ZTruthyDef> {
+  readonly name = ZType.Truthy
+  readonly hint = 'Truthy'
+
+  /**
+   * @internal
+   */
+  static $_create = (parentZ: AnyZ): ZTruthy =>
+    new ZTruthy({
+      validator: ZValidator.custom(parentZ._validator, (value, { OK, FAIL }) =>
+        value ? OK(true) : FAIL('truthy.base')
+      ),
+    })
+
+  static create = (): ZTruthy => this.$_create(ZAny.create())
+}
+
+/* ----------------------------------------------------- ZFalsy ----------------------------------------------------- */
+
+export type Falsy = false | '' | 0 | null | undefined | void
+
+export type ZFalsyDef = ZDef<{ validator: Joi.Schema<true> }>
+
+export class ZFalsy extends Z<Falsy, ZFalsyDef> {
+  readonly name = ZType.Falsy
+  readonly hint = 'Falsy'
+
+  /**
+   * @internal
+   */
+  static $_create = (parentZ: AnyZ): ZFalsy =>
+    new ZFalsy({
+      validator: ZValidator.custom(parentZ._validator.optional(), (value, { OK, FAIL }) =>
+        value ? FAIL('falsy.base') : OK(value)
+      ),
+    })
+
+  static create = (): ZFalsy => this.$_create(ZAny.create())
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

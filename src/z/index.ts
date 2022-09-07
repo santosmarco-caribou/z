@@ -13,6 +13,7 @@ import {
   type ZBooleanDef,
   type ZDateDef,
   type ZEnumDef,
+  type ZFalsyDef,
   type ZFunctionDef,
   type ZLiteralDef,
   type ZNaNDef,
@@ -32,6 +33,7 @@ import {
   type ZStringUriOptions,
   type ZStringUuidOptions,
   type ZSymbolDef,
+  type ZTruthyDef,
   type ZTupleDef,
   type ZUndefinedDef,
   type ZUnionDef,
@@ -46,6 +48,7 @@ import {
   ZDate,
   ZEnum,
   ZFalse,
+  ZFalsy,
   ZFunction,
   ZLiteral,
   ZNaN,
@@ -59,6 +62,7 @@ import {
   ZString,
   ZSymbol,
   ZTrue,
+  ZTruthy,
   ZTuple,
   ZUndefined,
   ZUnion,
@@ -74,6 +78,7 @@ const booleanType = ZBoolean.create
 const dateType = ZDate.create
 const enumType = ZEnum.create
 const falseType = ZFalse.create
+const falsyType = ZFalsy.create
 const functionType = ZFunction.create
 const literalType = ZLiteral.create
 const nanType = ZNaN.create
@@ -87,6 +92,7 @@ const optionalType = ZOptional.create
 const stringType = ZString.create
 const symbolType = ZSymbol.create
 const trueType = ZTrue.create
+const truthyType = ZTruthy.create
 const tupleType = ZTuple.create
 const undefinedType = ZUndefined.create
 const unionType = ZUnion.create
@@ -102,6 +108,7 @@ export {
   dateType as date,
   enumType as enum,
   falseType as false,
+  falsyType as falsy,
   functionType as function,
   literalType as literal,
   nanType as nan,
@@ -115,6 +122,7 @@ export {
   stringType as string,
   symbolType as symbol,
   trueType as true,
+  truthyType as truthy,
   tupleType as tuple,
   undefinedType as undefined,
   unionType as union,
@@ -131,6 +139,7 @@ export {
   ZDate,
   ZEnum,
   ZFalse,
+  ZFalsy,
   ZFunction,
   ZLiteral,
   ZNaN,
@@ -144,6 +153,7 @@ export {
   ZString,
   ZSymbol,
   ZTrue,
+  ZTruthy,
   ZTuple,
   ZUndefined,
   ZUnion,
@@ -158,6 +168,7 @@ export type {
   ZBooleanDef,
   ZDateDef,
   ZEnumDef,
+  ZFalsyDef,
   ZFunctionDef,
   ZLiteralDef,
   ZNaNDef,
@@ -170,6 +181,7 @@ export type {
   ZOptionalDef,
   ZStringDef,
   ZSymbolDef,
+  ZTruthyDef,
   ZTupleDef,
   ZUndefinedDef,
   ZUnionDef,

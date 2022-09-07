@@ -127,7 +127,15 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
   /**
    * Annotates the schema with a brief summary.
    *
+   * @remarks
+   * The summary should be short and concise. For longer explanations, see {@link Z#description}.
+   *
    * @param summary - The schema's summary.
+   *
+   * @example
+   * ```ts
+   * z.any().summary('A brief summary')
+   * ```
    */
   summary(summary: string): this {
     return this._manifest.set('summary', summary)
@@ -136,7 +144,16 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
   /**
    * Annotates the schema with a description.
    *
+   * @remarks
+   * The description should be a longer and more descriptive explanation of the schema.
+   * For shorter and more concise ones, prefer {@link Z#summary} instead.
+   *
    * @param description - The schema's description.
+   *
+   * @example
+   * ```ts
+   * z.any().description('A long, detailed description of the schema')
+   * ```
    */
   description(description: string): this {
     return this._manifest.set('description', description)

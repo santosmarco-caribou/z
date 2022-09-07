@@ -36,6 +36,7 @@ import {
   type ZUnionDef,
   type ZUnknownDef,
   type ZVoidDef,
+  Z,
   ZAny,
   ZArray,
   ZBigInt,
@@ -114,6 +115,7 @@ export {
   voidType as void,
 }
 export {
+  Z,
   ZAny,
   ZArray,
   ZBigInt,

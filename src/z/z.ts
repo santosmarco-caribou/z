@@ -1,15 +1,30 @@
-import Joi from 'joi'
 import type { OpenAPIV3 } from 'openapi-types'
 import type { F } from 'ts-toolbelt'
 import type { Primitive } from 'type-fest'
 
 import type { AnyZDef, ZDef } from '../def'
-import { ManifestBasicInfoWithValue, ZManifest, ZManifestObject } from '../manifest/manifest'
+import { type ManifestBasicInfoWithValue, type ZManifestObject, ZManifest } from '../manifest/manifest'
 import { ZOpenApi } from '../manifest/openapi'
 import { ZType } from '../type'
-import { ZUtils } from '../utils'
+import { ZObjectUtils, ZUtils } from '../utils'
 import { type ParseOptions, type ParseResult, ZParser } from '../validation/parser'
-import { ZValidator } from '../validation/validator'
+import {
+  type AnyZSchema,
+  type ZAlternativesSchema,
+  type ZAnySchema,
+  type ZArraySchema,
+  type ZBooleanSchema,
+  type ZDateSchema,
+  type ZFunctionSchema,
+  type ZNumberSchema,
+  type ZObjectSchema,
+  type ZOnlySchema,
+  type ZStringOnlySchema,
+  type ZStringSchema,
+  type ZSymbolSchema,
+  type ZUndefinedSchema,
+  ZValidator,
+} from '../validation/validator'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                          Z                                                         */
@@ -242,20 +257,20 @@ export type _ZValidator<Z extends AnyZ> = Z['_validator']
 /*                                                        ZAny                                                        */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZAnyDef = ZDef<{ validator: Joi.AnySchema<any> }>
+export type ZAnyDef = ZDef<{ validator: ZAnySchema }>
 
 export class ZAny extends Z<any, ZAnyDef> {
   readonly name = ZType.Any
   readonly hint = 'any'
 
-  static create = (): ZAny => new ZAny({ validator: Joi.any().required() })
+  static create = (): ZAny => new ZAny({ validator: ZValidator.any() })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZArray                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZArrayDef<T extends AnyZ> = ZDef<{ validator: Joi.ArraySchema }, { element: T }>
+export type ZArrayDef<T extends AnyZ> = ZDef<{ validator: ZArraySchema }, { element: T }>
 
 export class ZArray<T extends AnyZ> extends Z<_ZOutput<T>[], ZArrayDef<T>, _ZInput<T>[]> {
   readonly name = ZType.Array
@@ -309,7 +324,7 @@ export class ZArray<T extends AnyZ> extends Z<_ZOutput<T>[], ZArrayDef<T>, _ZInp
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends AnyZ>(element: T): ZArray<T> =>
-    new ZArray({ validator: Joi.array().items(element._validator).required(), element })
+    new ZArray({ validator: ZValidator.array(element._validator), element })
 }
 
 export type AnyZArray = ZArray<AnyZ>
@@ -318,7 +333,7 @@ export type AnyZArray = ZArray<AnyZ>
 /*                                                       ZBigInt                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZBigIntDef = ZDef<{ validator: Joi.AnySchema<bigint> }>
+export type ZBigIntDef = ZDef<{ validator: ZAnySchema }>
 
 export class ZBigInt extends Z<bigint, ZBigIntDef> {
   readonly name = ZType.BigInt
@@ -326,9 +341,9 @@ export class ZBigInt extends Z<bigint, ZBigIntDef> {
 
   static create = (): ZBigInt =>
     new ZBigInt({
-      validator: ZValidator.custom(Joi.any(), (value, { OK, FAIL }) =>
+      validator: ZValidator.custom(ZValidator.any(), (value, { OK, FAIL }) =>
         typeof value === 'bigint' ? OK(value) : FAIL('bigint.base')
-      ).required(),
+      ),
     })
 }
 
@@ -336,7 +351,7 @@ export class ZBigInt extends Z<bigint, ZBigIntDef> {
 /*                                                      ZBoolean                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZBooleanDef = ZDef<{ validator: Joi.BooleanSchema }>
+export type ZBooleanDef = ZDef<{ validator: ZBooleanSchema }>
 
 export class ZBoolean extends Z<boolean, ZBooleanDef> {
   readonly name = ZType.Boolean
@@ -368,7 +383,7 @@ export class ZBoolean extends Z<boolean, ZBooleanDef> {
     return ZFalsy.$_create(this)
   }
 
-  static create = (): ZBoolean => new ZBoolean({ validator: Joi.boolean().required() })
+  static create = (): ZBoolean => new ZBoolean({ validator: ZValidator.boolean() })
 }
 
 /* ------------------------------------------------------ ZTrue ----------------------------------------------------- */
@@ -403,7 +418,7 @@ export class ZFalse extends Z<false, ZBooleanDef> {
 
 /* ----------------------------------------------------- ZTruthy ---------------------------------------------------- */
 
-export type ZTruthyDef = ZDef<{ validator: Joi.Schema<true> }>
+export type ZTruthyDef = ZDef<{ validator: AnyZSchema }>
 
 export class ZTruthy extends Z<true, ZTruthyDef> {
   readonly name = ZType.Truthy
@@ -412,7 +427,7 @@ export class ZTruthy extends Z<true, ZTruthyDef> {
   /**
    * @internal
    */
-  static $_create = (parentZ: AnyZ): ZTruthy =>
+  static $_create = <Z extends AnyZ>(parentZ: Z): ZTruthy =>
     new ZTruthy({
       validator: ZValidator.custom(parentZ._validator, (value, { OK, FAIL }) =>
         value ? OK(true) : FAIL('truthy.base')
@@ -426,7 +441,7 @@ export class ZTruthy extends Z<true, ZTruthyDef> {
 
 export type Falsy = false | '' | 0 | null | undefined | void
 
-export type ZFalsyDef = ZDef<{ validator: Joi.Schema<true> }>
+export type ZFalsyDef = ZDef<{ validator: AnyZSchema }>
 
 export class ZFalsy extends Z<Falsy, ZFalsyDef> {
   readonly name = ZType.Falsy
@@ -453,7 +468,7 @@ const __NOW__ = Symbol('__NOW__')
 
 type ZDateCheckInput = Date | typeof __NOW__
 
-export type ZDateDef = ZDef<{ validator: Joi.DateSchema }>
+export type ZDateDef = ZDef<{ validator: ZDateSchema }>
 
 export class ZDate extends Z<Date, ZDateDef, Date | number | string> {
   readonly name = ZType.Date
@@ -494,14 +509,14 @@ export class ZDate extends Z<Date, ZDateDef, Date | number | string> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = Object.assign((): ZDate => new ZDate({ validator: Joi.date().required() }), { now: __NOW__ } as const)
+  static create = Object.assign((): ZDate => new ZDate({ validator: ZValidator.date() }), { now: __NOW__ } as const)
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZEnum                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZEnumDef<T extends string> = ZDef<{ validator: Joi.StringSchema }, { values: T[] }>
+export type ZEnumDef<T extends string> = ZDef<{ validator: ZStringOnlySchema }, { values: T[] }>
 
 export class ZEnum<T extends string> extends Z<T, ZEnumDef<T>> {
   readonly name = ZType.Enum
@@ -516,13 +531,7 @@ export class ZEnum<T extends string> extends Z<T, ZEnumDef<T>> {
     <T extends string>(...values: F.Narrow<T>[]): ZEnum<T>
   } = <T extends string>(...values: T[] | [T[]]): ZEnum<T> => {
     const _values = (Array.isArray(values[0]) ? values[0] : values) as T[]
-    return new ZEnum({
-      validator: Joi.string()
-        .strict()
-        .valid(..._values)
-        .required(),
-      values: _values,
-    })
+    return new ZEnum({ validator: ZValidator.string.only(..._values), values: _values })
   }
 }
 
@@ -533,7 +542,7 @@ export type AnyZEnum = ZEnum<string>
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export type ZFunctionDef<P extends AnyZ[], R extends AnyZ> = ZDef<
-  { validator: Joi.FunctionSchema },
+  { validator: ZFunctionSchema },
   { parameters: ZTuple<P>; returnType: R }
 >
 
@@ -592,7 +601,7 @@ export class ZFunction<P extends AnyZ[], R extends AnyZ> extends Z<
     parameters?: F.Narrow<P>,
     returnType?: R
   ): ZFunction<P, R> | ZFunction<[], ZUnknown> => {
-    const validator = Joi.function().required()
+    const validator = ZValidator.function()
     if (parameters && returnType) {
       return new ZFunction({ validator, parameters: ZTuple.create(parameters), returnType: returnType })
     }
@@ -606,7 +615,7 @@ export type AnyZFunction = ZFunction<AnyZ[], AnyZ>
 /*                                                      ZLiteral                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZLiteralDef<T extends Primitive> = ZDef<{ validator: Joi.AnySchema }, { value: T }>
+export type ZLiteralDef<T extends Primitive> = ZDef<{ validator: ZOnlySchema<T> }, { value: T }>
 
 export class ZLiteral<T extends Primitive> extends Z<T, ZLiteralDef<T>> {
   readonly name = ZType.Literal
@@ -617,7 +626,7 @@ export class ZLiteral<T extends Primitive> extends Z<T, ZLiteralDef<T>> {
   }
 
   static create = <T extends Primitive>(value: F.Narrow<T>): ZLiteral<T> =>
-    new ZLiteral({ validator: Joi.valid(value).required(), value: value as T })
+    new ZLiteral({ validator: ZValidator.only(value), value: value as T })
 }
 
 export type AnyZLiteral = ZLiteral<Primitive>
@@ -626,7 +635,7 @@ export type AnyZLiteral = ZLiteral<Primitive>
 /*                                                        ZNaN                                                        */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZNaNDef = ZDef<{ validator: Joi.AnySchema<number> }>
+export type ZNaNDef = ZDef<{ validator: ZAnySchema }>
 
 export class ZNaN extends Z<number, ZNaNDef> {
   readonly name = ZType.NaN
@@ -634,9 +643,9 @@ export class ZNaN extends Z<number, ZNaNDef> {
 
   static create = (): ZNaN =>
     new ZNaN({
-      validator: ZValidator.custom(Joi.any(), (value, { OK, FAIL }) =>
+      validator: ZValidator.custom(ZValidator.any(), (value, { OK, FAIL }) =>
         Number.isNaN(value) ? OK(value) : FAIL('nan.base')
-      ).required(),
+      ),
     })
 }
 
@@ -644,14 +653,14 @@ export class ZNaN extends Z<number, ZNaNDef> {
 /*                                                       ZNever                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZNeverDef = ZDef<{ validator: Joi.Schema<never> }>
+export type ZNeverDef = ZDef<{ validator: ZAnySchema }>
 
 export class ZNever extends Z<never, ZNeverDef> {
   readonly name = ZType.Never
   readonly hint = 'never'
 
   static create = (): ZNever =>
-    new ZNever({ validator: ZValidator.custom(Joi.any(), (_, { FAIL }) => FAIL('any.unknown')).required() })
+    new ZNever({ validator: ZValidator.custom(ZValidator.any(), (_, { FAIL }) => FAIL('any.unknown')) })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -698,20 +707,20 @@ export class ZNullish<T extends AnyZ> extends Z<
 /*                                                        ZNull                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZNullDef = ZDef<{ validator: Joi.AnySchema<null> }>
+export type ZNullDef = ZDef<{ validator: ZOnlySchema<null> }>
 
 export class ZNull extends Z<null, ZNullDef> {
   readonly name = ZType.Null
   readonly hint = 'null'
 
-  static create = (): ZNull => new ZNull({ validator: Joi.valid(null).required() })
+  static create = (): ZNull => new ZNull({ validator: ZValidator.only(null) })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZNumber                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZNumberDef = ZDef<{ validator: Joi.NumberSchema }>
+export type ZNumberDef = ZDef<{ validator: ZNumberSchema }>
 
 export class ZNumber extends Z<number, ZNumberDef> {
   readonly name = ZType.Number
@@ -845,7 +854,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = (): ZNumber => new ZNumber({ validator: Joi.number().required() })
+  static create = (): ZNumber => new ZNumber({ validator: ZValidator.number() })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -854,7 +863,7 @@ export class ZNumber extends Z<number, ZNumberDef> {
 
 export type AnyZObjectShape = Record<string, AnyZ>
 
-export type ZObjectDef<Shape extends AnyZObjectShape> = ZDef<{ validator: Joi.ObjectSchema }, { shape: Shape }>
+export type ZObjectDef<Shape extends AnyZObjectShape> = ZDef<{ validator: ZObjectSchema }, { shape: Shape }>
 
 export class ZObject<Shape extends AnyZObjectShape> extends Z<
   ZUtils.WithQuestionMarks<ZUtils.MapToZOutput<Shape>>,
@@ -862,7 +871,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
   ZUtils.WithQuestionMarks<ZUtils.MapToZInput<Shape>>
 > {
   readonly name = ZType.Object
-  readonly hint = ZObjectHelpers.generateHint(this._def.shape)
+  readonly hint = ZUtils.generateZObjectHint(this._def.shape)
 
   get shape(): Shape {
     return this._def.shape
@@ -884,7 +893,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
 
   extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Shape & S> {
     return new ZObject({
-      validator: this._validator.append(ZObjectHelpers.zShapeToJoiShape(incomingShape)),
+      validator: this._validator.append(ZObjectUtils.zShapeToJoiSchema(incomingShape)),
       shape: ZUtils.merge(this._def.shape, incomingShape),
     })
   }
@@ -896,36 +905,10 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <Shape extends AnyZObjectShape>(shape: Shape): ZObject<Shape> =>
-    new ZObject({ validator: Joi.object(ZObjectHelpers.zShapeToJoiShape(shape)).required(), shape: shape })
+    new ZObject({ validator: ZValidator.object(ZObjectUtils.zShapeToJoiSchema(shape)), shape: shape })
 }
 
 export type AnyZObject = ZObject<AnyZObjectShape>
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-class ZObjectHelpers {
-  static generateHint = <Shape extends AnyZObjectShape>(shape: Shape): string => {
-    const _generateHint = (shape: AnyZObjectShape, indentation = 2): string =>
-      '{\n' +
-      Object.entries(shape)
-        .map(
-          ([key, z]) =>
-            `${' '.repeat(indentation)}${key}${z.isOptional() ? '?' : ''}: ${
-              z instanceof ZObject
-                ? _generateHint(z.shape as AnyZObjectShape, indentation + 2)
-                : z instanceof ZArray && z.element instanceof ZObject
-                ? `Array<${_generateHint(z.element.shape as AnyZObjectShape, indentation + 2)}>`
-                : z.hint
-            },`
-        )
-        .join('\n') +
-      `\n${' '.repeat(indentation - 2)}}`
-    return _generateHint(shape)
-  }
-
-  static zShapeToJoiShape = <Shape extends AnyZObjectShape>(shape: Shape): Joi.SchemaMap =>
-    Object.fromEntries(Object.entries(shape).map(([key, z]) => [key, z._validator]))
-}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZOptional                                                     */
@@ -996,7 +979,7 @@ export type ZStringPatternOptions = {
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZStringDef = ZDef<{ validator: Joi.StringSchema }>
+export type ZStringDef = ZDef<{ validator: ZStringSchema }>
 
 export class ZString extends Z<string, ZStringDef> {
   readonly name = ZType.String
@@ -1152,14 +1135,14 @@ export class ZString extends Z<string, ZStringDef> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = (): ZString => new ZString({ validator: Joi.string().required() })
+  static create = (): ZString => new ZString({ validator: ZValidator.string() })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZSymbol                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZSymbolDef = ZDef<{ validator: Joi.SymbolSchema }>
+export type ZSymbolDef = ZDef<{ validator: ZSymbolSchema }>
 
 export class ZSymbol extends Z<symbol, ZSymbolDef> {
   readonly name = ZType.Symbol
@@ -1169,12 +1152,12 @@ export class ZSymbol extends Z<symbol, ZSymbolDef> {
     return ZUniqueSymbol.$_create(this, symbol)
   }
 
-  static create = (): ZSymbol => new ZSymbol({ validator: Joi.symbol().required() })
+  static create = (): ZSymbol => new ZSymbol({ validator: ZValidator.symbol() })
 }
 
 /* -------------------------------------------------- ZUniqueSymbol ------------------------------------------------- */
 
-export type ZUniqueSymbolDef<S extends symbol> = ZDef<{ validator: Joi.SymbolSchema }, { symbol: S }>
+export type ZUniqueSymbolDef<S extends symbol> = ZDef<{ validator: ZSymbolSchema }, { symbol: S }>
 
 export class ZUniqueSymbol<S extends symbol> extends Z<S, ZUniqueSymbolDef<S>> {
   readonly name = ZType.UniqueSymbol
@@ -1202,7 +1185,7 @@ export class ZUniqueSymbol<S extends symbol> extends Z<S, ZUniqueSymbolDef<S>> {
 /*                                                       ZTuple                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZTupleDef<T extends AnyZ[]> = ZDef<{ validator: Joi.ArraySchema }, { elements: T }>
+export type ZTupleDef<T extends AnyZ[]> = ZDef<{ validator: ZArraySchema }, { elements: T }>
 
 export class ZTuple<T extends AnyZ[]> extends Z<ZUtils.MapToZOutput<T>, ZTupleDef<T>, ZUtils.MapToZInput<T>> {
   readonly name = ZType.Tuple
@@ -1216,12 +1199,7 @@ export class ZTuple<T extends AnyZ[]> extends Z<ZUtils.MapToZOutput<T>, ZTupleDe
   }
 
   static create = <T extends AnyZ[]>(elements: F.Narrow<T>): ZTuple<T> =>
-    new ZTuple({
-      validator: Joi.array()
-        .items(...elements.map(v => v._validator))
-        .required(),
-      elements: elements as T,
-    })
+    new ZTuple({ validator: ZValidator.array(...elements.map(v => v._validator)), elements: elements as T })
 }
 
 export type AnyZTuple = ZTuple<AnyZ[]>
@@ -1230,20 +1208,20 @@ export type AnyZTuple = ZTuple<AnyZ[]>
 /*                                                     ZUndefined                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZUndefinedDef = ZDef<{ validator: Joi.AnySchema<undefined> }>
+export type ZUndefinedDef = ZDef<{ validator: ZUndefinedSchema }>
 
 export class ZUndefined extends Z<undefined, ZUndefinedDef> {
   readonly name = ZType.Undefined
   readonly hint = 'undefined'
 
-  static create = (): ZUndefined => new ZUndefined({ validator: Joi.forbidden() })
+  static create = (): ZUndefined => new ZUndefined({ validator: ZValidator.undefined() })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZUnion                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZUnionDef<T extends AnyZ[]> = ZDef<{ validator: Joi.AlternativesSchema }, { options: T }>
+export type ZUnionDef<T extends AnyZ[]> = ZDef<{ validator: ZAlternativesSchema }, { options: T }>
 
 export class ZUnion<T extends AnyZ[]> extends Z<_ZOutput<T[number]>, ZUnionDef<T>, _ZInput<T[number]>> {
   readonly name = ZType.Union
@@ -1255,7 +1233,7 @@ export class ZUnion<T extends AnyZ[]> extends Z<_ZOutput<T[number]>, ZUnionDef<T
 
   static create = <T extends AnyZ[]>(...options: F.Narrow<T>): ZUnion<T> => {
     return new ZUnion({
-      validator: Joi.alternatives(options.map(option => option._validator)).required(),
+      validator: ZValidator.alternatives(options.map(option => option._validator)),
       options: options as T,
     })
   }
@@ -1265,26 +1243,27 @@ export class ZUnion<T extends AnyZ[]> extends Z<_ZOutput<T[number]>, ZUnionDef<T
 /*                                                      ZUnknown                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZUnknownDef = ZDef<{ validator: Joi.AnySchema<unknown> }>
+export type ZUnknownDef = ZDef<{ validator: ZAnySchema }>
 
 export class ZUnknown extends Z<unknown, ZUnknownDef> {
   readonly name = ZType.Unknown
   readonly hint = 'unknown'
 
-  static create = (): ZUnknown => new ZUnknown({ validator: Joi.any() })
+  static create = (): ZUnknown => new ZUnknown({ validator: ZValidator.any() })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZVoid                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZVoidDef = ZDef<{ validator: Joi.Schema<void> }>
+export type ZVoidDef = ZDef<{ validator: ZAnySchema }>
 
 export class ZVoid extends Z<void, ZVoidDef> {
   readonly name = ZType.Void
   readonly hint = 'void'
 
-  static create = (): ZVoid => new ZVoid({ validator: ZValidator.custom(Joi.any(), (_, { OK }) => OK(undefined)) })
+  static create = (): ZVoid =>
+    new ZVoid({ validator: ZValidator.custom(ZValidator.any(), (_, { OK }) => OK(undefined)) })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

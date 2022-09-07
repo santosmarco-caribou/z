@@ -481,9 +481,9 @@ export type ZFunctionDef<P extends AnyZ[], R extends AnyZ> = ZDef<
 >
 
 export class ZFunction<P extends AnyZ[], R extends AnyZ> extends Z<
-  F.Function<ZUtils.MapToZOutput<P>, _ZOutput<R>>,
+  ZUtils.Function<ZUtils.MapToZInput<P>, _ZOutput<R>>,
   ZFunctionDef<P, R>,
-  F.Function<ZUtils.MapToZInput<P>, _ZInput<R>>
+  ZUtils.Function<ZUtils.MapToZOutput<P>, _ZInput<R>>
 > {
   readonly name = ZType.Function
   readonly hint = `(${this._def.parameters.elements.map((z, idx) => `args_${idx}: ${z.hint}`).join(', ')}) => ${
@@ -503,7 +503,7 @@ export class ZFunction<P extends AnyZ[], R extends AnyZ> extends Z<
    * @param parameters - parameters The schemas of the function's parameters.
    */
   arguments<T extends AnyZ[]>(parameters: F.Narrow<T>): ZFunction<T, R> {
-    return ZFunction.create(parameters, this._def.returnType)
+    return new ZFunction({ ...this._def, validator: this._validator, parameters: ZTuple.create(parameters) })
   }
   /**
    * {@inheritDoc ZFunction#arguments}
@@ -518,7 +518,12 @@ export class ZFunction<P extends AnyZ[], R extends AnyZ> extends Z<
    * @param returnType - The schema of the function's return type.
    */
   returns<T extends AnyZ>(returnType: T): ZFunction<P, T> {
-    return ZFunction.create(this._def.parameters.elements as F.Narrow<P>, returnType)
+    return new ZFunction({ ...this._def, validator: this._validator, returnType })
+  }
+
+  implement(fn: _ZOutput<this>): (...args: ZUtils.MapToZInput<P>) => _ZOutput<R> {
+    const validatedFn = this.parse(fn)
+    return validatedFn
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -1122,7 +1127,7 @@ export class ZUniqueSymbol<S extends symbol> extends Z<S, ZUniqueSymbolDef<S>> {
    * @internal
    */
   static $_create = <S extends symbol>(parentZ: ZSymbol, symbol: S): ZUniqueSymbol<S> => {
-    if (!symbol.description) throw new Error(`Symbol ${symbol.toString()} must have a description.`)
+    if (!symbol.description) throw new Error('The provided symbol must have a description')
     return new ZUniqueSymbol<S>({
       validator: parentZ._validator.map({ [symbol.description]: symbol }),
       symbol,

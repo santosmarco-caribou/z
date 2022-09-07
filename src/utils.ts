@@ -39,7 +39,8 @@ export namespace ZUtils {
 }
 
 export namespace ZSpecUtils {
-  export const _NaN = NaN as unknown as A.x
+  export const _NaN = NaN as A.Type<number, 'NaN'>
+  export const _UniqueSymbol = Symbol('uniq')
 
   const TYPE_SPEC_BASE_VALUES = [
     undefined,
@@ -58,6 +59,8 @@ export namespace ZSpecUtils {
     BigInt(-1),
     BigInt(0),
     BigInt(1),
+    Symbol(),
+    _UniqueSymbol,
   ] as const
 
   type TypeSpecBaseValues = typeof TYPE_SPEC_BASE_VALUES
@@ -84,8 +87,8 @@ export namespace ZSpecUtils {
   const stringifySpecValue = (value: any): string =>
     value === undefined
       ? 'undefined'
-      : typeof value === 'number' && isNaN(value)
-      ? 'NaN'
+      : (typeof value === 'number' && isNaN(value)) || typeof value === 'symbol'
+      ? value.toString()
       : typeof value === 'bigint'
       ? `BigInt(${value})`
       : Array.isArray(value)

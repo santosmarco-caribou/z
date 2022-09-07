@@ -23,6 +23,8 @@ describe('ZNull', () => {
       [BigInt(-1), 'any.only', '"value" must be [null]'],
       [BigInt(0), 'any.only', '"value" must be [null]'],
       [BigInt(1), 'any.only', '"value" must be [null]'],
+      [Symbol(), 'any.only', '"value" must be [null]'],
+      [ZSpecUtils._UniqueSymbol, 'any.only', '"value" must be [null]'],
     ],
   })
 })

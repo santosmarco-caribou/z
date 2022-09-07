@@ -23,6 +23,8 @@ describe('ZNaN', () => {
       [BigInt(-1), 'nan.base', '"value" must be a NaN'],
       [BigInt(0), 'nan.base', '"value" must be a NaN'],
       [BigInt(1), 'nan.base', '"value" must be a NaN'],
+      [Symbol(), 'nan.base', '"value" must be a NaN'],
+      [ZSpecUtils._UniqueSymbol, 'nan.base', '"value" must be a NaN'],
     ],
   })
 })

@@ -21,6 +21,8 @@ describe('ZBigInt', () => {
       [[], 'bigint.base', '"value" must be a bigint'],
       [[-1, 0, 1], 'bigint.base', '"value" must be a bigint'],
       [['', 'test'], 'bigint.base', '"value" must be a bigint'],
+      [Symbol(), 'bigint.base', '"value" must be a bigint'],
+      [ZSpecUtils._UniqueSymbol, 'bigint.base', '"value" must be a bigint'],
     ],
   })
 })

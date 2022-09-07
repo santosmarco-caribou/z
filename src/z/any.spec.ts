@@ -23,6 +23,8 @@ describe('ZAny', () => {
       [BigInt(-1)],
       [BigInt(0)],
       [BigInt(1)],
+      [Symbol()],
+      [ZSpecUtils._UniqueSymbol],
     ],
     shouldNotParse: [],
   })

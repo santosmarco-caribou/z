@@ -23,6 +23,8 @@ describe('ZUndefined', () => {
       [BigInt(-1), 'any.unknown', '"value" is not allowed'],
       [BigInt(0), 'any.unknown', '"value" is not allowed'],
       [BigInt(1), 'any.unknown', '"value" is not allowed'],
+      [Symbol(), 'any.unknown', '"value" is not allowed'],
+      [ZSpecUtils._UniqueSymbol, 'any.unknown', '"value" is not allowed'],
     ],
   })
 })

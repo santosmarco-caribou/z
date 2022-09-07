@@ -23,6 +23,8 @@ describe('ZVoid', () => {
       [BigInt(-1), undefined],
       [BigInt(0), undefined],
       [BigInt(1), undefined],
+      [Symbol(), undefined],
+      [ZSpecUtils._UniqueSymbol, undefined],
     ],
     shouldNotParse: [],
   })

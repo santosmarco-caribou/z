@@ -22,6 +22,8 @@ describe('ZBoolean', () => {
       [BigInt(-1), 'boolean.base', '"value" must be a boolean'],
       [BigInt(0), 'boolean.base', '"value" must be a boolean'],
       [BigInt(1), 'boolean.base', '"value" must be a boolean'],
+      [Symbol(), 'boolean.base', '"value" must be a boolean'],
+      [ZSpecUtils._UniqueSymbol, 'boolean.base', '"value" must be a boolean'],
     ],
     extra: {
       '.': [
@@ -53,6 +55,8 @@ describe('ZBoolean', () => {
         [BigInt(-1), 'any.only', '"value" must be [true]'],
         [BigInt(0), 'any.only', '"value" must be [true]'],
         [BigInt(1), 'any.only', '"value" must be [true]'],
+        [Symbol(), 'any.only', '"value" must be [true]'],
+        [ZSpecUtils._UniqueSymbol, 'any.only', '"value" must be [true]'],
       ],
     })
   })
@@ -79,6 +83,8 @@ describe('ZBoolean', () => {
         [BigInt(-1), 'any.only', '"value" must be [false]'],
         [BigInt(0), 'any.only', '"value" must be [false]'],
         [BigInt(1), 'any.only', '"value" must be [false]'],
+        [Symbol(), 'any.only', '"value" must be [false]'],
+        [ZSpecUtils._UniqueSymbol, 'any.only', '"value" must be [false]'],
       ],
     })
   })

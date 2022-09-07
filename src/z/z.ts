@@ -624,7 +624,7 @@ export class ZNull extends Z<null, ZNullDef> {
   readonly name = ZType.Null
   readonly hint = 'null'
 
-  static create = (): ZNull => new ZNull({ validator: Joi.allow(null) })
+  static create = (): ZNull => new ZNull({ validator: Joi.valid(null).required() })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1109,7 +1109,7 @@ export class ZUndefined extends Z<undefined, ZUndefinedDef> {
   readonly name = ZType.Undefined
   readonly hint = 'undefined'
 
-  static create = (): ZUndefined => new ZUndefined({ validator: Joi.optional() })
+  static create = (): ZUndefined => new ZUndefined({ validator: Joi.forbidden() })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

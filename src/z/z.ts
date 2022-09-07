@@ -878,14 +878,18 @@ export type ZOptionalDef<T extends AnyZ> = ZDef<{ validator: _ZValidator<T> }, {
 
 export class ZOptional<T extends AnyZ> extends Z<_ZOutput<T> | undefined, ZOptionalDef<T>, _ZInput<T> | undefined> {
   readonly name = ZType.Optional
-  readonly hint = `${this._def.inner.hint} | undefined`
+  readonly hint = ZUtils.unionizeHints(this._def.inner.hint, 'undefined')
 
   unwrap(): T {
     return this._def.inner
   }
 
   static create = <T extends AnyZ>(inner: T): ZOptional<T> =>
-    new ZOptional({ validator: inner._validator.optional(), inner })
+    new ZOptional({
+      validator:
+        inner._validator.$_getFlag('presence') === 'forbidden' ? inner._validator : inner._validator.optional(),
+      inner,
+    })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

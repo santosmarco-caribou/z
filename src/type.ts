@@ -18,10 +18,12 @@ export enum ZType {
   Object = 'ZObject',
   Optional = 'ZOptional',
   String = 'ZString',
+  Symbol = 'ZSymbol',
   True = 'ZTrue',
   Tuple = 'ZTuple',
   Undefined = 'ZUndefined',
   Union = 'ZUnion',
+  UniqueSymbol = 'ZUniqueSymbol',
   Unknown = 'ZUnknown',
   Void = 'ZVoid',
 }

@@ -31,9 +31,11 @@ import {
   type ZStringPatternOptions,
   type ZStringUriOptions,
   type ZStringUuidOptions,
+  type ZSymbolDef,
   type ZTupleDef,
   type ZUndefinedDef,
   type ZUnionDef,
+  type ZUniqueSymbolDef,
   type ZUnknownDef,
   type ZVoidDef,
   Z,
@@ -55,10 +57,12 @@ import {
   ZObject,
   ZOptional,
   ZString,
+  ZSymbol,
   ZTrue,
   ZTuple,
   ZUndefined,
   ZUnion,
+  ZUniqueSymbol,
   ZUnknown,
   ZVoid,
 } from './z'
@@ -81,10 +85,12 @@ const numberType = ZNumber.create
 const objectType = ZObject.create
 const optionalType = ZOptional.create
 const stringType = ZString.create
+const symbolType = ZSymbol.create
 const trueType = ZTrue.create
 const tupleType = ZTuple.create
 const undefinedType = ZUndefined.create
 const unionType = ZUnion.create
+const uniqueSymbolType = ZUniqueSymbol.create
 const unknownType = ZUnknown.create
 const voidType = ZVoid.create
 
@@ -107,10 +113,12 @@ export {
   objectType as object,
   optionalType as optional,
   stringType as string,
+  symbolType as symbol,
   trueType as true,
   tupleType as tuple,
   undefinedType as undefined,
   unionType as union,
+  uniqueSymbolType as uniqsymbol,
   unknownType as unknown,
   voidType as void,
 }
@@ -134,10 +142,12 @@ export {
   ZObject,
   ZOptional,
   ZString,
+  ZSymbol,
   ZTrue,
   ZTuple,
   ZUndefined,
   ZUnion,
+  ZUniqueSymbol,
   ZUnknown,
   ZVoid,
 }
@@ -159,9 +169,11 @@ export type {
   ZObjectDef,
   ZOptionalDef,
   ZStringDef,
+  ZSymbolDef,
   ZTupleDef,
   ZUndefinedDef,
   ZUnionDef,
+  ZUniqueSymbolDef,
   ZUnknownDef,
   ZVoidDef,
 }

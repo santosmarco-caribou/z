@@ -1092,6 +1092,49 @@ export class ZString extends Z<string, ZStringDef> {
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                       ZSymbol                                                      */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type ZSymbolDef = ZDef<{ validator: Joi.SymbolSchema }>
+
+export class ZSymbol extends Z<symbol, ZSymbolDef> {
+  readonly name = ZType.Symbol
+  readonly hint = 'symbol'
+
+  unique<S extends symbol>(symbol: S): ZUniqueSymbol<S> {
+    return ZUniqueSymbol.$_create(this, symbol)
+  }
+
+  static create = (): ZSymbol => new ZSymbol({ validator: Joi.symbol().required() })
+}
+
+/* -------------------------------------------------- ZUniqueSymbol ------------------------------------------------- */
+
+export type ZUniqueSymbolDef<S extends symbol> = ZDef<{ validator: Joi.SymbolSchema }, { symbol: S }>
+
+export class ZUniqueSymbol<S extends symbol> extends Z<S, ZUniqueSymbolDef<S>> {
+  readonly name = ZType.UniqueSymbol
+  readonly hint = this._def.symbol.toString()
+
+  get symbol(): S {
+    return this._def.symbol
+  }
+
+  /**
+   * @internal
+   */
+  static $_create = <S extends symbol>(parentZ: ZSymbol, symbol: S): ZUniqueSymbol<S> => {
+    if (!symbol.description) throw new Error(`Symbol ${symbol.toString()} must have a description.`)
+    return new ZUniqueSymbol<S>({
+      validator: parentZ._validator.map({ [symbol.description]: symbol }),
+      symbol,
+    })
+  }
+
+  static create = <S extends symbol>(symbol: S): ZUniqueSymbol<S> => this.$_create(ZSymbol.create(), symbol)
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZTuple                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 

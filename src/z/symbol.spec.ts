@@ -61,7 +61,16 @@ describe('ZSymbol', () => {
         [Symbol(), 'any.only', '"value" must be [Symbol(uniq)]'],
       ],
       extra: {
-        '.': [['.symbol should return the symbol', z => expect(z.symbol).toStrictEqual(ZSpecUtils._UniqueSymbol)]],
+        '.': [
+          ['.symbol should return the symbol', z => expect(z.symbol).toStrictEqual(ZSpecUtils._UniqueSymbol)],
+          [
+            'should throw an error when the symbol has no description',
+            () => {
+              const uniqSymbol = Symbol()
+              expect(() => ZUniqueSymbol.create(uniqSymbol)).toThrowError('The provided symbol must have a description')
+            },
+          ],
+        ],
       },
     })
   })

@@ -1,5 +1,5 @@
 import { isObject as _isObject, merge as _merge, omit as _omit, pick as _pick } from 'lodash'
-import type { A, F, N, O } from 'ts-toolbelt'
+import type { A, F, L, N, O } from 'ts-toolbelt'
 import type { FixedLengthArray, LiteralUnion, Promisable } from 'type-fest'
 
 import type { _ZInput, _ZOutput, AnyZ } from './z/z'
@@ -26,6 +26,8 @@ export namespace ZUtils {
   export type OmitInternals<T extends O.Object> = Omit<T, `${'$_' | '_'}${string}`>
 
   export type WithQuestionMarks<T extends O.Object> = Pick<T, RequiredKeys<T>> & Partial<Pick<T, OptionalKeys<T>>>
+
+  export type Function<P extends L.List = L.List<any>, R = any> = (...args: P) => R
 
   export type MapToZOutput<T> = Simplify<{ [K in keyof T]: T[K] extends AnyZ ? _ZOutput<T[K]> : never }>
   export type MapToZInput<T> = Simplify<{ [K in keyof T]: T[K] extends AnyZ ? _ZInput<T[K]> : never }>

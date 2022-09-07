@@ -1,6 +1,6 @@
 import { isObject as _isObject, merge as _merge, omit as _omit, pick as _pick } from 'lodash'
 import type { A, F, N, O } from 'ts-toolbelt'
-import type { FixedLengthArray } from 'type-fest'
+import type { FixedLengthArray, LiteralUnion, Promisable } from 'type-fest'
 
 import type { _ZInput, _ZOutput, AnyZ } from './z/z'
 
@@ -45,6 +45,8 @@ export namespace ZSpecUtils {
     undefined,
     null,
     _NaN,
+    false,
+    true,
     -1,
     0,
     1,
@@ -61,21 +63,26 @@ export namespace ZSpecUtils {
   type TypeSpecBaseValues = typeof TYPE_SPEC_BASE_VALUES
   type TypeSpecBaseValue = TypeSpecBaseValues[number]
 
-  type TypeSpecConfig<ShouldParseValues extends TypeSpecBaseValue[]> = {
-    type: { create: () => AnyZ }
+  type TypeSpecConfig<Z extends AnyZ, ShouldParseValues extends TypeSpecBaseValue[]> = {
+    type: { create: () => Z }
     typeName: string
     typeHint: string
-    shouldParse: ShouldParseValues
+    shouldParse: {
+      [K in keyof ShouldParseValues]: [value: ShouldParseValues[K], parseTo?: any]
+    }
     shouldNotParse: N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']> extends 0
-      ? [value: never, errorMessage: string][]
+      ? never[]
       : FixedLengthArray<
-          [value: Exclude<TypeSpecBaseValue, ShouldParseValues[number]>, errorMessage: string],
+          [value: Exclude<TypeSpecBaseValue, ShouldParseValues[number]>, errorCode: string, errorMessage: string],
           N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']>
         >
+    extra?: {
+      [K in LiteralUnion<'.', string>]?: [name: string, fn: (z: Z) => Promisable<void>][]
+    }
   }
 
-  const getSpecName = (value: any, subTitle?: string): string =>
-    (value === undefined
+  const stringifySpecValue = (value: any): string =>
+    value === undefined
       ? 'undefined'
       : typeof value === 'number' && isNaN(value)
       ? 'NaN'
@@ -84,10 +91,19 @@ export namespace ZSpecUtils {
       : Array.isArray(value)
       ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
       : JSON.stringify(value)
-    ).padEnd(13) + (subTitle ? ` ${subTitle}` : '')
 
-  export const buildBaseSpec = <ShouldParseValues extends TypeSpecBaseValue[]>(
-    config: F.Narrow<TypeSpecConfig<ShouldParseValues>>
+  const getSpecName = (value: any, subTitles?: Record<string, string>): string =>
+    stringifySpecValue(value).padEnd(13) +
+    (subTitles
+      ? ` ${Object.entries(subTitles)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join('; ')}`
+      : '')
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  export const buildBaseSpec = <Z extends AnyZ, ShouldParseValues extends TypeSpecBaseValue[]>(
+    config: F.Narrow<TypeSpecConfig<Z, ShouldParseValues>>
   ) => {
     const {
       type: { create },
@@ -95,28 +111,33 @@ export namespace ZSpecUtils {
       typeHint,
       shouldParse,
       shouldNotParse,
+      extra,
     } = config
 
-    let type: AnyZ
+    let z: Z
 
     beforeEach(() => {
-      type = create()
+      z = create()
     })
 
     it(`should have a name of '${typeName}'`, () => {
-      expect(type.name).toBe(typeName)
+      expect(z.name).toBe(typeName)
     })
 
     it(`should have a hint of '${typeHint}'`, () => {
-      expect(type.hint).toBe(typeHint)
+      expect(z.hint).toBe(typeHint)
     })
+
+    extra?.['.']?.forEach(([name, fn]) => it(name, async () => fn(z)))
 
     /* -------------------------------------------------------------------------------------------------------------- */
 
     describe('should parse:', () => {
-      shouldParse.forEach(value => {
-        it(getSpecName(value), () => {
-          expect(type.parse(value)).toBe(value)
+      shouldParse.forEach(def => {
+        const [value, parseTo] = def
+        const containsParseTo = def.length === 2
+        it(getSpecName(value, containsParseTo ? { to: stringifySpecValue(parseTo) } : undefined), () => {
+          expect(z.safeParse(value).value).toStrictEqual(containsParseTo ? parseTo : value)
         })
       })
     })
@@ -124,12 +145,22 @@ export namespace ZSpecUtils {
     /* -------------------------------------------------------------------------------------------------------------- */
 
     describe('should not parse:', () => {
-      const _shouldNotParse = shouldNotParse as [value: TypeSpecBaseValue, errorMessage: string][]
-      _shouldNotParse.forEach(([value, errorMessage]) => {
-        it(getSpecName(value, `w/ msg: ${errorMessage}`), () => {
-          expect(() => type.parse(value)).toThrowError(errorMessage)
+      const _shouldNotParse = shouldNotParse as [value: TypeSpecBaseValue, errorCode: string, errorMessage: string][]
+      _shouldNotParse.forEach(([value, errorCode, errorMessage]) => {
+        it(getSpecName(value, { 'w/ code': errorCode, msg: errorMessage }), () => {
+          const { error } = z.safeParse(value)
+          expect(error?.issues).toHaveLength(1)
+          expect(error?.issues[0]?.code).toBe(errorCode)
+          expect(error?.issues[0]?.message).toBe(errorMessage)
         })
       })
     })
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+
+    extra &&
+      Object.entries(extra)
+        .filter(([key]) => key !== '.')
+        .forEach(([, specs]) => specs?.forEach(([name, fn]) => it(name, async () => fn(z))))
   }
 }

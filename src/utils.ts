@@ -1,5 +1,5 @@
 import { isObject as _isObject, merge as _merge, omit as _omit, pick as _pick } from 'lodash'
-import type { A, F, L, N, O, U } from 'ts-toolbelt'
+import type { A, F, L, N, O } from 'ts-toolbelt'
 import type { FixedLengthArray, LiteralUnion, Promisable } from 'type-fest'
 
 import type { _ZInput, _ZOutput, AnyZ } from './z/z'

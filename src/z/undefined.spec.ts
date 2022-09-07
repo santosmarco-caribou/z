@@ -2,14 +2,14 @@ import { ZSpecUtils } from '../utils'
 import { ZUndefined } from './z'
 
 describe('ZUndefined', () => {
-  ZSpecUtils.buildTypeSpec({
+  ZSpecUtils.buildBaseSpec({
     type: ZUndefined,
     typeName: 'ZUndefined',
     typeHint: 'undefined',
     shouldParse: [undefined],
     shouldNotParse: [
       [null, '"value" is not allowed'],
-      [NaN, '"value" is not allowed'],
+      [ZSpecUtils._NaN, '"value" is not allowed'],
       [-1, '"value" is not allowed'],
       [0, '"value" is not allowed'],
       [1, '"value" is not allowed'],

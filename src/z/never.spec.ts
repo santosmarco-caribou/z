@@ -2,7 +2,7 @@ import { ZSpecUtils } from '../utils'
 import { ZNever } from './z'
 
 describe('ZNever', () => {
-  ZSpecUtils.buildTypeSpec({
+  ZSpecUtils.buildBaseSpec({
     type: ZNever,
     typeName: 'ZNever',
     typeHint: 'never',
@@ -10,7 +10,7 @@ describe('ZNever', () => {
     shouldNotParse: [
       [undefined, '"value" is required'],
       [null, '"value" is not allowed'],
-      [NaN, '"value" is not allowed'],
+      [ZSpecUtils._NaN, '"value" is not allowed'],
       [-1, '"value" is not allowed'],
       [0, '"value" is not allowed'],
       [1, '"value" is not allowed'],

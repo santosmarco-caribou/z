@@ -1,47 +1,24 @@
+import { ZSpecUtils } from '../utils'
 import { ZBigInt } from './z'
 
 describe('ZBigInt', () => {
-  it("should have a hint of 'bigint'", () => {
-    const z = ZBigInt.create()
-    expect(z.hint).toBe('bigint')
-  })
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  it('should parse a BigInt', () => {
-    const z = ZBigInt.create()
-    expect(z.parse(BigInt(1))).toBe(BigInt(1))
-  })
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  it('should not parse `undefined`', () => {
-    const z = ZBigInt.create()
-    expect(() => z.parse(undefined)).toThrowError('"value" is required')
-  })
-
-  it('should not parse `null`', () => {
-    const z = ZBigInt.create()
-    expect(() => z.parse(null)).toThrowError('"value" must be a bigint')
-  })
-
-  it('should not parse a non-zero number', () => {
-    const z = ZBigInt.create()
-    expect(() => z.parse(1)).toThrowError('"value" must be a bigint')
-  })
-
-  it('should not parse `0`', () => {
-    const z = ZBigInt.create()
-    expect(() => z.parse(0)).toThrowError('"value" must be a bigint')
-  })
-
-  it('should not parse a string', () => {
-    const z = ZBigInt.create()
-    expect(() => z.parse('test')).toThrowError('"value" must be a bigint')
-  })
-
-  it('should not parse an empty string', () => {
-    const z = ZBigInt.create()
-    expect(() => z.parse('')).toThrowError('"value" must be a bigint')
+  ZSpecUtils.buildBaseSpec({
+    type: ZBigInt,
+    typeName: 'ZBigInt',
+    typeHint: 'bigint',
+    shouldParse: [BigInt(-1), BigInt(0), BigInt(1)],
+    shouldNotParse: [
+      [undefined, '"value" is required'],
+      [null, '"value" must be a bigint'],
+      [ZSpecUtils._NaN, '"value" must be a bigint'],
+      [-1, '"value" must be a bigint'],
+      [0, '"value" must be a bigint'],
+      [1, '"value" must be a bigint'],
+      ['', '"value" must be a bigint'],
+      ['test', '"value" must be a bigint'],
+      [[], '"value" must be a bigint'],
+      [[-1, 0, 1], '"value" must be a bigint'],
+      [['', 'test'], '"value" must be a bigint'],
+    ],
   })
 })

@@ -1,4 +1,4 @@
-import { isObject as _isObject, merge as _merge, omit as _omit, pick as _pick } from 'lodash'
+import { isObject as _isObject, merge as _merge, omit as _omit, omitBy as _omitBy, pick as _pick } from 'lodash'
 import type { A, L, O } from 'ts-toolbelt'
 
 import type { _ZInput, _ZOutput, AnyZ } from './z/z'
@@ -37,6 +37,8 @@ export namespace ZUtils {
   export const pick = _pick
   export const omit = _omit
   export const merge = _merge
+
+  export const unionizeHints = (...hints: string[]): string => [...new Set(hints)].join(' | ')
 }
 
 export namespace ZArrayUtils {
@@ -51,8 +53,8 @@ export namespace ZArrayUtils {
 
   export const concat = <T extends [AnyArray, ...AnyArray[]]>(...arrs: T): Concat<T> =>
     arrs[0].concat(...arrs.slice(1)) as Concat<T>
-
   export const includes = <T extends AnyArray, U>(arr: T, value: U): value is T[number] => arr.includes(value)
+  export const omitBy = <T>(arr: T[], predicate: (value: T, key: number) => boolean): T[] => arr.filter(predicate)
 }
 
 export namespace ZObjectUtils {
@@ -61,4 +63,9 @@ export namespace ZObjectUtils {
   export type PartialKeys<T extends AnyStringRecord, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>
 
   export const keys = <T extends AnyStringRecord>(obj: T): (keyof T)[] => Object.keys(obj) as (keyof T)[]
+
+  export const pick = _pick
+  export const omit = _omit
+  export const omitBy = _omitBy
+  export const merge = _merge
 }

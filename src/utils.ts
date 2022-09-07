@@ -70,6 +70,15 @@ export namespace ZSpecUtils {
     >
   }
 
+  const getSpecName = (value: any): string =>
+    typeof value === 'number' && isNaN(value)
+      ? 'NaN'
+      : typeof value === 'bigint'
+      ? `BigInt(${value})`
+      : Array.isArray(value)
+      ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
+      : JSON.stringify(value)
+
   export const buildTypeSpec = <ShouldParseValues extends TypeSpecBaseValue[]>(
     config: F.Narrow<TypeSpecConfig<ShouldParseValues>>
   ) => {
@@ -99,16 +108,9 @@ export namespace ZSpecUtils {
 
     describe('should parse:', () => {
       shouldParse.forEach(value => {
-        it(
-          typeof value === 'bigint'
-            ? `BigInt(${value})`
-            : Array.isArray(value)
-            ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
-            : JSON.stringify(value),
-          () => {
-            expect(type.parse(value)).toBe(value)
-          }
-        )
+        it(getSpecName(value), () => {
+          expect(type.parse(value)).toBe(value)
+        })
       })
     })
 
@@ -116,16 +118,9 @@ export namespace ZSpecUtils {
 
     describe('should not parse:', () => {
       shouldNotParse.forEach(([value, errorMessage]) => {
-        it(
-          typeof value === 'bigint'
-            ? `BigInt(${value})`
-            : Array.isArray(value)
-            ? `[${value.map(val => JSON.stringify(val)).join(', ')}]`
-            : JSON.stringify(value),
-          () => {
-            expect(() => type.parse(value)).toThrowError(errorMessage)
-          }
-        )
+        it(getSpecName(value), () => {
+          expect(() => type.parse(value)).toThrowError(errorMessage)
+        })
       })
     })
   }

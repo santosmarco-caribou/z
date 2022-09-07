@@ -1,7 +1,8 @@
+import type Joi from 'joi'
 import { isObject as _isObject, merge as _merge, omit as _omit, omitBy as _omitBy, pick as _pick } from 'lodash'
 import type { A, L, O } from 'ts-toolbelt'
 
-import type { _ZInput, _ZOutput, AnyZ } from './z/z'
+import { _ZInput, _ZOutput, AnyZ, AnyZObjectShape, ZArray, ZObject } from './z/z'
 
 export namespace ZUtils {
   export type MaybeArray<T> = T | T[]
@@ -39,6 +40,24 @@ export namespace ZUtils {
   export const merge = _merge
 
   export const unionizeHints = (...hints: string[]): string => [...new Set(hints)].join(' | ')
+  export const generateZObjectHint = (shape: AnyZObjectShape): string => {
+    const _generateHint = (_shape: AnyZObjectShape, indentation = 2): string =>
+      '{\n' +
+      Object.entries(_shape)
+        .map(
+          ([key, z]) =>
+            `${' '.repeat(indentation)}${key}${z.isOptional() ? '?' : ''}: ${
+              z instanceof ZObject
+                ? _generateHint(z.shape as AnyZObjectShape, indentation + 2)
+                : z instanceof ZArray && z.element instanceof ZObject
+                ? `Array<${_generateHint(z.element.shape as AnyZObjectShape, indentation + 2)}>`
+                : z.hint
+            },`
+        )
+        .join('\n') +
+      `\n${' '.repeat(indentation - 2)}}`
+    return _generateHint(shape)
+  }
 }
 
 export namespace ZArrayUtils {
@@ -68,4 +87,9 @@ export namespace ZObjectUtils {
   export const omit = _omit
   export const omitBy = _omitBy
   export const merge = _merge
+
+  export const zShapeToJoiSchema = <Shape extends AnyZObjectShape>(shape: Shape): Joi.StrictSchemaMap<Shape> =>
+    Object.fromEntries(
+      Object.entries(shape).map(([key, z]) => [key, z._validator])
+    ) as unknown as Joi.StrictSchemaMap<Shape>
 }

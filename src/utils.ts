@@ -1,5 +1,5 @@
 import { isObject as _isObject, merge as _merge, omit as _omit, pick as _pick } from 'lodash'
-import type { A, F, L, N, O } from 'ts-toolbelt'
+import type { A, F, L, N, O, U } from 'ts-toolbelt'
 import type { FixedLengthArray, LiteralUnion, Promisable } from 'type-fest'
 
 import type { _ZInput, _ZOutput, AnyZ } from './z/z'
@@ -51,7 +51,9 @@ export namespace ZSpecUtils {
     false,
     true,
     -1,
+    -0.5,
     0,
+    0.5,
     1,
     '',
     'test',
@@ -68,19 +70,25 @@ export namespace ZSpecUtils {
   type TypeSpecBaseValues = typeof TYPE_SPEC_BASE_VALUES
   type TypeSpecBaseValue = TypeSpecBaseValues[number]
 
+  type ShouldParse<ShouldParseValues extends TypeSpecBaseValue[]> = {
+    [K in keyof ShouldParseValues]: [value: ShouldParseValues[K], parseTo?: any]
+  }
+  type ShouldNotParse<ShouldParseValues extends TypeSpecBaseValue[]> = N.Sub<
+    TypeSpecBaseValues['length'],
+    ShouldParseValues['length']
+  > extends 0
+    ? never[]
+    : FixedLengthArray<
+        [value: Exclude<TypeSpecBaseValue, ShouldParseValues[number]>, errorCode: string, errorMessage: string],
+        N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']>
+      >
+
   type TypeSpecConfig<Z extends AnyZ, ShouldParseValues extends TypeSpecBaseValue[]> = {
     type: { create: () => Z }
     typeName: string
     typeHint: string
-    shouldParse: {
-      [K in keyof ShouldParseValues]: [value: ShouldParseValues[K], parseTo?: any]
-    }
-    shouldNotParse: N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']> extends 0
-      ? never[]
-      : FixedLengthArray<
-          [value: Exclude<TypeSpecBaseValue, ShouldParseValues[number]>, errorCode: string, errorMessage: string],
-          N.Sub<TypeSpecBaseValues['length'], ShouldParseValues['length']>
-        >
+    shouldParse: ShouldParse<ShouldParseValues>
+    shouldNotParse: ShouldNotParse<ShouldParseValues>
     extra?: {
       [K in LiteralUnion<'.', string>]?: [name: string, fn: (z: Z) => Promisable<void>][]
     }
@@ -109,7 +117,7 @@ export namespace ZSpecUtils {
 
   export const buildBaseSpec = <Z extends AnyZ, ShouldParseValues extends TypeSpecBaseValue[]>(
     config: F.Narrow<TypeSpecConfig<Z, ShouldParseValues>>
-  ) => {
+  ): void => {
     const {
       type: { create },
       typeName,

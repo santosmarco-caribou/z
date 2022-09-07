@@ -7,16 +7,16 @@ const VALIDATION_FAIL = Symbol('VALIDATION_FAIL')
 
 /* ------------------------------------------------ Custom validation ----------------------------------------------- */
 
-export type CustomValidationHelpers<V extends Joi.Schema> = {
-  OK(): [typeof VALIDATION_OK]
-  FAIL<T extends ZIssueCode<V>, Ctx extends Partial<ZIssueLocalContext<T>>>(
-    issue: T,
+export type CustomValidationHelpers<T, V extends Joi.Schema> = {
+  OK(value: T): [typeof VALIDATION_OK, T]
+  FAIL<_T extends ZIssueCode<V>, Ctx extends Partial<ZIssueLocalContext<_T>>>(
+    issue: _T,
     context?: Ctx
-  ): [typeof VALIDATION_FAIL, T, Ctx | undefined]
+  ): [typeof VALIDATION_FAIL, _T, Ctx | undefined]
 }
 
-export type CustomValidationResult<V extends Joi.Schema> = ReturnType<
-  CustomValidationHelpers<V>[keyof CustomValidationHelpers<V>]
+export type CustomValidationResult<T, V extends Joi.Schema> = ReturnType<
+  CustomValidationHelpers<T, V>[keyof CustomValidationHelpers<T, V>]
 >
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -24,19 +24,19 @@ export type CustomValidationResult<V extends Joi.Schema> = ReturnType<
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export class ZValidator {
-  static custom = <V extends Joi.Schema>(
+  static custom = <T, V extends Joi.Schema>(
     baseValidator: V,
-    handler: (value: any, helpers: CustomValidationHelpers<V>) => CustomValidationResult<V>
+    handler: (value: any, helpers: CustomValidationHelpers<T, V>) => CustomValidationResult<T, V>
   ): V => {
-    const helpers: CustomValidationHelpers<V> = {
-      OK: () => [VALIDATION_OK],
+    const helpers: CustomValidationHelpers<T, V> = {
+      OK: value => [VALIDATION_OK, value],
       FAIL: (issue, ctx) => [VALIDATION_FAIL, issue, ctx],
     }
 
     return baseValidator.custom((_value, _helpers) => {
-      const [result, issue, issueCtx] = handler(_value, helpers)
-      if (result === VALIDATION_OK) return _value
-      else return _helpers.error(issue, issueCtx)
+      const [result, valueOrIssue, issueCtx] = handler(_value, helpers)
+      if (result === VALIDATION_OK) return valueOrIssue
+      else return _helpers.error(valueOrIssue, issueCtx)
     }) as V
   }
 }

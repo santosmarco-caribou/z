@@ -1,5 +1,6 @@
 import type Joi from 'joi'
 
+import type { ZUtils } from '../utils'
 import type { ZIssueCode, ZIssueLocalContext } from './issue-map'
 
 const VALIDATION_OK = Symbol('VALIDATION_OK')
@@ -26,17 +27,29 @@ export type CustomValidationResult<T, V extends Joi.Schema> = ReturnType<
 export class ZValidator {
   static custom = <T, V extends Joi.Schema>(
     baseValidator: V,
-    handler: (value: any, helpers: CustomValidationHelpers<T, V>) => CustomValidationResult<T, V>
+    handler: (value: JoiSchemaToHandlerValue<V>, helpers: CustomValidationHelpers<T, V>) => CustomValidationResult<T, V>
   ): V => {
     const helpers: CustomValidationHelpers<T, V> = {
       OK: value => [VALIDATION_OK, value],
       FAIL: (issue, ctx) => [VALIDATION_FAIL, issue, ctx],
     }
 
-    return baseValidator.custom((_value, _helpers) => {
+    return baseValidator.custom((_value: JoiSchemaToHandlerValue<V>, _helpers) => {
       const [result, valueOrIssue, issueCtx] = handler(_value, helpers)
       if (result === VALIDATION_OK) return valueOrIssue
       else return _helpers.error(valueOrIssue, issueCtx)
     }) as V
   }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+type JoiSchemaToHandlerValue<V extends Joi.Schema> = V extends Joi.ArraySchema
+  ? any[]
+  : V extends Joi.BooleanSchema
+  ? boolean
+  : V extends Joi.DateSchema
+  ? Date
+  : V extends Joi.FunctionSchema
+  ? ZUtils.Function
+  : any

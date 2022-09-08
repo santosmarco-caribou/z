@@ -1,7 +1,8 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "name": "ZSchemas",
   "entryPoints": ["src/index.ts"],
-  "out": "docs",
-  "excludePrivate": true
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "name": "ZSchemas",
+  "out": "docs"
 }

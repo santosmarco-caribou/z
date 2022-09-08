@@ -5,8 +5,7 @@ import type { Primitive } from 'type-fest'
 import type { AnyZDef, ZDef } from '../def'
 import { type ManifestBasicInfoWithValue, type ZManifestObject, ZManifest } from '../manifest/manifest'
 import { ZOpenApi } from '../manifest/openapi'
-import { ZType } from '../type'
-import type { ParseOptions, ParseResult, ZCheckOptions, ZParserParsingMethods } from '../types'
+import { type ParseOptions, type ParseResult, type ZCheckOptions, type ZParserParsingMethods, ZType } from '../types'
 import { ZObjectUtils, ZUtils } from '../utils'
 import { ZParser } from '../validation/parser'
 import {
@@ -24,6 +23,7 @@ import {
   type ZStringSchema,
   type ZSymbolSchema,
   type ZUndefinedSchema,
+  ZEntriesSchema,
   ZValidator,
 } from '../validation/validator'
 
@@ -339,7 +339,7 @@ export class ZArray<T extends AnyZ, Arr extends T[] = T[]> extends Z<
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends AnyZ, Arr extends T[] = T[]>(element: T): ZArray<T, Arr> =>
-    new ZArray<T, Arr>({ validator: ZValidator.array(element._validator), element })
+    new ZArray<T, Arr>({ validator: ZValidator.array(element['_validator']), element })
 }
 
 export type AnyZArray = ZArray<AnyZ, AnyZ[]>
@@ -411,7 +411,7 @@ export class ZTrue extends Z<true, ZBooleanDef> {
    * @internal
    */
   static $_create = (parentZ: ZBoolean): ZTrue =>
-    new ZTrue({ validator: parentZ._validator.valid(true).prefs({ abortEarly: true }) })
+    new ZTrue({ validator: parentZ['_validator'].valid(true).prefs({ abortEarly: true }) })
 
   static create = (): ZTrue => this.$_create(ZBoolean.create())
 }
@@ -426,7 +426,7 @@ export class ZFalse extends Z<false, ZBooleanDef> {
    * @internal
    */
   static $_create = (parentZ: ZBoolean): ZFalse =>
-    new ZFalse({ validator: parentZ._validator.valid(false).prefs({ abortEarly: true }) })
+    new ZFalse({ validator: parentZ['_validator'].valid(false).prefs({ abortEarly: true }) })
 
   static create = (): ZFalse => this.$_create(ZBoolean.create())
 }
@@ -444,7 +444,7 @@ export class ZTruthy extends Z<true, ZTruthyDef> {
    */
   static $_create = (parentZ: AnyZ): ZTruthy =>
     new ZTruthy({
-      validator: ZValidator.custom(parentZ._validator, (value, { OK, FAIL }) =>
+      validator: ZValidator.custom(parentZ['_validator'], (value, { OK, FAIL }) =>
         value ? OK(true) : FAIL('truthy.base')
       ),
     })
@@ -467,7 +467,7 @@ export class ZFalsy extends Z<Falsy, ZFalsyDef> {
    */
   static $_create = (parentZ: AnyZ): ZFalsy =>
     new ZFalsy({
-      validator: ZValidator.custom(parentZ._validator.optional(), (value, { OK, FAIL }) =>
+      validator: ZValidator.custom(parentZ['_validator'].optional(), (value, { OK, FAIL }) =>
         value ? FAIL('falsy.base') : OK(value)
       ),
     })
@@ -656,7 +656,7 @@ export class ZIntersection<T extends AnyZ[]> extends Z<
 
   static create = <T extends AnyZ[]>(...components: F.Narrow<T>): ZIntersection<T> => {
     return new ZIntersection({
-      validator: ZValidator.alternatives(components.map(component => component._validator)).match('all'),
+      validator: ZValidator.alternatives(components.map(component => (component as AnyZ)['_validator'])).match('all'),
       components: components as T,
     })
   }
@@ -681,6 +681,45 @@ export class ZLiteral<T extends Primitive> extends Z<T, ZLiteralDef<T>> {
 }
 
 export type AnyZLiteral = ZLiteral<Primitive>
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                        ZMap                                                        */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type ZMapDef<K extends AnyZ, V extends AnyZ> = ZDef<{ validator: ZEntriesSchema }, { keyType: K; valueType: V }>
+
+export class ZMap<K extends AnyZ, V extends AnyZ> extends Z<
+  Map<_ZOutput<K>, _ZOutput<V>>,
+  ZMapDef<K, V>,
+  Map<_ZInput<K>, _ZInput<V>>
+> {
+  readonly name = ZType.Map
+  readonly hint = `Map<${this._def.keyType.hint}, ${this._def.valueType.hint}>`
+
+  get keyType(): K {
+    return this._def.keyType
+  }
+  get valueType(): V {
+    return this._def.valueType
+  }
+
+  entries(): ZTuple<[K, V]> {
+    return this._manifest.copyAndReturn(ZTuple.create([this._def.keyType, this._def.valueType]))
+  }
+
+  static create = <K extends AnyZ, V extends AnyZ>(keyType: K, valueType: V): ZMap<K, V> =>
+    new ZMap({
+      validator: ZValidator.entries(
+        keyType,
+        valueType,
+        (value, FAIL) => (value instanceof Map ? { entries: [...value.entries()] } : { error: FAIL('map.base') }),
+        FAIL => FAIL('map.key.base', { type: keyType.hint }),
+        FAIL => FAIL('map.value.base', { type: valueType.hint })
+      ),
+      keyType,
+      valueType,
+    })
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZNaN                                                        */
@@ -729,7 +768,7 @@ export class ZNullable<T extends AnyZ> extends Z<_ZOutput<T> | null, ZNullableDe
   }
 
   static create = <T extends AnyZ>(inner: T): ZNullable<T> =>
-    new ZNullable({ validator: inner._validator.allow(null), inner })
+    new ZNullable({ validator: inner['_validator'].allow(null), inner })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -751,7 +790,7 @@ export class ZNullish<T extends AnyZ> extends Z<
   }
 
   static create = <T extends AnyZ>(inner: T): ZNullish<T> =>
-    new ZNullish({ validator: inner._validator.optional().allow(null), inner })
+    new ZNullish({ validator: inner['_validator'].optional().allow(null), inner })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1145,6 +1184,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
     catchall: AnyZ
   ): ZObject<Shape> => {
     if (catchall) options.mode = 'passthrough'
+
     const baseValidator = ZValidator.object(ZObjectUtils.zShapeToJoiSchema(shape)).preferences(
       {
         passthrough: { allowUnknown: true, stripUnknown: false },
@@ -1152,12 +1192,17 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
         strip: { allowUnknown: true, stripUnknown: true },
       }[options.mode]
     )
-    return new ZObject({
-      validator: catchall ? baseValidator.pattern(/./, catchall._validator) : baseValidator,
+
+    const zObject = new ZObject({
+      validator: catchall ? baseValidator.pattern(/./, catchall['_validator']) : baseValidator,
       shape: shape,
       options,
       catchall,
     })
+
+    zObject._manifest.setKey('keys', ZObjectUtils.getZObjectManifestDeep(zObject.shape))
+
+    return zObject
   }
 
   static create = <Shape extends AnyZObjectShape>(shape: Shape): ZObject<Shape> =>
@@ -1183,9 +1228,72 @@ export class ZOptional<T extends AnyZ> extends Z<_ZOutput<T> | undefined, ZOptio
   static create = <T extends AnyZ>(inner: T): ZOptional<T> =>
     new ZOptional({
       validator:
-        inner._validator.$_getFlag('presence') === 'forbidden' ? inner._validator : inner._validator.optional(),
+        inner['_validator'].$_getFlag('presence') === 'forbidden'
+          ? inner['_validator']
+          : inner['_validator'].optional(),
       inner,
     })
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                       ZRecord                                                      */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type ZRecordDef<K extends Z<PropertyKey, AnyZDef>, V extends AnyZ> = ZDef<
+  { validator: ZEntriesSchema },
+  { keyType: K; valueType: V }
+>
+
+export class ZRecord<K extends Z<PropertyKey, AnyZDef>, V extends AnyZ> extends Z<
+  Record<_ZOutput<K>, _ZOutput<V>>,
+  ZRecordDef<K, V>,
+  Record<_ZInput<K>, _ZInput<V>>
+> {
+  readonly name = ZType.Record
+  readonly hint = `{ [k: ${this._def.keyType.hint}]: ${this._def.valueType.hint} }`
+
+  get keyType(): K {
+    return this._def.keyType
+  }
+  get valueType(): V {
+    return this._def.valueType
+  }
+
+  entries(): ZTuple<[K, V]> {
+    return this._manifest.copyAndReturn(ZTuple.create([this._def.keyType, this._def.valueType]))
+  }
+
+  static create: {
+    <V extends AnyZ>(valueType: V): ZRecord<ZString, V>
+    <K extends Z<PropertyKey, AnyZDef>, V extends AnyZ>(keyType: K, valueType: V): ZRecord<K, V>
+  } = <K extends Z<PropertyKey, AnyZDef>, V extends AnyZ>(
+    valueTypeOrKeyType: V | K,
+    valueType?: V
+  ): ZRecord<ZString, V> | ZRecord<K, V> => {
+    const buildValidator = (keyType: Z<PropertyKey, AnyZDef>, valueType: AnyZ) =>
+      ZValidator.entries(
+        keyType,
+        valueType,
+        (value, FAIL) =>
+          ZObjectUtils.isPlainObject(value) ? { entries: Object.entries(value) } : { error: FAIL('record.base') },
+        FAIL => FAIL('record.key.base', { type: keyType.hint }),
+        FAIL => FAIL('record.value.base', { type: valueType.hint })
+      )
+
+    if (valueType)
+      /* `valueTypeOrKeyType` is keyType */
+      return new ZRecord<K, V>({
+        validator: buildValidator(valueTypeOrKeyType, valueType),
+        keyType: valueTypeOrKeyType as K,
+        valueType,
+      })
+    else
+      return new ZRecord<ZString, V>({
+        validator: buildValidator(ZString.create(), valueTypeOrKeyType),
+        keyType: ZString.create(),
+        valueType: valueTypeOrKeyType as V,
+      })
+  }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1433,7 +1541,7 @@ export class ZUniqueSymbol<S extends symbol> extends Z<S, ZUniqueSymbolDef<S>> {
   static $_create = <S extends symbol>(parentZ: ZSymbol, symbol: S): ZUniqueSymbol<S> => {
     if (!symbol.description) throw new Error('The provided symbol must have a description')
     return new ZUniqueSymbol<S>({
-      validator: parentZ._validator.map({ [symbol.description]: symbol }),
+      validator: parentZ['_validator'].map({ [symbol.description]: symbol }),
       symbol,
     })
   }
@@ -1461,7 +1569,10 @@ export class ZTuple<T extends AnyZ[]> extends Z<ZUtils.MapToZOutput<T>, ZTupleDe
   }
 
   static create = <T extends AnyZ[]>(elements: F.Narrow<T>): ZTuple<T> =>
-    new ZTuple({ validator: ZValidator.array(...elements.map(v => v._validator)), elements: elements as T })
+    new ZTuple({
+      validator: ZValidator.array(...elements.map(v => (v as AnyZ)['_validator'])),
+      elements: elements as T,
+    })
 }
 
 export type AnyZTuple = ZTuple<AnyZ[]>
@@ -1495,7 +1606,7 @@ export class ZUnion<T extends AnyZ[]> extends Z<_ZOutput<T[number]>, ZUnionDef<T
 
   static create = <T extends AnyZ[]>(...options: F.Narrow<T>): ZUnion<T> => {
     return new ZUnion({
-      validator: ZValidator.alternatives(options.map(option => option._validator)),
+      validator: ZValidator.alternatives(options.map(option => (option as AnyZ)['_validator'])),
       options: options as T,
     })
   }

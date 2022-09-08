@@ -1,7 +1,8 @@
 import type Joi from 'joi'
-import { isObject as _isObject, merge as _merge, omit as _omit, omitBy as _omitBy, pick as _pick } from 'lodash'
+import _, { isObject as _isObject, merge as _merge, omit as _omit, omitBy as _omitBy, pick as _pick } from 'lodash'
 import type { A, L, O } from 'ts-toolbelt'
 
+import type { AnyZManifestObject } from './manifest/manifest'
 import { _ZInput, _ZOutput, AnyZ, AnyZObjectShape, ZArray, ZObject, ZOptional } from './z/z'
 
 export namespace ZUtils {
@@ -104,6 +105,17 @@ export namespace ZObjectUtils {
 
   export const zShapeToJoiSchema = <Shape extends AnyZObjectShape>(shape: Shape): Joi.StrictSchemaMap<Shape> =>
     Object.fromEntries(
-      Object.entries(shape).map(([key, z]) => [key, z._validator])
+      Object.entries(shape).map(([key, z]) => [key, z['_validator']])
     ) as unknown as Joi.StrictSchemaMap<Shape>
+
+  export const getZObjectManifestDeep = <S extends AnyZObjectShape>(shape: S): Record<string, AnyZManifestObject> =>
+    Object.entries(shape).reduce(
+      (acc, entry) => ({
+        ...acc,
+        [entry[0]]: entry[1] instanceof ZObject ? getZObjectManifestDeep(entry[1].shape) : entry[1].manifest,
+      }),
+      {}
+    )
+
+  export const isPlainObject = <T>(obj: T): obj is Record<PropertyKey, any> => _.isPlainObject(obj)
 }

@@ -1,6 +1,6 @@
 import type { S } from 'ts-toolbelt'
+import type { Simplify } from 'type-fest'
 
-import type { ZUtils } from '../utils'
 import type { _ZOutput, AnyZ } from '../z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -8,8 +8,6 @@ import type { _ZOutput, AnyZ } from '../z/z'
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export const Z_ISSUE_MAP = {
-  /* ------------------------------------------------- Joi defaults ------------------------------------------------- */
-
   'alternatives.all': '{{#label}} does not match all of the required types',
   'alternatives.any': '{{#label}} does not match any of the allowed types',
   'alternatives.match': '{{#label}} does not match any of the allowed types',
@@ -44,6 +42,8 @@ export const Z_ISSUE_MAP = {
   'array.sparse': '{{#label}} must not be a sparse array item',
   'array.unique': '{{#label}} contains a duplicate value',
 
+  'bigint.base': '{{#label}} must be a bigint',
+
   'binary.base': '{{#label}} must be a buffer or a string',
   'binary.length': '{{#label}} must be {{#limit}} bytes',
   'binary.max': '{{#label}} must be less than or equal to {{#limit}} bytes',
@@ -54,6 +54,7 @@ export const Z_ISSUE_MAP = {
   'falsy.base': '{{#label}} must be falsy',
 
   'date.base': '{{#label}} must be a valid date',
+  'date.between': '{{#label}} must be a valid date between {{#minDate}} and {{#maxDate}}',
   'date.format': '{{#label}} must be in {msg("date.format." + #format) || #format} format',
   'date.greater': '{{#label}} must be greater than {{:#limit}}',
   'date.less': '{{#label}} must be less than {{:#limit}}',
@@ -91,6 +92,8 @@ export const Z_ISSUE_MAP = {
   'object.with': '{{:#mainWithLabel}} missing required peer {{:#peerWithLabel}}',
   'object.without': '{{:#mainWithLabel}} conflict with forbidden peer {{:#peerWithLabel}}',
   'object.xor': '{{#label}} contains a conflict between exclusive peers {{#peersWithLabels}}',
+
+  'nan.base': '{{#label}} must be a NaN',
 
   'number.base': '{{#label}} must be a number',
   'number.greater': '{{#label}} must be greater than {{#limit}}',
@@ -141,12 +144,6 @@ export const Z_ISSUE_MAP = {
 
   'symbol.base': '{{#label}} must be a symbol',
   'symbol.map': '{{#label}} must be one of {{#map}}',
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  'bigint.base': '{{#label}} must be a bigint',
-
-  'nan.base': '{{#label}} must be a NaN',
 } as const
 
 export type ZIssueMap = typeof Z_ISSUE_MAP
@@ -155,7 +152,25 @@ export type ZIssueMap = typeof Z_ISSUE_MAP
 
 export type ZIssueCode<Z extends AnyZ = AnyZ> = Extract<
   keyof ZIssueMap,
-  _ZOutput<Z> extends number ? `number.${string}` : string
+  _ZOutput<Z> extends any[]
+    ? `array.${string}`
+    : _ZOutput<Z> extends bigint
+    ? `bigint.${string}`
+    : _ZOutput<Z> extends boolean
+    ? `boolean.${string}`
+    : _ZOutput<Z> extends Date
+    ? `date.${string}`
+    : _ZOutput<Z> extends (...args: any[]) => any
+    ? `function.${string}`
+    : _ZOutput<Z> extends Record<string, any>
+    ? `object.${string}`
+    : _ZOutput<Z> extends number
+    ? `${'nan' | 'number'}.${string}`
+    : _ZOutput<Z> extends string
+    ? `string.${string}`
+    : _ZOutput<Z> extends symbol
+    ? `symbol.${string}`
+    : string
 >
 
 export type AnyZIssueCode = ZIssueCode<AnyZ>
@@ -173,6 +188,8 @@ export type ZIssueLocalCtxTagTypeMap = {
   label: string
   limit: number
   map: any
+  maxDate: Date
+  minDate: Date
   missingWithLabels: any
   multiple: number
   n: any
@@ -191,9 +208,8 @@ export type ZIssueLocalCtxTagTypeMap = {
 }
 
 export type GetLocalCtxTagOpts = { Extras?: boolean }
-
 export type GetLocalCtxTag<
-  IssueCode extends keyof ZIssueMap = keyof ZIssueMap,
+  IssueCode extends AnyZIssueCode = AnyZIssueCode,
   Opts extends GetLocalCtxTagOpts = { Extras: false }
 > =
   | Extract<S.Split<ZIssueMap[IssueCode], ' '>[number], `{{#${string}}}`>
@@ -201,14 +217,11 @@ export type GetLocalCtxTag<
 
 export type RemoveLocalCtxTagBraces<Tag extends string> = S.Replace<S.Replace<Tag, '{{#', ''>, '}}', ''>
 
-export type ZIssueLocalContextOpts = GetLocalCtxTagOpts & {
-  WithBraces?: boolean
-}
-
+export type ZIssueLocalContextOpts = GetLocalCtxTagOpts & { WithBraces?: boolean }
 export type ZIssueLocalContext<
   T extends AnyZIssueCode,
   Opts extends ZIssueLocalContextOpts = { Extras: false; WithBraces: false }
-> = ZUtils.Simplify<
+> = Simplify<
   {
     [K in T]: {
       [KK in Opts['WithBraces'] extends true
@@ -217,7 +230,7 @@ export type ZIssueLocalContext<
             GetLocalCtxTag<K, Opts>
           >]: RemoveLocalCtxTagBraces<KK> extends keyof ZIssueLocalCtxTagTypeMap
         ? ZIssueLocalCtxTagTypeMap[RemoveLocalCtxTagBraces<KK>]
-        : never
+        : any
     }
   }[T]
 >

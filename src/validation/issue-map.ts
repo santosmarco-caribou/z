@@ -1,8 +1,7 @@
-import type Joi from 'joi'
-import type { L, S } from 'ts-toolbelt'
+import type { S } from 'ts-toolbelt'
 
 import type { ZUtils } from '../utils'
-import type { _ZValidator, AnyZ } from '../z/z'
+import type { _ZOutput, AnyZ } from '../z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZIssueMap                                                     */
@@ -154,50 +153,71 @@ export type ZIssueMap = typeof Z_ISSUE_MAP
 
 /* --------------------------------------------------- ZIssueCode --------------------------------------------------- */
 
-export type ZIssueCode<
-  T extends Joi.Schema | AnyZ,
-  V extends T extends Joi.Schema ? T : _ZValidator<T extends AnyZ ? T : never> = T extends Joi.Schema
-    ? T
-    : _ZValidator<T extends AnyZ ? T : never>
-> = ZUtils.Simplify<
-  Extract<
-    keyof ZIssueMap,
-    `${V extends Joi.AlternativesSchema
-      ? 'alternatives'
-      : V extends Joi.ArraySchema
-      ? 'array'
-      : V extends Joi.BinarySchema
-      ? 'binary'
-      : V extends Joi.BooleanSchema
-      ? 'boolean'
-      : V extends Joi.DateSchema
-      ? 'date'
-      : V extends Joi.FunctionSchema
-      ? 'function'
-      : V extends Joi.ObjectSchema
-      ? 'object'
-      : V extends Joi.NumberSchema
-      ? 'number'
-      : V extends Joi.StringSchema
-      ? 'string'
-      : V extends Joi.SymbolSchema
-      ? 'symbol'
-      : S.Split<keyof ZIssueMap, '.'>[0]}.${string}`
-  >
+export type ZIssueCode<Z extends AnyZ = AnyZ> = Extract<
+  keyof ZIssueMap,
+  _ZOutput<Z> extends number ? `number.${string}` : string
 >
 
 export type AnyZIssueCode = ZIssueCode<AnyZ>
 
 /* -------------------------------------------------- ZIssueContext ------------------------------------------------- */
 
-export type ZIssueLocalContext<T extends AnyZIssueCode> = ZUtils.Simplify<
+export type ZIssueLocalCtxTagTypeMap = {
+  'error.message': any
+  arg: any
+  by: any
+  cidr: any
+  form: any
+  key: string | number
+  knownMisses: any
+  label: string
+  limit: number
+  map: any
+  missingWithLabels: any
+  multiple: number
+  n: any
+  name: string
+  pattern: string
+  peersWithLabels: any
+  presentWithLabels: any
+  reason: any
+  regex: string
+  scheme: any
+  type: any
+  types: any
+  unknownMisses: any
+  value: any
+  version: any
+}
+
+export type GetLocalCtxTagOpts = { Extras?: boolean }
+
+export type GetLocalCtxTag<
+  IssueCode extends keyof ZIssueMap = keyof ZIssueMap,
+  Opts extends GetLocalCtxTagOpts = { Extras: false }
+> =
+  | Extract<S.Split<ZIssueMap[IssueCode], ' '>[number], `{{#${string}}}`>
+  | (Opts['Extras'] extends true ? 'key' | 'value' : never)
+
+export type RemoveLocalCtxTagBraces<Tag extends string> = S.Replace<S.Replace<Tag, '{{#', ''>, '}}', ''>
+
+export type ZIssueLocalContextOpts = GetLocalCtxTagOpts & {
+  WithBraces?: boolean
+}
+
+export type ZIssueLocalContext<
+  T extends AnyZIssueCode,
+  Opts extends ZIssueLocalContextOpts = { Extras: false; WithBraces: false }
+> = ZUtils.Simplify<
   {
     [K in T]: {
-      [KK in S.Replace<
-        S.Replace<L.Select<S.Split<ZIssueMap[K], ' '>, `{{#${string}}}`>[number], '{{#', ''>,
-        '}}',
-        ''
-      >]: ({ label: string; limit: number } & Record<string, any>)[KK]
+      [KK in Opts['WithBraces'] extends true
+        ? GetLocalCtxTag<K, Opts>
+        : RemoveLocalCtxTagBraces<
+            GetLocalCtxTag<K, Opts>
+          >]: RemoveLocalCtxTagBraces<KK> extends keyof ZIssueLocalCtxTagTypeMap
+        ? ZIssueLocalCtxTagTypeMap[RemoveLocalCtxTagBraces<KK>]
+        : never
     }
   }[T]
 >

@@ -2,7 +2,7 @@ import type Joi from 'joi'
 import { isObject as _isObject, merge as _merge, omit as _omit, omitBy as _omitBy, pick as _pick } from 'lodash'
 import type { A, L, O } from 'ts-toolbelt'
 
-import { _ZInput, _ZOutput, AnyZ, AnyZObjectShape, ZArray, ZObject } from './z/z'
+import { _ZInput, _ZOutput, AnyZ, AnyZObjectShape, ZArray, ZObject, ZOptional } from './z/z'
 
 export namespace ZUtils {
   export type MaybeArray<T> = T | T[]
@@ -58,6 +58,11 @@ export namespace ZUtils {
       `\n${' '.repeat(indentation - 2)}}`
     return _generateHint(shape)
   }
+
+  type _UnionToArray<T extends string> = {
+    [K in T]: [...(Exclude<T, K> extends never ? [] : _UnionToArray<Exclude<T, K>>[Exclude<T, K>]), K]
+  }
+  export type UnionToArray<T extends string> = _UnionToArray<T>[T]
 }
 
 export namespace ZArrayUtils {
@@ -87,6 +92,15 @@ export namespace ZObjectUtils {
   export const omit = _omit
   export const omitBy = _omitBy
   export const merge = _merge
+
+  export type ToPartialZObjectShape<Shape extends AnyZObjectShape, Depth extends 'flat' | 'deep' = 'flat'> = {
+    flat: { [K in keyof Shape]: ZOptional<Shape[K]> }
+    deep: {
+      [K in keyof Shape]: Shape[K] extends ZObject<infer S>
+        ? ZOptional<ZObject<ToPartialZObjectShape<S, 'deep'>>>
+        : ZOptional<Shape[K]>
+    }
+  }[Depth]
 
   export const zShapeToJoiSchema = <Shape extends AnyZObjectShape>(shape: Shape): Joi.StrictSchemaMap<Shape> =>
     Object.fromEntries(

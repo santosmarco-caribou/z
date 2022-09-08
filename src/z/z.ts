@@ -7,7 +7,7 @@ import { type ManifestBasicInfoWithValue, type ZManifestObject, ZManifest } from
 import { ZOpenApi } from '../manifest/openapi'
 import { ZType } from '../type'
 import { ZObjectUtils, ZUtils } from '../utils'
-import { type ParseOptions, type ParseResult, ZParser } from '../validation/parser'
+import { type ParseOptions, type ParseResult, ZCheckOptions, ZParser } from '../validation/parser'
 import {
   type AnyZSchema,
   type ZAlternativesSchema,
@@ -767,14 +767,14 @@ export class ZNumber extends Z<number, ZNumberDef> {
   /**
    * Requires the number to be an integer (no floating point).
    */
-  integer(): this {
-    return this._parser.addCheck(v => v.integer())
+  integer(options?: ZCheckOptions<'number.integer'>): this {
+    return this._parser.addCheck('number.integer', v => v.integer(), options)
   }
   /**
    * {@inheritDoc ZNumber#integer}
    */
-  int(): this {
-    return this.integer()
+  int(options?: ZCheckOptions<'number.integer'>): this {
+    return this.integer(options)
   }
 
   /**
@@ -782,15 +782,15 @@ export class ZNumber extends Z<number, ZNumberDef> {
    *
    * @param precision - The maximum number of decimal places allowed.
    */
-  precision(precision: number): this {
-    return this._parser.addCheck(v => v.precision(precision))
+  precision(precision: number, options?: ZCheckOptions<'number.precision'>): this {
+    return this._parser.addCheck('number.precision', v => v.precision(precision), options)
   }
 
   /**
    * Requires the number to be positive.
    */
-  positive(): this {
-    return this._parser.addCheck(v => v.positive())
+  positive(options?: ZCheckOptions<'number.positive'>): this {
+    return this._parser.addCheck('number.positive', v => v.positive(), options)
   }
   /**
    * Requires the number to be less than or equal to 0.
@@ -802,14 +802,14 @@ export class ZNumber extends Z<number, ZNumberDef> {
   /**
    * Requires the number to be negative.
    */
-  negative(): this {
-    return this._parser.addCheck(v => v.negative())
+  negative(options?: ZCheckOptions<'number.negative'>): this {
+    return this._parser.addCheck('number.negative', v => v.negative(), options)
   }
   /**
    * Requires the number to be greater than or equal to 0.
    */
-  nonnegative(): this {
-    return this.min(0)
+  nonnegative(options?: ZCheckOptions<'number.min'>): this {
+    return this.min(0, options)
   }
 
   /**
@@ -817,14 +817,14 @@ export class ZNumber extends Z<number, ZNumberDef> {
    *
    * @param value - The minimum value allowed.
    */
-  min(value: number): this {
-    return this._parser.addCheck(v => v.min(value))
+  min(value: number, options?: ZCheckOptions<'number.min'>): this {
+    return this._parser.addCheck('number.min', v => v.min(value), options)
   }
   /**
    * {@inheritDoc ZNumber#min}
    */
-  gte(value: number): this {
-    return this.min(value)
+  gte(value: number, options?: ZCheckOptions<'number.min'>): this {
+    return this.min(value, options)
   }
 
   /**
@@ -832,14 +832,14 @@ export class ZNumber extends Z<number, ZNumberDef> {
    *
    * @param value - The minimum value allowed (exclusive).
    */
-  greater(value: number): this {
-    return this._parser.addCheck(v => v.greater(value))
+  greater(value: number, options?: ZCheckOptions<'number.greater'>): this {
+    return this._parser.addCheck('number.greater', v => v.greater(value), options)
   }
   /**
    * {@inheritDoc ZNumber#greater}
    */
-  gt(value: number): this {
-    return this.greater(value)
+  gt(value: number, options?: ZCheckOptions<'number.greater'>): this {
+    return this.greater(value, options)
   }
 
   /**
@@ -847,14 +847,14 @@ export class ZNumber extends Z<number, ZNumberDef> {
    *
    * @param value - The maximum value allowed.
    */
-  max(value: number): this {
-    return this._parser.addCheck(v => v.max(value))
+  max(value: number, options?: ZCheckOptions<'number.max'>): this {
+    return this._parser.addCheck('number.max', v => v.max(value), options)
   }
   /**
    * {@inheritDoc ZNumber#max}
    */
-  lte(value: number): this {
-    return this.max(value)
+  lte(value: number, options?: ZCheckOptions<'number.max'>): this {
+    return this.max(value, options)
   }
 
   /**
@@ -862,14 +862,14 @@ export class ZNumber extends Z<number, ZNumberDef> {
    *
    * @param value - The maximum value allowed (exclusive).
    */
-  less(value: number): this {
-    return this._parser.addCheck(v => v.less(value))
+  less(value: number, options?: ZCheckOptions<'number.less'>): this {
+    return this._parser.addCheck('number.less', v => v.less(value), options)
   }
   /**
    * {@inheritDoc ZNumber#less}
    */
-  lt(value: number): this {
-    return this.less(value)
+  lt(value: number, options?: ZCheckOptions<'number.less'>): this {
+    return this.less(value, options)
   }
 
   /**
@@ -877,15 +877,15 @@ export class ZNumber extends Z<number, ZNumberDef> {
    *
    * @param value - The value of which the number must be a multiple.
    */
-  multiple(value: number): this {
-    return this._parser.addCheck(v => v.multiple(value))
+  multiple(value: number, options?: ZCheckOptions<'number.multiple'>): this {
+    return this._parser.addCheck('number.multiple', v => v.multiple(value), options)
   }
 
   /**
    * Requires the number to be a TCP port, i.e., between `0` and `65535`.
    */
-  port(): this {
-    this._parser.addCheck(v => v.port())
+  port(options?: ZCheckOptions<'number.port'>): this {
+    this._parser.addCheck('number.port', v => v.port(), options)
     this._manifest.setKey('format', 'port')
     return this
   }
@@ -901,7 +901,13 @@ export class ZNumber extends Z<number, ZNumberDef> {
 
 export type AnyZObjectShape = Record<string, AnyZ>
 
-export type ZObjectDef<Shape extends AnyZObjectShape> = ZDef<{ validator: ZObjectSchema }, { shape: Shape }>
+export type ZObjectOptions = { mode: 'passthrough' | 'strip' | 'strict' }
+const DEFAULT_Z_OBJECT_OPTIONS: ZObjectOptions = { mode: 'strip' }
+
+export type ZObjectDef<Shape extends AnyZObjectShape> = ZDef<
+  { validator: ZObjectSchema },
+  { shape: Shape; options: ZObjectOptions; catchall: AnyZ }
+>
 
 export class ZObject<Shape extends AnyZObjectShape> extends Z<
   ZUtils.WithQuestionMarks<ZUtils.MapToZOutput<Shape>>,
@@ -922,28 +928,227 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
   }
 
   pick<K extends keyof Shape>(keys: K[]): ZObject<Pick<Shape, K>> {
-    return this._manifest.copyAndReturn(ZObject.create(ZUtils.pick(this._def.shape, keys)))
+    return this._manifest.copyAndReturn(
+      ZObject.$_create(ZUtils.pick(this._def.shape, keys), this._def.options, this._def.catchall)
+    )
   }
 
   omit<K extends keyof Shape>(keys: K[]): ZObject<Omit<Shape, K>> {
-    return this._manifest.copyAndReturn(ZObject.create(ZUtils.omit(this._def.shape, keys)))
+    return this._manifest.copyAndReturn(
+      ZObject.$_create(ZUtils.omit(this._def.shape, keys), this._def.options, this._def.catchall)
+    )
   }
 
   extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Shape & S> {
-    return new ZObject({
-      validator: this._validator.append(ZObjectUtils.zShapeToJoiSchema(incomingShape)),
-      shape: ZUtils.merge(this._def.shape, incomingShape),
-    })
+    return this._manifest.copyAndReturn(
+      ZObject.$_create(ZUtils.merge(this._def.shape, incomingShape), this._def.options, this._def.catchall)
+    )
   }
 
   merge<S extends AnyZObjectShape>(incomingSchema: ZObject<S>): ZObject<Shape & S> {
     return this.extend(incomingSchema.shape)
   }
 
+  /**
+   * Inspired by the built-in TypeScript utility type {@link https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype | `Partial`},
+   * the `.partial()` method makes all properties optional.
+   *
+   * @example Starting from this object:
+   * ```ts
+   * const user = z.object({
+   *   email: z.string()
+   *   username: z.string(),
+   * })
+   * // { email: string; username: string }
+   * ```
+   *
+   * We can create a partial version:
+   *
+   * ```ts
+   * const partialUser = user.partial()
+   * // { email?: string | undefined; username?: string | undefined }
+   * ```
+   */
+  partial(): ZObject<ZObjectUtils.ToPartialZObjectShape<Shape>> {
+    return this._manifest.copyAndReturn(
+      ZObject.$_create(
+        Object.fromEntries(
+          Object.entries(this._def.shape).map(([key, z]) => [key, z.optional()])
+        ) as ZObjectUtils.ToPartialZObjectShape<Shape>,
+        this._def.options,
+        this._def.catchall
+      )
+    )
+  }
+
+  /**
+   * The `.partial()` method is shallow—it only applies one level deep. There is also a "deep" version:
+   *
+   * @example
+   * ```ts
+   * const user = z.object({
+   *   username: z.string(),
+   *   location: z.object({
+   *     latitude: z.number(),
+   *     longitude: z.number(),
+   *   }),
+   *   strings: z.array(z.object({ value: z.string() })),
+   * })
+   *
+   * const deepPartialUser = user.deepPartial()
+   * ```
+   *
+   * The result on type inference is:
+   *
+   * ```ts
+   * {
+   *   username?: string | undefined,
+   *   location?: {
+   *     latitude?: number | undefined;
+   *     longitude?: number | undefined;
+   *   } | undefined,
+   *   strings?: { value?: string}[]
+   * }
+   * ```
+   */
+  deepPartial(): ZObject<ZObjectUtils.ToPartialZObjectShape<Shape, 'deep'>> {
+    return this._manifest.copyAndReturn(
+      ZObject.$_create(
+        Object.fromEntries(
+          Object.entries(this._def.shape).map(([key, z]) => [
+            key,
+            z instanceof ZObject ? z.deepPartial().optional() : z.optional(),
+          ])
+        ) as ZObjectUtils.ToPartialZObjectShape<Shape, 'deep'>,
+        this._def.options,
+        this._def.catchall
+      )
+    )
+  }
+
+  /**
+   * By default `ZObject`s strip out unrecognized keys during parsing.
+   *
+   * @example
+   * ```ts
+   * const person = z.object({
+   *   name: z.string(),
+   * })
+   *
+   * person.parse({
+   *   name: "Bob Dylan",
+   *   extraKey: 61,
+   * })
+   * // => { name: "Bob Dylan" }
+   * // `extraKey` has been stripped
+   * ```
+   *
+   * Instead, if you want to pass through unknown keys, use `.passthrough()`.
+   *
+   * @example
+   * ```ts
+   * person.passthrough().parse({
+   *   name: "Bob Dylan",
+   *   extraKey: 61,
+   * })
+   * // => { name: "Bob Dylan", extraKey: 61 }
+   * ```
+   */
+  passthrough(): this {
+    this._def.options = { mode: 'passthrough' }
+    return this
+  }
+
+  /**
+   * By default `ZObject`s strip out unrecognized keys during parsing. You can _disallow_ unknown keys with `.strict()`.
+   * If there are any unknown keys in the input, `Z` will throw an error.
+   *
+   * @example
+   * ```ts
+   * const person = z
+   *   .object({
+   *     name: z.string(),
+   *   })
+   *   .strict()
+   *
+   * person.parse({
+   *   name: "Bob Dylan",
+   *   extraKey: 61,
+   * })
+   * // => throws ZError
+   * ```
+   */
+  strict(): this {
+    this._def.options = { mode: 'strict' }
+    return this
+  }
+
+  /**
+   * You can use the `.strip()` method to reset an `ZObject` to the default behavior (stripping unrecognized keys).
+   */
+  strip(): this {
+    this._def.options = { mode: 'strip' }
+    return this
+  }
+
+  /**
+   * You can pass a "catchall" `ZType` into a `ZObject`. All unknown keys will be validated against it.
+   *
+   * @example
+   * ```ts
+   * const person = z
+   *   .object({
+   *     name: z.string(),
+   *   })
+   *   .catchall(z.number())
+   *
+   * person.parse({
+   *   name: "Bob Dylan",
+   *   validExtraKey: 61, // works fine
+   * })
+   *
+   * person.parse({
+   *   name: "Bob Dylan",
+   *   validExtraKey: false, // fails
+   * })
+   * // => throws ZError
+   * ```
+   *
+   * _Note:_ Using `.catchall()` obviates `.passthrough()`, `.strip()`, and `.strict()`—All keys are now considered "known".
+   */
+  catchall(z: AnyZ): this {
+    this._def.catchall = z
+    return this
+  }
+
   /* ---------------------------------------------------------------------------------------------------------------- */
 
+  /**
+   * @internal
+   */
+  static $_create = <Shape extends AnyZObjectShape>(
+    shape: Shape,
+    options: ZObjectOptions,
+    catchall: AnyZ
+  ): ZObject<Shape> => {
+    if (catchall) options.mode = 'passthrough'
+    const baseValidator = ZValidator.object(ZObjectUtils.zShapeToJoiSchema(shape)).preferences(
+      {
+        passthrough: { allowUnknown: true, stripUnknown: false },
+        strict: { allowUnknown: false, stripUnknown: false },
+        strip: { allowUnknown: true, stripUnknown: true },
+      }[options.mode]
+    )
+    return new ZObject({
+      validator: catchall ? baseValidator.pattern(/./, catchall._validator) : baseValidator,
+      shape: shape,
+      options,
+      catchall,
+    })
+  }
+
   static create = <Shape extends AnyZObjectShape>(shape: Shape): ZObject<Shape> =>
-    new ZObject({ validator: ZValidator.object(ZObjectUtils.zShapeToJoiSchema(shape)), shape: shape })
+    this.$_create(shape, DEFAULT_Z_OBJECT_OPTIONS, ZAny.create())
 }
 
 export type AnyZObject = ZObject<AnyZObjectShape>
@@ -1219,6 +1424,8 @@ export class ZUniqueSymbol<S extends symbol> extends Z<S, ZUniqueSymbolDef<S>> {
   static create = <S extends symbol>(symbol: S): ZUniqueSymbol<S> => this.$_create(ZSymbol.create(), symbol)
 }
 
+export type AnyZUniqueSymbol = ZUniqueSymbol<symbol>
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZTuple                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1276,6 +1483,8 @@ export class ZUnion<T extends AnyZ[]> extends Z<_ZOutput<T[number]>, ZUnionDef<T
     })
   }
 }
+
+export type AnyZUnion = ZUnion<AnyZ[]>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZUnknown                                                      */

@@ -86,75 +86,71 @@ export type CustomValidationResult<T, V extends Joi.Schema> = ReturnType<
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export class ZValidator {
+  static ZJoi = Joi.defaults(schema => schema.required())
+
   /**
    * Everything except `undefined`.
    */
-  static any = () => Joi.any().required() as ZAnySchema
+  static any = () => this.ZJoi.any() as ZAnySchema
   /**
    * Alternatives schema.
    */
   static alternatives = (...alternatives: Joi.SchemaLike[]) =>
-    Joi.alternatives(alternatives).required() as ZAlternativesSchema
+    this.ZJoi.alternatives(alternatives) as ZAlternativesSchema
   /**
    * Array. No `undefined`.
    */
-  static array = (...items: Joi.SchemaLikeWithoutArray[]) =>
-    Joi.array()
-      .items(...items)
-      .required() as ZArraySchema
+  static array = (...items: Joi.SchemaLikeWithoutArray[]) => this.ZJoi.array().items(...items) as ZArraySchema
   /**
    * Boolean. No `undefined`.
    */
-  static boolean = () => Joi.boolean().required() as ZBooleanSchema
+  static boolean = () => this.ZJoi.boolean() as ZBooleanSchema
   /**
    * Date. No `undefined`.
    */
-  static date = () => Joi.date().required() as ZDateSchema
+  static date = () => this.ZJoi.date() as ZDateSchema
   /**
    * Everything (including `undefined`).
    */
-  static everything = () => Joi.any() as ZEverythingSchema
+  static everything = () => this.ZJoi.any() as ZEverythingSchema
   /**
    * Function. No `undefined`.
    */
-  static function = () => Joi.function().required() as ZFunctionSchema
+  static function = () => this.ZJoi.function() as ZFunctionSchema
   /**
    * Nothing (not even `undefined`).
    */
-  static nothing = () => Joi.any().forbidden().required() as ZNothingSchema
+  static nothing = () => this.ZJoi.any().forbidden() as ZNothingSchema
   /**
    * Number. No `undefined`.
    */
-  static number = () => Joi.number().required() as ZNumberSchema
+  static number = () => this.ZJoi.number() as ZNumberSchema
   /**
    * Object. No `undefined`.
    */
   static object = <S extends ZObjectUtils.AnyStringRecord>(shape: Joi.StrictSchemaMap<S>) =>
-    Joi.object<S, true>(shape).required() as ZObjectSchema<S>
+    this.ZJoi.object<S, true>(shape) as ZObjectSchema<S>
   /**
    * Only certain values. No `undefined`.
    */
-  static only = <V>(value: V) => Joi.valid(value).required() as ZOnlySchema<V>
+  static only = <V>(value: V) => this.ZJoi.valid(value) as ZOnlySchema<V>
   /**
    * String. No `undefined`.
    */
-  static string = Object.assign(() => Joi.string().required() as ZStringSchema, {
+  static string = Object.assign(() => this.ZJoi.string() as ZStringSchema, {
     /**
      * String with only certain values. No `undefined`.
      */
-    only: (...values: string[]) =>
-      Joi.string()
-        .valid(...values)
-        .required() as ZStringOnlySchema,
+    only: (...values: string[]) => this.ZJoi.string().valid(...values) as ZStringOnlySchema,
   })
   /**
    * Symbol. No `undefined`.
    */
-  static symbol = () => Joi.symbol().required() as ZSymbolSchema
+  static symbol = () => this.ZJoi.symbol() as ZSymbolSchema
   /**
    * Only `undefined`.
    */
-  static undefined = () => Joi.any().forbidden() as ZUndefinedSchema
+  static undefined = () => this.ZJoi.any().forbidden() as ZUndefinedSchema
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 

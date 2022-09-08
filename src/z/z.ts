@@ -1,5 +1,5 @@
 import type { A, F, U } from 'ts-toolbelt'
-import type { Primitive } from 'type-fest'
+import type { Primitive, Simplify } from 'type-fest'
 
 import type { AnyZDef, ZDef } from '../def'
 import { ZManifest } from '../manifest/manifest'
@@ -1319,25 +1319,25 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
     )
   }
 
-  pick<K extends keyof Shape>(keys: K[]): ZObject<Pick<Shape, K>> {
+  pick<K extends keyof Shape>(keys: K[]): ZObject<Simplify<Pick<Shape, K>>> {
     return this._manifest.copyAndReturn(
       ZObject.$_create(ZUtils.pick(this._def.shape, keys), this._def.options, this._def.catchall)
     )
   }
 
-  omit<K extends keyof Shape>(keys: K[]): ZObject<Omit<Shape, K>> {
+  omit<K extends keyof Shape>(keys: K[]): ZObject<Simplify<Omit<Shape, K>>> {
     return this._manifest.copyAndReturn(
       ZObject.$_create(ZUtils.omit(this._def.shape, keys), this._def.options, this._def.catchall)
     )
   }
 
-  extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Shape & S> {
+  extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Simplify<Shape & S>> {
     return this._manifest.copyAndReturn(
       ZObject.$_create(ZUtils.merge(this._def.shape, incomingShape), this._def.options, this._def.catchall)
     )
   }
 
-  merge<S extends AnyZObjectShape>(incomingSchema: ZObject<S>): ZObject<Shape & S> {
+  merge<S extends AnyZObjectShape>(incomingSchema: ZObject<S>): ZObject<Simplify<Shape & S>> {
     return this.extend(incomingSchema.shape)
   }
 
@@ -1423,7 +1423,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
     return this
   }
 
-  readonlyDeep(): ZObject<ZObjectUtils.ToReadonlyZObjectShape<Shape, 'deep'>> {
+  deepReadonly(): ZObject<ZObjectUtils.ToReadonlyZObjectShape<Shape, 'deep'>> {
     this._parser.addAfterParseHook(ZObjectUtils.deepFreeze)
     return this as any
   }

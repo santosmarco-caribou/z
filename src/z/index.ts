@@ -16,6 +16,7 @@ import {
   type ZFalsyDef,
   type ZFunctionDef,
   type ZLiteralDef,
+  type ZMapDef,
   type ZNaNDef,
   type ZNeverDef,
   type ZNullableDef,
@@ -24,6 +25,7 @@ import {
   type ZNumberDef,
   type ZObjectDef,
   type ZOptionalDef,
+  type ZRecordDef,
   type ZStringDef,
   type ZStringDomainOptions,
   type ZStringDomainTldsOptions,
@@ -51,6 +53,7 @@ import {
   ZFalsy,
   ZFunction,
   ZLiteral,
+  ZMap,
   ZNaN,
   ZNever,
   ZNull,
@@ -59,6 +62,7 @@ import {
   ZNumber,
   ZObject,
   ZOptional,
+  ZRecord,
   ZString,
   ZSymbol,
   ZTrue,
@@ -81,6 +85,7 @@ const falseType = ZFalse.create
 const falsyType = ZFalsy.create
 const functionType = ZFunction.create
 const literalType = ZLiteral.create
+const mapType = ZMap.create
 const nanType = ZNaN.create
 const neverType = ZNever.create
 const nullableType = ZNullable.create
@@ -89,6 +94,7 @@ const nullType = ZNull.create
 const numberType = ZNumber.create
 const objectType = ZObject.create
 const optionalType = ZOptional.create
+const recordType = ZRecord.create
 const stringType = ZString.create
 const symbolType = ZSymbol.create
 const trueType = ZTrue.create
@@ -111,6 +117,7 @@ export {
   falsyType as falsy,
   functionType as function,
   literalType as literal,
+  mapType as map,
   nanType as nan,
   neverType as never,
   nullType as null,
@@ -119,6 +126,7 @@ export {
   numberType as number,
   objectType as object,
   optionalType as optional,
+  recordType as record,
   stringType as string,
   symbolType as symbol,
   trueType as true,
@@ -142,6 +150,7 @@ export {
   ZFalsy,
   ZFunction,
   ZLiteral,
+  ZMap,
   ZNaN,
   ZNever,
   ZNull,
@@ -150,6 +159,7 @@ export {
   ZNumber,
   ZObject,
   ZOptional,
+  ZRecord,
   ZString,
   ZSymbol,
   ZTrue,
@@ -171,6 +181,7 @@ export type {
   ZFalsyDef,
   ZFunctionDef,
   ZLiteralDef,
+  ZMapDef,
   ZNaNDef,
   ZNeverDef,
   ZNullableDef,
@@ -179,6 +190,7 @@ export type {
   ZNumberDef,
   ZObjectDef,
   ZOptionalDef,
+  ZRecordDef,
   ZStringDef,
   ZSymbolDef,
   ZTruthyDef,

@@ -1,7 +1,7 @@
 import type Joi from 'joi'
 
 import type { ZManifestObject } from '../manifest/manifest'
-import type { ZType } from '../type'
+import type { ZType } from '../types'
 import type { ZUtils } from '../utils'
 import type { _ZOutput, AnyZ } from '../z/z'
 import type { ZIssueCode } from './issue-map'

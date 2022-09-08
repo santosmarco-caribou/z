@@ -6,8 +6,9 @@ import type { AnyZDef, ZDef } from '../def'
 import { type ManifestBasicInfoWithValue, type ZManifestObject, ZManifest } from '../manifest/manifest'
 import { ZOpenApi } from '../manifest/openapi'
 import { ZType } from '../type'
+import type { ParseOptions, ParseResult, ZCheckOptions, ZParserParsingMethods } from '../types'
 import { ZObjectUtils, ZUtils } from '../utils'
-import { type ParseOptions, type ParseResult, ZCheckOptions, ZParser } from '../validation/parser'
+import { ZParser } from '../validation/parser'
 import {
   type AnyZSchema,
   type ZAlternativesSchema,
@@ -30,7 +31,9 @@ import {
 /*                                                          Z                                                         */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export abstract class Z<Output, Def extends AnyZDef, Input = Output> {
+export abstract class Z<Output, Def extends AnyZDef, Input = Output>
+  implements ZParserParsingMethods<Z<Output, Def, Input>>
+{
   /**
    * @internal
    */
@@ -294,14 +297,14 @@ export class ZArray<T extends AnyZ, Arr extends T[] = T[]> extends Z<
   /**
    * Requires the array to be in ascending order.
    */
-  ascending(): this {
-    return this._parser.addCheck(v => v.sort({ order: 'ascending' }))
+  ascending(options?: ZCheckOptions<'array.sort'>): this {
+    return this._parser.addCheck('array.sort', v => v.sort({ order: 'ascending' }), options)
   }
   /**
    * Requires the array to be in descending order.
    */
-  descending(): this {
-    return this._parser.addCheck(v => v.sort({ order: 'descending' }))
+  descending(options?: ZCheckOptions<'array.sort'>): this {
+    return this._parser.addCheck('array.sort', v => v.sort({ order: 'descending' }), options)
   }
 
   /**
@@ -309,24 +312,24 @@ export class ZArray<T extends AnyZ, Arr extends T[] = T[]> extends Z<
    *
    * @param min - The minimum number of elements in the array.
    */
-  min(min: number): this {
-    return this._parser.addCheck(v => v.min(min))
+  min(min: number, options?: ZCheckOptions<'array.min'>): this {
+    return this._parser.addCheck('array.min', v => v.min(min), options)
   }
   /**
    * Requires the array to have at most a certain number of elements.
    *
    * @param max - The maximum number of elements in the array.
    */
-  max(max: number): this {
-    return this._parser.addCheck(v => v.max(max))
+  max(max: number, options?: ZCheckOptions<'array.max'>): this {
+    return this._parser.addCheck('array.max', v => v.max(max), options)
   }
   /**
    * Requires the array to have an exact number of elements.
    *
    * @param length - The number of elements in the array.
    */
-  length(length: number): this {
-    return this._parser.addCheck(v => v.length(length))
+  length(length: number, options?: ZCheckOptions<'array.length'>): this {
+    return this._parser.addCheck('array.length', v => v.length(length), options)
   }
 
   nonempty(): ZArray<T, [T, ...T[]]> {
@@ -491,25 +494,35 @@ export class ZDate extends Z<Date, ZDateDef, Date | number | string> {
    *
    * @param date - The date to compare to.
    */
-  before(date: ZDateCheckInput): ZDate {
-    return this._parser.addCheck(v => v.max(this._parseCheckInput(date)))
+  before(date: ZDateCheckInput, options?: ZCheckOptions<'date.max'>): ZDate {
+    return this._parser.addCheck('date.max', v => v.max(this._parseCheckInput(date)), options)
   }
   /**
    * Requires the date to be after a certain date.
    *
    * @param date - The date to compare to.
    */
-  after(date: ZDateCheckInput): ZDate {
-    return this._parser.addCheck(v => v.min(this._parseCheckInput(date)))
+  after(date: ZDateCheckInput, options?: ZCheckOptions<'date.min'>): ZDate {
+    return this._parser.addCheck('date.min', v => v.min(this._parseCheckInput(date)), options)
   }
   /**
    * Requires the date to be between two dates.
    *
-   * @param dateA - The `after` date to compare to.
-   * @param dateB - The `before` date to compare to.
+   * @param dateA - The `min` date to compare to.
+   * @param dateB - The `max` date to compare to.
    */
-  between(dateA: ZDateCheckInput, dateB: ZDateCheckInput): ZDate {
-    return this.after(dateA).before(dateB)
+  between(dateA: ZDateCheckInput, dateB: ZDateCheckInput, options?: ZCheckOptions<'date.between'>): ZDate {
+    return this._parser.addCheck(
+      'date.between',
+      () =>
+        ZValidator.custom(this._validator, (_value, { OK, FAIL }) => {
+          const { value, error } = this.after(dateA).before(dateB).safeParse(_value)
+          return error
+            ? FAIL('date.between', { minDate: this._parseCheckInput(dateA), maxDate: this._parseCheckInput(dateB) })
+            : OK(value)
+        }),
+      options
+    )
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -1189,12 +1202,12 @@ export type ZStringDomainOptions = {
   allowUnicode?: boolean
   minDomainSegments?: number
   tlds?: ZStringDomainTldsOptions | false
-}
+} & ZCheckOptions<'string.domain'>
 
 export type ZStringIpOptions = {
   version?: ZUtils.MaybeArray<'ipv4' | 'ipv6' | 'ipvfuture'>
   cidr?: 'optional' | 'required' | 'forbidden'
-}
+} & ZCheckOptions<'string.ip'>
 
 export type ZStringUriOptions = {
   allowQuerySquareBrackets?: boolean
@@ -1202,23 +1215,22 @@ export type ZStringUriOptions = {
   domain?: ZStringDomainOptions
   relativeOnly?: boolean
   scheme?: ZUtils.MaybeArray<string | RegExp>
-}
+} & ZCheckOptions<'string.uri'>
 
 export type ZStringEmailOptions = ZStringDomainOptions & {
   ignoreLength?: boolean
   multiple?: boolean
   separator?: ZUtils.MaybeArray<string>
-}
+} & ZCheckOptions<'string.email'>
 
 export type ZStringUuidOptions = {
   version?: ZUtils.MaybeArray<'uuidv1' | 'uuidv2' | 'uuidv3' | 'uuidv4' | 'uuidv5'>
   separator?: '-' | ':' | boolean
-}
+} & ZCheckOptions<'string.guid'>
 
-export type ZStringPatternOptions = {
-  name?: string
-  invert?: boolean
-}
+export type ZStringPatternOptions = { name?: string; invert?: boolean } & ZCheckOptions<
+  'string.pattern.base' | 'string.pattern.name' | 'string.pattern.invert.base' | 'string.pattern.invert.name'
+>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -1231,66 +1243,66 @@ export class ZString extends Z<string, ZStringDef> {
   /**
    * Requires the string to only contain `a-z`, `A-Z`, and `0-9`.
    */
-  alphanumeric(): this {
-    this._parser.addCheck(v => v.alphanum())
+  alphanumeric(options?: ZCheckOptions<'string.alphanum'>): this {
+    this._parser.addCheck('string.alphanum', v => v.alphanum(), options)
     this._manifest.setKey('format', 'alphanumeric')
     return this
   }
   /**
    * {@inheritDoc ZString#alphanumeric}
    */
-  alphanum(): this {
-    return this.alphanumeric()
+  alphanum(options?: ZCheckOptions<'string.alphanum'>): this {
+    return this.alphanumeric(options)
   }
 
   /**
    * Requires the string to be a valid `base64` string.
    */
-  base64(): this {
-    return this._parser.addCheck(v => v.base64())
+  base64(options?: ZCheckOptions<'string.base64'>): this {
+    return this._parser.addCheck('string.base64', v => v.base64(), options)
   }
 
   /**
    * Requires the string to be a valid hexadecimal string.
    */
-  hexadecimal(): this {
-    this._parser.addCheck(v => v.hex())
+  hexadecimal(options?: ZCheckOptions<'string.hex'>): this {
+    this._parser.addCheck('string.hex', v => v.hex(), options)
     this._manifest.setKey('format', 'hexadecimal')
     return this
   }
   /**
    * {@inheritDoc ZString#hexadecimal}
    */
-  hex(): this {
-    return this.hexadecimal()
+  hex(options?: ZCheckOptions<'string.hex'>): this {
+    return this.hexadecimal(options)
   }
 
   domain(options?: ZStringDomainOptions): this {
-    return this._parser.addCheck(v => v.domain(options))
+    return this._parser.addCheck('string.domain', v => v.domain(options), { message: options?.message })
   }
 
-  hostname(): this {
-    return this._parser.addCheck(v => v.hostname())
+  hostname(options?: ZCheckOptions<'string.hostname'>): this {
+    return this._parser.addCheck('string.hostname', v => v.hostname(), options)
   }
 
   ip(options?: ZStringIpOptions): this {
-    return this._parser.addCheck(v => v.ip(options))
+    return this._parser.addCheck('string.ip', v => v.ip(options), { message: options?.message })
   }
 
   uri(options?: ZStringUriOptions): this {
-    this._parser.addCheck(v => v.uri(options))
+    this._parser.addCheck('string.uri', v => v.uri(options), { message: options?.message })
     this._manifest.setKey('format', 'uri')
     return this
   }
 
-  dataUri(): this {
-    this._parser.addCheck(v => v.dataUri())
+  dataUri(options?: ZCheckOptions<'string.dataUri'>): this {
+    this._parser.addCheck('string.dataUri', v => v.dataUri(), options)
     this._manifest.setKey('format', 'data-uri')
     return this
   }
 
   email(options?: ZStringEmailOptions): this {
-    this._parser.addCheck(v => v.email(options))
+    this._parser.addCheck('string.email', v => v.email(options), { message: options?.message })
     this._manifest.setKey('format', 'email')
     return this
   }
@@ -1301,7 +1313,7 @@ export class ZString extends Z<string, ZStringDef> {
    * @param options - Rule options
    */
   uuid(options?: ZStringUuidOptions): this {
-    this._parser.addCheck(v => v.uuid(options))
+    this._parser.addCheck('string.guid', v => v.uuid(options), { message: options?.message })
     this._manifest.setKey('format', 'uuid')
     return this
   }
@@ -1312,30 +1324,30 @@ export class ZString extends Z<string, ZStringDef> {
     return this.uuid(options)
   }
 
-  isoDate(): this {
-    this._parser.addCheck(v => v.isoDate())
+  isoDate(options?: ZCheckOptions<'string.isoDate'>): this {
+    this._parser.addCheck('string.isoDate', v => v.isoDate(), options)
     this._manifest.setKey('format', 'date-time')
     return this
   }
 
-  isoDuration(): this {
-    return this._parser.addCheck(v => v.isoDuration())
+  isoDuration(options?: ZCheckOptions<'string.isoDuration'>): this {
+    return this._parser.addCheck('string.isoDuration', v => v.isoDuration(), options)
   }
 
-  creditCard(): this {
-    return this._parser.addCheck(v => v.creditCard())
+  creditCard(options?: ZCheckOptions<'string.creditCard'>): this {
+    return this._parser.addCheck('string.creditCard', v => v.creditCard(), options)
   }
 
-  min(min: number): this {
-    return this._parser.addCheck(v => v.min(min))
+  min(min: number, options?: ZCheckOptions<'string.min'>): this {
+    return this._parser.addCheck('string.min', v => v.min(min), options)
   }
 
-  max(max: number): this {
-    return this._parser.addCheck(v => v.max(max))
+  max(max: number, options?: ZCheckOptions<'string.max'>): this {
+    return this._parser.addCheck('string.max', v => v.max(max), options)
   }
 
-  length(length: number): this {
-    return this._parser.addCheck(v => v.length(length))
+  length(length: number, options?: ZCheckOptions<'string.length'>): this {
+    return this._parser.addCheck('string.length', v => v.length(length), options)
   }
 
   /**
@@ -1345,7 +1357,12 @@ export class ZString extends Z<string, ZStringDef> {
    * @param options - Rule options
    */
   pattern(regex: RegExp, options?: ZStringPatternOptions): this {
-    return this._parser.addCheck(v => v.pattern(regex, options))
+    if (!options || (!options.invert && !options.name))
+      return this._parser.addCheck('string.pattern.base', v => v.pattern(regex), options)
+    else if (options.name && options.invert)
+      return this._parser.addCheck('string.pattern.invert.name', v => v.pattern(regex, { invert: true }), options)
+    else if (options.name) return this._parser.addCheck('string.pattern.name', v => v.pattern(regex), options)
+    else return this._parser.addCheck('string.pattern.invert.base', v => v.pattern(regex, { invert: true }), options)
   }
   /**
    * {@inheritDoc ZString#pattern}
@@ -1356,20 +1373,20 @@ export class ZString extends Z<string, ZStringDef> {
 
   /* -------------------------------------------------- Transforms -------------------------------------------------- */
 
-  lowercase(): this {
-    return this._parser.addCheck(v => v.lowercase())
+  lowercase(options?: ZCheckOptions<'string.lowercase'>): this {
+    return this._parser.addCheck('string.lowercase', v => v.lowercase(), options)
   }
 
-  uppercase(): this {
-    return this._parser.addCheck(v => v.uppercase())
+  uppercase(options?: ZCheckOptions<'string.uppercase'>): this {
+    return this._parser.addCheck('string.uppercase', v => v.uppercase(), options)
   }
 
   insensitive(): this {
     return this._parser.addCheck(v => v.insensitive())
   }
 
-  trim(): this {
-    return this._parser.addCheck(v => v.trim())
+  trim(options?: ZCheckOptions<'string.trim'>): this {
+    return this._parser.addCheck('string.trim', v => v.trim(), options)
   }
 
   replace(pattern: string | RegExp, replacement: string): this {

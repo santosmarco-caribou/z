@@ -93,6 +93,10 @@ export const Z_ISSUE_MAP = {
   'object.without': '{{:#mainWithLabel}} conflict with forbidden peer {{:#peerWithLabel}}',
   'object.xor': '{{#label}} contains a conflict between exclusive peers {{#peersWithLabels}}',
 
+  'map.base': '{{#label}} must be a Map',
+  'map.key.base': '{{#label}} keys must be of type {{#type}}',
+  'map.value.base': '{{#label}} values must be of type {{#type}}',
+
   'nan.base': '{{#label}} must be a NaN',
 
   'number.base': '{{#label}} must be a number',
@@ -108,6 +112,10 @@ export const Z_ISSUE_MAP = {
   'number.positive': '{{#label}} must be a positive number',
   'number.precision': '{{#label}} must have no more than {{#limit}} decimal places',
   'number.unsafe': '{{#label}} must be a safe number',
+
+  'record.base': '{{#label}} must be of type record',
+  'record.key.base': '{{#label}} keys must be of type {{#type}}',
+  'record.value.base': '{{#label}} values must be of type {{#type}}',
 
   'string.alphanum': '{{#label}} must only contain alpha-numeric characters',
   'string.base': '{{#label}} must be a string',
@@ -163,7 +171,9 @@ export type ZIssueCode<Z extends AnyZ = AnyZ> = Extract<
     : _ZOutput<Z> extends (...args: any[]) => any
     ? `function.${string}`
     : _ZOutput<Z> extends Record<string, any>
-    ? `object.${string}`
+    ? `${'object' | 'record'}.${string}`
+    : _ZOutput<Z> extends Map
+    ? `map.${string}`
     : _ZOutput<Z> extends number
     ? `${'nan' | 'number'}.${string}`
     : _ZOutput<Z> extends string
@@ -200,7 +210,7 @@ export type ZIssueLocalCtxTagTypeMap = {
   reason: any
   regex: string
   scheme: any
-  type: any
+  type: string
   types: any
   unknownMisses: any
   value: any

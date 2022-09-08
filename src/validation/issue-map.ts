@@ -1,5 +1,5 @@
 import type { S } from 'ts-toolbelt'
-import type { Simplify } from 'type-fest'
+import type { Replace, Simplify } from 'type-fest'
 
 import type { _ZOutput, AnyZ } from '../z/z'
 
@@ -93,6 +93,8 @@ export const Z_ISSUE_MAP = {
   'object.without': '{{:#mainWithLabel}} conflict with forbidden peer {{:#peerWithLabel}}',
   'object.xor': '{{#label}} contains a conflict between exclusive peers {{#peersWithLabels}}',
 
+  'instanceof.base': '{{#label}} must be an instance of {{#type}}',
+
   'map.base': '{{#label}} must be a Map',
   'map.key.base': '{{#label}} keys must be of type {{#type}}',
   'map.value.base': '{{#label}} values must be of type {{#type}}',
@@ -110,7 +112,7 @@ export const Z_ISSUE_MAP = {
   'number.negative': '{{#label}} must be a negative number',
   'number.port': '{{#label}} must be a valid port',
   'number.positive': '{{#label}} must be a positive number',
-  'number.precision': '{{#label}} must have no more than {{#limit}} decimal places',
+  'number.precision': '{{#label}} must have no more than {{#limit}} decimal place{if(#limit == 1, "", "s")}',
   'number.unsafe': '{{#label}} must be a safe number',
 
   'record.base': '{{#label}} must be of type record',
@@ -160,12 +162,14 @@ export type ZIssueMap = typeof Z_ISSUE_MAP
 
 export type ZIssueCode<Z extends AnyZ = AnyZ> = Extract<
   keyof ZIssueMap,
-  _ZOutput<Z> extends any[]
+  _ZOutput<Z> extends any[] | Set<any>
     ? `array.${string}`
     : _ZOutput<Z> extends bigint
     ? `bigint.${string}`
+    : _ZOutput<Z> extends Buffer
+    ? `binary.${string}`
     : _ZOutput<Z> extends boolean
-    ? `boolean.${string}`
+    ? `${'boolean' | 'truthy' | 'falsy'}.${string}`
     : _ZOutput<Z> extends Date
     ? `date.${string}`
     : _ZOutput<Z> extends (...args: any[]) => any
@@ -190,31 +194,32 @@ export type AnyZIssueCode = ZIssueCode<AnyZ>
 export type ZIssueLocalCtxTagTypeMap = {
   'error.message': any
   arg: any
-  by: any
+  by: string
   cidr: any
   form: any
   key: string | number
-  knownMisses: any
+  knownMisses: string[]
   label: string
   limit: number
   map: any
   maxDate: Date
   minDate: Date
-  missingWithLabels: any
+  missingWithLabels: string[]
   multiple: number
   n: any
   name: string
   pattern: string
-  peersWithLabels: any
-  presentWithLabels: any
+  peersWithLabels: string[]
+  presentWithLabels: string[]
   reason: any
   regex: string
   scheme: any
   type: string
   types: any
-  unknownMisses: any
+  unknownMisses: number
   value: any
   version: any
+  order: any
 }
 
 export type GetLocalCtxTagOpts = { Extras?: boolean }
@@ -222,10 +227,15 @@ export type GetLocalCtxTag<
   IssueCode extends AnyZIssueCode = AnyZIssueCode,
   Opts extends GetLocalCtxTagOpts = { Extras: false }
 > =
-  | Extract<S.Split<ZIssueMap[IssueCode], ' '>[number], `{{#${string}}}`>
+  | Extract<S.Split<ZIssueMap[IssueCode], ' '>[number], `${'{' | ''}{${':' | ''}#${string}}${'}' | ''}`>
   | (Opts['Extras'] extends true ? 'key' | 'value' : never)
 
-export type RemoveLocalCtxTagBraces<Tag extends string> = S.Replace<S.Replace<Tag, '{{#', ''>, '}}', ''>
+export type RemoveLocalCtxTagBraces<Tag extends string> = Replace<
+  Replace<Replace<Replace<Tag, '{', '', { all: true }>, '}', '', { all: true }>, ':', '', { all: true }>,
+  '#',
+  '',
+  { all: true }
+>
 
 export type ZIssueLocalContextOpts = GetLocalCtxTagOpts & { WithBraces?: boolean }
 export type ZIssueLocalContext<

@@ -14,6 +14,7 @@ const VALIDATION_FAIL = Symbol('VALIDATION_FAIL')
 export type ZAnySchema = A.Type<Joi.AnySchema, 'ZAnySchema'>
 export type ZAlternativesSchema = A.Type<Joi.AlternativesSchema, 'ZAlternativesSchema'>
 export type ZArraySchema = A.Type<Joi.ArraySchema, 'ZArraySchema'>
+export type ZBinarySchema = A.Type<Joi.BinarySchema, 'ZBinarySchema'>
 export type ZBooleanSchema = A.Type<Joi.BooleanSchema, 'ZBooleanSchema'>
 export type ZDateSchema = A.Type<Joi.DateSchema, 'ZDateSchema'>
 export type ZEntriesSchema = A.Type<Joi.AnySchema, 'ZEntriesSchema'>
@@ -35,6 +36,7 @@ export type AnyZSchema =
   | ZAnySchema
   | ZAlternativesSchema
   | ZArraySchema
+  | ZBinarySchema
   | ZBooleanSchema
   | ZDateSchema
   | ZEntriesSchema
@@ -111,6 +113,10 @@ export class ZValidator {
    * Array. No `undefined`.
    */
   static array = (...items: Joi.SchemaLikeWithoutArray[]) => this.ZJoi.array().items(...items) as ZArraySchema
+  /**
+   * Binary. No `undefined`.
+   */
+  static binary = () => this.ZJoi.binary() as ZBinarySchema
   /**
    * Boolean. No `undefined`.
    */

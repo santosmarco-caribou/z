@@ -70,6 +70,8 @@ spec.child('ZTruthy', {
       'BigInt(1)',
       'symbol',
       'unique symbol',
+      'class',
+      'abstract class',
     ],
     defaultCastTo: true,
   },

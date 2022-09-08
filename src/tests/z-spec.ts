@@ -2,11 +2,15 @@ import type { Promisable } from 'type-fest'
 
 import { ZArrayUtils, ZObjectUtils } from '../utils'
 import type { AnyZ } from '../z/z'
-import { ZNullableSpecChild, ZOptionalSpecChild } from './common-children'
+import { ZNullableSpecChild, ZNullishSpecChild, ZOptionalSpecChild } from './common-children'
 
 const Z_SPEC_ALL_VALUES = Symbol('Z_SPEC_ALL_VALUES')
 const Z_SPEC_UNIQUE_SYMBOL = Symbol('Z_SPEC_UNIQUE_SYMBOL')
 const Z_SPEC_BYPASS_CASTING = Symbol('Z_SPEC_BYPASS_CASTING')
+
+// Only used for testing ZInstanceOf
+export class Z_SPEC_CLASS {}
+abstract class Z_SPEC_ABSTRACT_CLASS {}
 
 const Z_SPEC_VALUE_MAP = {
   // Nil
@@ -40,6 +44,9 @@ const Z_SPEC_VALUE_MAP = {
   // Symbols
   symbol: Symbol(),
   'unique symbol': Z_SPEC_UNIQUE_SYMBOL,
+  // Classes
+  class: new Z_SPEC_CLASS(),
+  'abstract class': Z_SPEC_ABSTRACT_CLASS,
 } as const
 
 type ZSpecValueKey = keyof typeof Z_SPEC_VALUE_MAP
@@ -115,19 +122,19 @@ export class ZSpec<Z extends AnyZ> {
 
       describe('should parse', () =>
         shouldParseValueConfigs.forEach(({ value, ...config }) =>
-          it(value, () =>
-            expect(z.safeParse(Z_SPEC_VALUE_MAP[value]).value).toStrictEqual(
+          it(value, () => {
+            const parsed = z.safeParse(Z_SPEC_VALUE_MAP[value]).value
+            if (typeof parsed === 'bigint') {
+              expect(String(parsed)).toStrictEqual(String(Z_SPEC_VALUE_MAP[value]))
+            }
+            expect(parsed).toStrictEqual(
               'castTo' in config
-                ? config.castTo === Z_SPEC_BYPASS_CASTING
-                  ? Z_SPEC_VALUE_MAP[value]
-                  : config.castTo
+                ? config.castTo
                 : 'defaultCastTo' in shouldParse
-                ? shouldParse.defaultCastTo === Z_SPEC_BYPASS_CASTING
-                  ? Z_SPEC_VALUE_MAP[value]
-                  : shouldParse.defaultCastTo
+                ? shouldParse.defaultCastTo
                 : Z_SPEC_VALUE_MAP[value]
             )
-          )
+          })
         ))
 
       describe('should not parse', () =>
@@ -238,6 +245,7 @@ export class ZSpec<Z extends AnyZ> {
 
     spec.child(ZOptionalSpecChild(spec))
     spec.child(ZNullableSpecChild(spec))
+    spec.child(ZNullishSpecChild(spec))
 
     return spec
   }

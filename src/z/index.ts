@@ -1,32 +1,23 @@
 import {
   type _ZInput,
   type _ZOutput,
+  type AnyZArray,
   type AnyZEnum,
   type AnyZFunction,
+  type AnyZInstanceOf,
+  type AnyZIntersection,
   type AnyZLiteral,
+  type AnyZMap,
+  type AnyZNullable,
+  type AnyZNullish,
   type AnyZObject,
+  type AnyZOptional,
+  type AnyZRecord,
+  type AnyZSet,
   type AnyZTuple,
+  type AnyZUnion,
+  type AnyZUniqueSymbol,
   type TypeOf,
-  type ZAnyDef,
-  type ZArrayDef,
-  type ZBigIntDef,
-  type ZBooleanDef,
-  type ZDateDef,
-  type ZEnumDef,
-  type ZFalsyDef,
-  type ZFunctionDef,
-  type ZLiteralDef,
-  type ZMapDef,
-  type ZNaNDef,
-  type ZNeverDef,
-  type ZNullableDef,
-  type ZNullDef,
-  type ZNullishDef,
-  type ZNumberDef,
-  type ZObjectDef,
-  type ZOptionalDef,
-  type ZRecordDef,
-  type ZStringDef,
   type ZStringDomainOptions,
   type ZStringDomainTldsOptions,
   type ZStringEmailOptions,
@@ -34,24 +25,18 @@ import {
   type ZStringPatternOptions,
   type ZStringUriOptions,
   type ZStringUuidOptions,
-  type ZSymbolDef,
-  type ZTruthyDef,
-  type ZTupleDef,
-  type ZUndefinedDef,
-  type ZUnionDef,
-  type ZUniqueSymbolDef,
-  type ZUnknownDef,
-  type ZVoidDef,
   Z,
   ZAny,
   ZArray,
   ZBigInt,
+  ZBinary,
   ZBoolean,
   ZDate,
   ZEnum,
   ZFalse,
   ZFalsy,
   ZFunction,
+  ZInstanceOf,
   ZLiteral,
   ZMap,
   ZNaN,
@@ -63,6 +48,7 @@ import {
   ZObject,
   ZOptional,
   ZRecord,
+  ZSet,
   ZString,
   ZSymbol,
   ZTrue,
@@ -75,47 +61,85 @@ import {
   ZVoid,
 } from './z'
 
+/** @group Main methods */
 const anyType = ZAny.create
+/** @group Main methods */
 const arrayType = ZArray.create
+/** @group Main methods */
 const bigIntType = ZBigInt.create
+/** @group Main methods */
+const binaryType = ZBinary.create
+/** @group Main methods */
 const booleanType = ZBoolean.create
+/** @group Main methods */
 const dateType = ZDate.create
+/** @group Main methods */
 const enumType = ZEnum.create
+/** @group Main methods */
 const falseType = ZFalse.create
+/** @group Main methods */
 const falsyType = ZFalsy.create
+/** @group Main methods */
 const functionType = ZFunction.create
+/** @group Main methods */
+const instanceofType = ZInstanceOf.create
+/** @group Main methods */
 const literalType = ZLiteral.create
+/** @group Main methods */
 const mapType = ZMap.create
+/** @group Main methods */
 const nanType = ZNaN.create
+/** @group Main methods */
 const neverType = ZNever.create
+/** @group Main methods */
 const nullableType = ZNullable.create
+/** @group Main methods */
 const nullishType = ZNullish.create
+/** @group Main methods */
 const nullType = ZNull.create
+/** @group Main methods */
 const numberType = ZNumber.create
+/** @group Main methods */
 const objectType = ZObject.create
+/** @group Main methods */
 const optionalType = ZOptional.create
+/** @group Main methods */
 const recordType = ZRecord.create
+/** @group Main methods */
+const setType = ZSet.create
+/** @group Main methods */
 const stringType = ZString.create
+/** @group Main methods */
 const symbolType = ZSymbol.create
+/** @group Main methods */
 const trueType = ZTrue.create
+/** @group Main methods */
 const truthyType = ZTruthy.create
+/** @group Main methods */
 const tupleType = ZTuple.create
+/** @group Main methods */
 const undefinedType = ZUndefined.create
+/** @group Main methods */
 const unionType = ZUnion.create
+/** @group Main methods */
 const uniqueSymbolType = ZUniqueSymbol.create
+/** @group Main methods */
 const unknownType = ZUnknown.create
+/** @group Main methods */
 const voidType = ZVoid.create
 
 export {
   anyType as any,
   arrayType as array,
   bigIntType as bigint,
+  binaryType as binary,
   booleanType as boolean,
   dateType as date,
   enumType as enum,
   falseType as false,
   falsyType as falsy,
   functionType as function,
+  instanceofType as instanceof,
   literalType as literal,
   mapType as map,
   nanType as nan,
@@ -127,6 +151,7 @@ export {
   objectType as object,
   optionalType as optional,
   recordType as record,
+  setType as set,
   stringType as string,
   symbolType as symbol,
   trueType as true,
@@ -143,12 +168,14 @@ export {
   ZAny,
   ZArray,
   ZBigInt,
+  ZBinary,
   ZBoolean,
   ZDate,
   ZEnum,
   ZFalse,
   ZFalsy,
   ZFunction,
+  ZInstanceOf,
   ZLiteral,
   ZMap,
   ZNaN,
@@ -160,6 +187,7 @@ export {
   ZObject,
   ZOptional,
   ZRecord,
+  ZSet,
   ZString,
   ZSymbol,
   ZTrue,
@@ -172,36 +200,23 @@ export {
   ZVoid,
 }
 export type {
-  ZAnyDef,
-  ZArrayDef,
-  ZBigIntDef,
-  ZBooleanDef,
-  ZDateDef,
-  ZEnumDef,
-  ZFalsyDef,
-  ZFunctionDef,
-  ZLiteralDef,
-  ZMapDef,
-  ZNaNDef,
-  ZNeverDef,
-  ZNullableDef,
-  ZNullDef,
-  ZNullishDef,
-  ZNumberDef,
-  ZObjectDef,
-  ZOptionalDef,
-  ZRecordDef,
-  ZStringDef,
-  ZSymbolDef,
-  ZTruthyDef,
-  ZTupleDef,
-  ZUndefinedDef,
-  ZUnionDef,
-  ZUniqueSymbolDef,
-  ZUnknownDef,
-  ZVoidDef,
+  AnyZArray,
+  AnyZEnum,
+  AnyZFunction,
+  AnyZInstanceOf,
+  AnyZIntersection,
+  AnyZLiteral,
+  AnyZMap,
+  AnyZNullable,
+  AnyZNullish,
+  AnyZObject,
+  AnyZOptional,
+  AnyZRecord,
+  AnyZSet,
+  AnyZTuple,
+  AnyZUnion,
+  AnyZUniqueSymbol,
 }
-export type { AnyZEnum, AnyZFunction, AnyZLiteral, AnyZObject, AnyZTuple }
 export type {
   ZStringDomainOptions,
   ZStringDomainTldsOptions,

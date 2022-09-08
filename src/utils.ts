@@ -1,8 +1,16 @@
 import type Joi from 'joi'
-import _, { isObject as _isObject, merge as _merge, omit as _omit, omitBy as _omitBy, pick as _pick } from 'lodash'
+import _, {
+  cloneDeep,
+  isObject as _isObject,
+  merge as _merge,
+  omit as _omit,
+  omitBy as _omitBy,
+  pick as _pick,
+} from 'lodash'
 import type { A, L, O } from 'ts-toolbelt'
+import type { Simplify } from 'type-fest'
 
-import type { AnyZManifestObject } from './manifest/manifest'
+import type { AnyZManifestObject } from './types'
 import { _ZInput, _ZOutput, AnyZ, AnyZObjectShape, ZArray, ZObject, ZOptional } from './z/z'
 
 export namespace ZUtils {
@@ -66,6 +74,10 @@ export namespace ZUtils {
   export type UnionToArray<T extends string> = _UnionToArray<T>[T]
 }
 
+export namespace ZTypeUtils {
+  export type Nullable<T> = T | null | undefined
+}
+
 export namespace ZArrayUtils {
   export type AnyArray = any[] | readonly any[]
 
@@ -93,6 +105,13 @@ export namespace ZObjectUtils {
   export const omit = _omit
   export const omitBy = _omitBy
   export const merge = _merge
+
+  export const mergeSafe = <
+    T extends [ZTypeUtils.Nullable<AnyStringRecord>, ...ZTypeUtils.Nullable<AnyStringRecord>[]]
+  >(
+    ...objs: T
+  ): Simplify<O.MergeAll<NonNullable<T[0]>, L.Update<L.Tail<T>, PropertyKey, NonNullable<A.x>>, 'deep'>> =>
+    merge({}, ...objs.map(obj => cloneDeep(obj)))
 
   export type ToPartialZObjectShape<Shape extends AnyZObjectShape, Depth extends 'flat' | 'deep' = 'flat'> = {
     flat: { [K in keyof Shape]: ZOptional<Shape[K]> }

@@ -1,16 +1,16 @@
 import type Joi from 'joi'
-import { merge } from 'lodash'
+import type { O } from 'ts-toolbelt'
 
-import {
-  type ParseOptions,
-  type ParseResult,
-  type ParseResultFail,
-  type ParseResultOk,
-  type ZCheckOptions,
-  type ZParserChecksAndValidationMethods,
-  type ZParserParsingMethods,
-  DEFAULT_PARSE_OPTIONS,
+import type {
+  ParseOptions,
+  ParseResult,
+  ParseResultFail,
+  ParseResultOk,
+  ZCheckOptions,
+  ZChecksAndValidationMethods,
+  ZParsingMethods,
 } from '../types'
+import { ZObjectUtils } from '../utils'
 import type { _ZOutput, _ZValidator, AnyZ } from '../z/z'
 import { ZError } from './error'
 import { type ZIssueLocalContext, AnyZIssueCode, Z_ISSUE_MAP } from './issue-map'
@@ -19,7 +19,10 @@ import { type ZIssueLocalContext, AnyZIssueCode, Z_ISSUE_MAP } from './issue-map
 /*                                                       ZParser                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZParser<Z extends AnyZ> implements ZParserParsingMethods<Z>, ZParserChecksAndValidationMethods<Z> {
+export class ZParser<Z extends AnyZ> implements ZParsingMethods<Z>, ZChecksAndValidationMethods<Z> {
+  private static readonly _DEFAULT_PARSE_OPTIONS: Joi.ValidationOptions &
+    O.Required<ParseOptions, PropertyKey, 'deep'> = { abortEarly: false, messages: Z_ISSUE_MAP }
+
   private constructor(private readonly _z: Z) {}
 
   /* ---------------------------------------------------- Parsing --------------------------------------------------- */
@@ -122,7 +125,7 @@ export class ZParser<Z extends AnyZ> implements ZParserParsingMethods<Z>, ZParse
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   private _validate(input: unknown, options: ParseOptions | undefined): Joi.ValidationResult<_ZOutput<Z>> {
-    return this._z._validator.validate(input, merge(DEFAULT_PARSE_OPTIONS, options))
+    return this._z._validator.validate(input, ZObjectUtils.mergeSafe(ZParser._DEFAULT_PARSE_OPTIONS, options))
   }
 
   private _OK(value: _ZOutput<Z>): ParseResultOk<Z> {

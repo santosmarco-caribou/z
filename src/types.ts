@@ -1,10 +1,8 @@
-import type Joi from 'joi'
 import type { OpenAPIV3 } from 'openapi-types'
-import type { O } from 'ts-toolbelt'
 
 import type { ZError } from './validation/error'
-import { type ZIssueLocalContext, AnyZIssueCode, Z_ISSUE_MAP } from './validation/issue-map'
-import type { _ZOutput, _ZValidator, AnyZ } from './z/z'
+import type { AnyZIssueCode, ZIssueLocalContext } from './validation/issue-map'
+import type { _ZOutput, _ZValidator, AnyZ, ZArray, ZIntersection, ZNullable, ZNullish, ZOptional, ZUnion } from './z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZType                                                       */
@@ -14,12 +12,14 @@ export enum ZType {
   Any = 'ZAny',
   Array = 'ZArray',
   BigInt = 'ZBigInt',
+  Binary = 'ZBinary',
   Boolean = 'ZBoolean',
   Date = 'ZDate',
   Enum = 'ZEnum',
   False = 'ZFalse',
   Falsy = 'ZFalsy',
   Function = 'ZFunction',
+  InstanceOf = 'ZInstanceOf',
   Intersection = 'ZIntersection',
   Literal = 'ZLiteral',
   Map = 'ZMap',
@@ -32,6 +32,7 @@ export enum ZType {
   Object = 'ZObject',
   Optional = 'ZOptional',
   Record = 'ZRecord',
+  Set = 'ZSet',
   String = 'ZString',
   Symbol = 'ZSymbol',
   True = 'ZTrue',
@@ -42,6 +43,22 @@ export enum ZType {
   UniqueSymbol = 'ZUniqueSymbol',
   Unknown = 'ZUnknown',
   Void = 'ZVoid',
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                          Z                                                         */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export interface ZTransformMethods<Z extends AnyZ> {
+  optional(): ZOptional<Z>
+  nullable(): ZNullable<Z>
+  nullish(): ZNullish<Z>
+  array(): ZArray<Z>
+  or<T extends AnyZ>(alternative: T): ZUnion<[Z, T]>
+  and<T extends AnyZ>(incoming: T): ZIntersection<[Z, T]>
+  /* ---------------------------------------------------------------------------------------------------------------- */
+  isOptional(): boolean
+  isNullable(): boolean
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -70,11 +87,6 @@ export type ParseOptions = {
   abortEarly?: boolean
 }
 
-export const DEFAULT_PARSE_OPTIONS: Joi.ValidationOptions & O.Required<ParseOptions, PropertyKey, 'deep'> = {
-  abortEarly: false,
-  messages: Z_ISSUE_MAP,
-}
-
 /* -------------------------------------------------- CheckOptions -------------------------------------------------- */
 
 export type ZCheckOptions<IssueCode extends AnyZIssueCode> = {
@@ -87,14 +99,14 @@ export type ZCheckOptions<IssueCode extends AnyZIssueCode> = {
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface ZParserParsingMethods<Z extends AnyZ> {
+export interface ZParsingMethods<Z extends AnyZ> {
   safeParse(input: unknown, options: ParseOptions | undefined): ParseResult<Z>
   parse(input: unknown, options: ParseOptions | undefined): _ZOutput<Z>
   parseAsync(input: unknown, options: ParseOptions | undefined): Promise<_ZOutput<Z>>
   isValid(input: unknown, options: ParseOptions | undefined): input is _ZOutput<Z>
 }
 
-export interface ZParserChecksAndValidationMethods<Z extends AnyZ> {
+export interface ZChecksAndValidationMethods<Z extends AnyZ> {
   addCheck(fn: (validator: _ZValidator<Z>) => _ZValidator<Z>): Z
   addCheck<IssueCode extends AnyZIssueCode>(
     issue: IssueCode,
@@ -104,7 +116,70 @@ export interface ZParserChecksAndValidationMethods<Z extends AnyZ> {
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                      ZManifest                                                     */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type ManifestBasicInfo = {
+  title?: string
+  summary?: string
+  description?: string
+}
+
+export type ManifestBasicInfoWithValue<T> = ManifestBasicInfo & {
+  value: T
+}
+
+export type ManifestFormat =
+  | 'alphanumeric'
+  | 'data-uri'
+  | 'date-time'
+  | 'email'
+  | 'hexadecimal'
+  | 'port'
+  | 'uri'
+  | 'uuid'
+
+/* ------------------------------------------------- ZManifestObject ------------------------------------------------ */
+
+export type ZManifestObject<T> = ManifestBasicInfo & {
+  label?: string
+  format?: ManifestFormat
+  default?: ManifestBasicInfoWithValue<T>
+  examples?: ManifestBasicInfoWithValue<T>[]
+  tags?: ManifestBasicInfoWithValue<string>[]
+  notes?: ManifestBasicInfoWithValue<string>[]
+  unit?: string
+  deprecated?: boolean
+  keys?: Record<string, ZManifestObject<T>>
+}
+
+export type AnyZManifestObject = ZManifestObject<any>
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export interface ZManifestMethods<Z extends AnyZ> {
+  get manifest(): ZManifestObject<_ZOutput<Z>>
+  label(label: string): this
+  title(title: string): this
+  summary(summary: string): this
+  description(description: string): this
+  default(value: _ZOutput<Z> | ManifestBasicInfoWithValue<_ZOutput<Z>>): this
+  examples(...examples: Array<_ZOutput<Z> | ManifestBasicInfoWithValue<_ZOutput<Z>>>): this
+  example(example: _ZOutput<Z> | ManifestBasicInfoWithValue<_ZOutput<Z>>): this
+  tags(...tags: (string | ManifestBasicInfoWithValue<string>)[]): this
+  tag(tag: string | ManifestBasicInfoWithValue<string>): this
+  notes(...notes: (string | ManifestBasicInfoWithValue<string>)[]): this
+  note(note: string | ManifestBasicInfoWithValue<string>): this
+  unit(unit: string): this
+  deprecated(deprecated: boolean): this
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZOpenApi                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export type OpenApiSchemaObject = OpenAPIV3.SchemaObject
+
+export interface ZOpenApiMethods {
+  toOpenApi(): OpenApiSchemaObject
+}

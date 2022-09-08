@@ -1,42 +1,10 @@
+import type { ZManifestObject } from '../types'
 import { ZObjectUtils } from '../utils'
 import type { _ZOutput, AnyZ } from '../z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZManifest                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
-
-export type ManifestBasicInfo = {
-  title?: string
-  summary?: string
-  description?: string
-}
-
-export type ManifestBasicInfoWithValue<T> = ManifestBasicInfo & {
-  value: T
-}
-
-export type ManifestFormat =
-  | 'alphanumeric'
-  | 'data-uri'
-  | 'date-time'
-  | 'email'
-  | 'hexadecimal'
-  | 'port'
-  | 'uri'
-  | 'uuid'
-
-export type ZManifestObject<T> = ManifestBasicInfo & {
-  format?: ManifestFormat
-  default?: ManifestBasicInfoWithValue<T>
-  examples?: ManifestBasicInfoWithValue<T>[]
-  tags?: ManifestBasicInfoWithValue<string>[]
-  notes?: ManifestBasicInfoWithValue<string>[]
-  unit?: string
-  deprecated?: boolean
-  keys?: Record<string, ZManifestObject<T>>
-}
-
-export type AnyZManifestObject = ZManifestObject<any>
 
 export class ZManifest<Z extends AnyZ> {
   private constructor(private readonly _z: Z) {}

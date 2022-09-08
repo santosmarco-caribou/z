@@ -1,4 +1,5 @@
 import type Joi from 'joi'
+import util from 'util'
 
 import type { ZManifestObject, ZType } from '../types'
 import type { ZUtils } from '../utils'
@@ -50,7 +51,7 @@ export class ZError<Z extends AnyZ> extends Error {
     return this._original.annotate()
   }
 
-  toPlainObject(): ZUtils.OmitInternals<Omit<ZError<Z>, 'toPlainObject'>> {
+  toPlainObject(): ZUtils.OmitInternals<Omit<ZError<Z>, 'toPlainObject'> & { toString(): string }> {
     return {
       name: this.name,
       message: this.message,
@@ -59,6 +60,7 @@ export class ZError<Z extends AnyZ> extends Error {
       typeHint: this.typeHint,
       typeManifest: this.typeManifest,
       annotate: () => this.annotate(),
+      toString: () => util.inspect(this.toPlainObject(), { colors: true, depth: Infinity }),
     }
   }
 

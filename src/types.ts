@@ -1,9 +1,48 @@
 import type Joi from 'joi'
+import type { OpenAPIV3 } from 'openapi-types'
 import type { O } from 'ts-toolbelt'
 
 import type { ZError } from './validation/error'
 import { type ZIssueLocalContext, AnyZIssueCode, Z_ISSUE_MAP } from './validation/issue-map'
 import type { _ZOutput, _ZValidator, AnyZ } from './z/z'
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                        ZType                                                       */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export enum ZType {
+  Any = 'ZAny',
+  Array = 'ZArray',
+  BigInt = 'ZBigInt',
+  Boolean = 'ZBoolean',
+  Date = 'ZDate',
+  Enum = 'ZEnum',
+  False = 'ZFalse',
+  Falsy = 'ZFalsy',
+  Function = 'ZFunction',
+  Intersection = 'ZIntersection',
+  Literal = 'ZLiteral',
+  Map = 'ZMap',
+  NaN = 'ZNaN',
+  Never = 'ZNever',
+  Null = 'ZNull',
+  Nullable = 'ZNullable',
+  Nullish = 'ZNullish',
+  Number = 'ZNumber',
+  Object = 'ZObject',
+  Optional = 'ZOptional',
+  Record = 'ZRecord',
+  String = 'ZString',
+  Symbol = 'ZSymbol',
+  True = 'ZTrue',
+  Truthy = 'ZTruthy',
+  Tuple = 'ZTuple',
+  Undefined = 'ZUndefined',
+  Union = 'ZUnion',
+  UniqueSymbol = 'ZUniqueSymbol',
+  Unknown = 'ZUnknown',
+  Void = 'ZVoid',
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZParser                                                      */
@@ -63,3 +102,9 @@ export interface ZParserChecksAndValidationMethods<Z extends AnyZ> {
     options: ZCheckOptions<IssueCode> | undefined
   ): Z
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                      ZOpenApi                                                      */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type OpenApiSchemaObject = OpenAPIV3.SchemaObject

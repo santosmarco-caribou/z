@@ -19,9 +19,21 @@ import { type ZIssueLocalContext, AnyZIssueCode, Z_ISSUE_MAP } from './issue-map
 /*                                                       ZParser                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+export type ZParserHook = <Z extends AnyZ>(input: _ZOutput<Z>) => _ZOutput<Z>
+
+export type ZParserHooks = {
+  beforeParse: ZParserHook[]
+  afterParse: ZParserHook[]
+}
+
 export class ZParser<Z extends AnyZ> implements ZParsingMethods<Z>, ZChecksAndValidationMethods<Z> {
   private static readonly _DEFAULT_PARSE_OPTIONS: Joi.ValidationOptions &
     O.Required<ParseOptions, PropertyKey, 'deep'> = { abortEarly: false, messages: Z_ISSUE_MAP }
+
+  private readonly _hooks: ZParserHooks = {
+    beforeParse: [],
+    afterParse: [],
+  }
 
   private constructor(private readonly _z: Z) {}
 
@@ -122,10 +134,28 @@ export class ZParser<Z extends AnyZ> implements ZParsingMethods<Z>, ZChecksAndVa
     return this._z
   }
 
+  /* ----------------------------------------------------- Hooks ---------------------------------------------------- */
+
+  addBeforeParseHook(hook: ZParserHook): Z {
+    this._hooks.beforeParse.push(hook)
+    return this._z
+  }
+
+  addAfterParseHook(hook: ZParserHook): Z {
+    this._hooks.afterParse.push(hook)
+    return this._z
+  }
+
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   private _validate(input: unknown, options: ParseOptions | undefined): Joi.ValidationResult<_ZOutput<Z>> {
-    return this._z._validator.validate(input, ZObjectUtils.mergeSafe(ZParser._DEFAULT_PARSE_OPTIONS, options))
+    this._hooks.beforeParse.forEach(hook => (input = hook(input)))
+    const validationResult = this._z._validator.validate(
+      input,
+      ZObjectUtils.mergeSafe(ZParser._DEFAULT_PARSE_OPTIONS, options)
+    )
+    this._hooks.afterParse.forEach(hook => (validationResult.value = hook(validationResult.value)))
+    return validationResult
   }
 
   private _OK(value: _ZOutput<Z>): ParseResultOk<Z> {

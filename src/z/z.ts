@@ -35,6 +35,7 @@ import {
   type ZStringOnlySchema,
   type ZStringSchema,
   type ZSymbolSchema,
+  type ZTupleSchema,
   type ZUndefinedSchema,
   ZValidator,
 } from '../validation/validator'
@@ -357,6 +358,12 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
   toOpenApi(): OpenApiSchemaObject {
     return this._openApi.generate()
   }
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  get [Symbol.toStringTag]() {
+    return `${this.name} (${this.hint})`
+  }
 }
 
 /**
@@ -399,7 +406,7 @@ export type ZArrayDef<T extends AnyZ> = ZDef<{ validator: ZArraySchema }, { elem
 /**
  * @group ZTypes
  */
-export class ZArray<T extends AnyZ, Arr extends T[] = T[]> extends Z<
+export class ZArray<T extends AnyZ, Arr extends T[] | readonly T[] = T[] | readonly T[]> extends Z<
   ZUtils.MapToZOutput<Arr>,
   ZArrayDef<T>,
   ZUtils.MapToZInput<Arr>
@@ -456,7 +463,12 @@ export class ZArray<T extends AnyZ, Arr extends T[] = T[]> extends Z<
    * Requires the array to have at least one element.
    */
   nonempty(options?: ZCheckOptions<'array.min'>): ZArray<T, [T, ...T[]]> {
-    return ZArray.create<T, [T, ...T[]]>(this._def.element).min(1, options)
+    return this.min(1, options) as any
+  }
+
+  readonly(): ZArray<T, Arr extends [T, ...T[]] ? readonly [T, ...T[]] : readonly T[]> {
+    this._parser.addAfterParseHook(Object.freeze)
+    return this as any
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -1406,6 +1418,18 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
     )
   }
 
+  readonly(): ZObject<ZObjectUtils.ToReadonlyZObjectShape<Shape>> {
+    this._parser.addAfterParseHook(Object.freeze)
+    return this
+  }
+
+  readonlyDeep(): ZObject<ZObjectUtils.ToReadonlyZObjectShape<Shape, 'deep'>> {
+    this._parser.addAfterParseHook(ZObjectUtils.deepFreeze)
+    return this as any
+  }
+
+  /* ------------------------------------------------- Configuration ------------------------------------------------ */
+
   /**
    * By default `ZObject`s strip out unrecognized keys during parsing.
    *
@@ -1993,7 +2017,7 @@ export type AnyZUniqueSymbol = ZUniqueSymbol<symbol>
 /*                                                       ZTuple                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZTupleDef<T extends AnyZ[]> = ZDef<{ validator: ZArraySchema }, { elements: T }>
+export type ZTupleDef<T extends AnyZ[]> = ZDef<{ validator: ZTupleSchema }, { elements: T }>
 
 /**
  * @group ZTypes
@@ -2011,7 +2035,7 @@ export class ZTuple<T extends AnyZ[]> extends Z<ZUtils.MapToZOutput<T>, ZTupleDe
 
   static create = <T extends AnyZ[]>(elements: F.Narrow<T>): ZTuple<T> =>
     new ZTuple({
-      validator: ZValidator.array(...elements.map(v => (v as AnyZ)['_validator'])),
+      validator: ZValidator.tuple(...elements.map(v => (v as AnyZ)['_validator'])),
       elements: elements as T,
     })
 }

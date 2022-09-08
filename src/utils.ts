@@ -8,7 +8,7 @@ import _, {
   pick as _pick,
 } from 'lodash'
 import type { A, L, O } from 'ts-toolbelt'
-import type { Simplify } from 'type-fest'
+import type { ReadonlyDeep, Simplify } from 'type-fest'
 
 import type { AnyZManifestObject } from './types'
 import { _ZInput, _ZOutput, AnyZ, AnyZObjectShape, ZArray, ZObject, ZOptional } from './z/z'
@@ -122,6 +122,17 @@ export namespace ZObjectUtils {
     }
   }[Depth]
 
+  export type ToReadonlyZObjectShape<Shape extends AnyZObjectShape, Depth extends 'flat' | 'deep' = 'flat'> = {
+    flat: { readonly [K in keyof Shape]: Shape[K] }
+    deep: {
+      readonly [K in keyof Shape]: Shape[K] extends ZObject<infer S>
+        ? ZObject<ToReadonlyZObjectShape<S, 'deep'>>
+        : Shape[K] extends ZArray<infer E, infer Arr>
+        ? ZArray<E, Arr extends [E, ...E[]] ? readonly [E, ...E[]] : readonly E[]>
+        : Shape[K]
+    }
+  }[Depth]
+
   export const zShapeToJoiSchema = <Shape extends AnyZObjectShape>(shape: Shape): Joi.StrictSchemaMap<Shape> =>
     Object.fromEntries(
       Object.entries(shape).map(([key, z]) => [key, z['_validator']])
@@ -137,4 +148,11 @@ export namespace ZObjectUtils {
     )
 
   export const isPlainObject = <T>(obj: T): obj is Record<PropertyKey, any> => _.isPlainObject(obj)
+
+  export const deepFreeze = <T extends AnyStringRecord>(object: T): ReadonlyDeep<T> => {
+    Object.getOwnPropertyNames(object).forEach(prop =>
+      object[prop] && typeof object[prop] === 'object' ? deepFreeze(object[prop]) : Object.freeze(object[prop])
+    )
+    return Object.freeze(object) as ReadonlyDeep<T>
+  }
 }

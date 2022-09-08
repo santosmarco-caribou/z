@@ -1,6 +1,6 @@
 import j2s from 'joi-to-swagger'
-import type { OpenAPIV3 } from 'openapi-types'
 
+import type { OpenApiSchemaObject } from '../types'
 import type { AnyZ } from '../z/z'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -10,7 +10,7 @@ import type { AnyZ } from '../z/z'
 export class ZOpenApi<Z extends AnyZ> {
   private constructor(private readonly _z: Z) {}
 
-  generate(): OpenAPIV3.SchemaObject {
+  generate(): OpenApiSchemaObject {
     return Object.assign(j2s(this._z._validator).swagger, this._z.manifest)
   }
 

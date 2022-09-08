@@ -172,7 +172,7 @@ export type ZIssueCode<Z extends AnyZ = AnyZ> = Extract<
     ? `function.${string}`
     : _ZOutput<Z> extends Record<string, any>
     ? `${'object' | 'record'}.${string}`
-    : _ZOutput<Z> extends Map
+    : _ZOutput<Z> extends Map<any, any>
     ? `map.${string}`
     : _ZOutput<Z> extends number
     ? `${'nan' | 'number'}.${string}`

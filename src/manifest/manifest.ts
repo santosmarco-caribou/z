@@ -33,6 +33,7 @@ export type ZManifestObject<T> = ManifestBasicInfo & {
   notes?: ManifestBasicInfoWithValue<string>[]
   unit?: string
   deprecated?: boolean
+  keys?: Record<string, ZManifestObject<T>>
 }
 
 export type AnyZManifestObject = ZManifestObject<any>

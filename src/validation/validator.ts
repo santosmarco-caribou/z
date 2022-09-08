@@ -2,6 +2,7 @@ import Joi from 'joi'
 import type { A } from 'ts-toolbelt'
 
 import type { ZObjectUtils, ZUtils } from '../utils'
+import type { AnyZ } from '../z/z'
 import type { ZIssueCode, ZIssueLocalContext } from './issue-map'
 
 const VALIDATION_OK = Symbol('VALIDATION_OK')
@@ -69,16 +70,16 @@ export type ToJoiSchema<T> = T extends null | undefined
 
 /* ------------------------------------------------ Custom validation ----------------------------------------------- */
 
-export type CustomValidationHelpers<T, V extends Joi.Schema> = {
+export type CustomValidationHelpers<T, Z extends AnyZ> = {
   OK(value: T): [typeof VALIDATION_OK, T]
-  FAIL<_T extends ZIssueCode<V>, Ctx extends Partial<ZIssueLocalContext<_T>>>(
+  FAIL<_T extends ZIssueCode<Z>, Ctx extends Partial<ZIssueLocalContext<ZIssueCode<Z>>>>(
     issue: _T,
     context?: Ctx
   ): [typeof VALIDATION_FAIL, _T, Ctx | undefined]
 }
 
-export type CustomValidationResult<T, V extends Joi.Schema> = ReturnType<
-  CustomValidationHelpers<T, V>[keyof CustomValidationHelpers<T, V>]
+export type CustomValidationResult<T, Z extends AnyZ> = ReturnType<
+  CustomValidationHelpers<T, Z>[keyof CustomValidationHelpers<T, Z>]
 >
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -154,11 +155,11 @@ export class ZValidator {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static custom = <T, V extends AnyZSchema>(
+  static custom = <T, V extends AnyZSchema, Z extends AnyZ>(
     baseValidator: V,
-    handler: (value: JoiSchemaToHandlerValue<V>, helpers: CustomValidationHelpers<T, V>) => CustomValidationResult<T, V>
+    handler: (value: JoiSchemaToHandlerValue<V>, helpers: CustomValidationHelpers<T, Z>) => CustomValidationResult<T, Z>
   ): V => {
-    const helpers: CustomValidationHelpers<T, V> = {
+    const helpers: CustomValidationHelpers<T, Z> = {
       OK: value => [VALIDATION_OK, value],
       FAIL: (issue, ctx) => [VALIDATION_FAIL, issue, ctx],
     }

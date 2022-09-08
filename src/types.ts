@@ -15,6 +15,7 @@ export enum ZType {
   Binary = 'ZBinary',
   Boolean = 'ZBoolean',
   Date = 'ZDate',
+  Default = 'ZDefault',
   Enum = 'ZEnum',
   False = 'ZFalse',
   Falsy = 'ZFalsy',

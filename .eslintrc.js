@@ -16,7 +16,7 @@ module.exports = {
     sourceType: 'module',
     project: './tsconfig.json',
   },
-  plugins: ['@typescript-eslint', 'unicorn', 'simple-import-sort', 'eslint-plugin-tsdoc'],
+  plugins: ['@typescript-eslint', 'unicorn', 'simple-import-sort' /* 'eslint-plugin-tsdoc' */],
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
@@ -25,6 +25,6 @@ module.exports = {
     '@typescript-eslint/prefer-as-const': 'off',
     'simple-import-sort/imports': 'warn',
     'simple-import-sort/exports': 'warn',
-    'tsdoc/syntax': 'warn',
+    // 'tsdoc/syntax': 'warn',
   },
 }

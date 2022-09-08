@@ -7,7 +7,9 @@ import type { _ZOutput, AnyZ } from '../z/z'
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export class ZManifest<Z extends AnyZ = AnyZ> {
-  private constructor(private readonly _z: Z) {}
+  private constructor(private readonly _z: Z) {
+    this.get()
+  }
 
   get(): ZManifestObject<_ZOutput<Z>> {
     const metas = this._z._validator.$_terms['metas'] as { swagger: ZManifestObject<_ZOutput<Z>> }[]

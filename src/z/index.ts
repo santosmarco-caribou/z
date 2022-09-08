@@ -32,6 +32,7 @@ import {
   ZBinary,
   ZBoolean,
   ZDate,
+  ZDefault,
   ZEnum,
   ZFalse,
   ZFalsy,
@@ -73,6 +74,8 @@ const binaryType = ZBinary.create
 const booleanType = ZBoolean.create
 /** @group Main methods */
 const dateType = ZDate.create
+/** @group Main methods */
+const defaultType = ZDefault.create
 /** @group Main methods */
 const enumType = ZEnum.create
 /** @group Main methods */
@@ -135,6 +138,7 @@ export {
   binaryType as binary,
   booleanType as boolean,
   dateType as date,
+  defaultType as default,
   enumType as enum,
   falseType as false,
   falsyType as falsy,

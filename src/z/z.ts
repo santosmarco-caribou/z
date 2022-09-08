@@ -1,3 +1,5 @@
+import { merge } from 'lodash'
+import { nanoid } from 'nanoid'
 import type { A, F, U } from 'ts-toolbelt'
 import type { Primitive, Simplify } from 'type-fest'
 
@@ -62,6 +64,10 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
    * @internal
    */
   readonly $_input!: Input
+  /**
+   * @internal
+   */
+  readonly _id = nanoid()
 
   /**
    * @internal
@@ -103,6 +109,19 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
     this._openApi = ZOpenApi.create(this)
   }
 
+  transferDependencies<Z extends AnyZ>(recipient: Z): Z {
+    // Merge ZManifest
+    merge(recipient.manifest, this.manifest)
+
+    // Merge ZParser hooks
+    const recipientParserHooks = recipient['_parser']['_hooks']
+    const ownParserHooks = this['_parser']['_hooks']
+    recipientParserHooks.beforeParse = recipientParserHooks.beforeParse.concat(ownParserHooks.beforeParse)
+    recipientParserHooks.afterParse = recipientParserHooks.afterParse.concat(ownParserHooks.afterParse)
+
+    return recipient
+  }
+
   /* ---------------------------------------------------- Parsing --------------------------------------------------- */
 
   safeParse(input: unknown, options?: ParseOptions): ParseResult<this> {
@@ -135,7 +154,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
    * ```
    */
   optional(): ZOptional<this> {
-    return this._manifest.copyAndReturn(ZOptional.create(this))
+    return this.transferDependencies(ZOptional.create(this))
   }
 
   /**
@@ -150,7 +169,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
    * ```
    */
   nullable(): ZNullable<this> {
-    return this._manifest.copyAndReturn(ZNullable.create(this))
+    return this.transferDependencies(ZNullable.create(this))
   }
 
   /**
@@ -166,7 +185,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
    * ```
    */
   nullish(): ZNullish<this> {
-    return this._manifest.copyAndReturn(ZNullish.create(this))
+    return this.transferDependencies(ZNullish.create(this))
   }
 
   /**
@@ -181,7 +200,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
    * ```
    */
   array(): ZArray<this> {
-    return this._manifest.copyAndReturn(ZArray.create(this))
+    return this.transferDependencies(ZArray.create(this))
   }
 
   /**
@@ -196,7 +215,7 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
    * ```
    */
   or<T extends AnyZ>(alternative: T): ZUnion<[this, T]> {
-    return this._manifest.copyAndReturn(ZUnion.create(this, alternative))
+    return this.transferDependencies(ZUnion.create(this, alternative))
   }
 
   /**
@@ -211,7 +230,11 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
    * ```
    */
   and<T extends AnyZ>(incoming: T): ZIntersection<[this, T]> {
-    return this._manifest.copyAndReturn(ZIntersection.create(this, incoming))
+    return this.transferDependencies(ZIntersection.create(this, incoming))
+  }
+
+  default<T extends AnyZ>(defaultValue: T): ZDefault<this, T> {
+    return this.transferDependencies(ZDefault.create(this, defaultValue))
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -284,9 +307,11 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
     return this._manifest.setKey('description', description)
   }
 
+  /*
   default(value: Output | ManifestBasicInfoWithValue<Output>): this {
     return this._manifest.setKey('default', ZUtils.hasProp(value, 'value') ? value : { value: value })
   }
+  */
 
   /**
    * Adds one or more examples to the schema's manifest.
@@ -747,7 +772,29 @@ export class ZDate extends Z<Date, ZDateDef, Date | number | string> {
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZEnum                                                       */
+/*                                                      ZDefault                                                      */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type ZDefaultDef<T extends AnyZ, D extends AnyZ> = ZDef<
+  { validator: AnyZSchema },
+  { withDefault: T; defaultValue: D }
+>
+
+export class ZDefault<T extends AnyZ, D extends AnyZ> extends Z<
+  undefined extends _ZOutput<T> ? Exclude<_ZOutput<T>, undefined> | _ZOutput<D> : _ZOutput<T>,
+  ZDefaultDef<T, D>
+> {
+  readonly name = ZType.Default
+  readonly hint = this._def.withDefault.hint.replace('undefined', this._def.defaultValue.hint)
+
+  static create = <T extends AnyZ, D extends AnyZ>(withDefault: T, defaultValue: D): ZDefault<T, D> => {
+    const validator = withDefault['_validator'].default(defaultValue['_validator'])
+    return new ZDefault({ validator, withDefault, defaultValue })
+  }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                        ZEnum                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export type ZEnumDef<T extends string> = ZDef<{ validator: ZStringOnlySchema }, { values: T[] }>
@@ -908,8 +955,17 @@ export class ZIntersection<T extends AnyZ[]> extends Z<
   }
 
   static create = <T extends AnyZ[]>(...components: F.Narrow<T>): ZIntersection<T> => {
+    const optAlreadyAlt = components.find(opt => opt._validator.type === 'alternatives')
+
     return new ZIntersection({
-      validator: ZValidator.alternatives(components.map(component => (component as AnyZ)['_validator'])).match('all'),
+      validator: (optAlreadyAlt
+        ? (optAlreadyAlt._validator as ZAlternativesSchema).concat(
+            ZValidator.alternatives(
+              ...components.filter(opt => opt._id !== optAlreadyAlt._id).map(option => option['_validator'])
+            )
+          )
+        : ZValidator.alternatives(...components.map(option => option['_validator']))
+      ).match('all'),
       components: components as T,
     })
   }
@@ -971,7 +1027,7 @@ export class ZMap<K extends AnyZ, V extends AnyZ> extends Z<
   }
 
   entries(): ZTuple<[K, V]> {
-    return this._manifest.copyAndReturn(ZTuple.create([this._def.keyType, this._def.valueType]))
+    return this.transferDependencies(ZTuple.create([this._def.keyType, this._def.valueType]))
   }
 
   static create = <K extends AnyZ, V extends AnyZ>(keyType: K, valueType: V): ZMap<K, V> =>
@@ -1320,19 +1376,19 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
   }
 
   pick<K extends keyof Shape>(keys: K[]): ZObject<Simplify<Pick<Shape, K>>> {
-    return this._manifest.copyAndReturn(
+    return this.transferDependencies(
       ZObject.$_create(ZUtils.pick(this._def.shape, keys), this._def.options, this._def.catchall)
     )
   }
 
   omit<K extends keyof Shape>(keys: K[]): ZObject<Simplify<Omit<Shape, K>>> {
-    return this._manifest.copyAndReturn(
+    return this.transferDependencies(
       ZObject.$_create(ZUtils.omit(this._def.shape, keys), this._def.options, this._def.catchall)
     )
   }
 
   extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Simplify<Shape & S>> {
-    return this._manifest.copyAndReturn(
+    return this.transferDependencies(
       ZObject.$_create(ZUtils.merge(this._def.shape, incomingShape), this._def.options, this._def.catchall)
     )
   }
@@ -1362,7 +1418,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
    * ```
    */
   partial(): ZObject<ZObjectUtils.ToPartialZObjectShape<Shape>> {
-    return this._manifest.copyAndReturn(
+    return this.transferDependencies(
       ZObject.$_create(
         Object.fromEntries(
           Object.entries(this._def.shape).map(([key, z]) => [key, z.optional()])
@@ -1404,7 +1460,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
    * ```
    */
   deepPartial(): ZObject<ZObjectUtils.ToPartialZObjectShape<Shape, 'deep'>> {
-    return this._manifest.copyAndReturn(
+    return this.transferDependencies(
       ZObject.$_create(
         Object.fromEntries(
           Object.entries(this._def.shape).map(([key, z]) => [
@@ -1626,7 +1682,7 @@ export class ZRecord<K extends Z<PropertyKey, AnyZDef>, V extends AnyZ> extends 
   }
 
   entries(): ZTuple<[K, V]> {
-    return this._manifest.copyAndReturn(ZTuple.create([this._def.keyType, this._def.valueType]))
+    return this.transferDependencies(ZTuple.create([this._def.keyType, this._def.valueType]))
   }
 
   static create: {
@@ -2079,8 +2135,16 @@ export class ZUnion<T extends AnyZ[]> extends Z<_ZOutput<T[number]>, ZUnionDef<T
   }
 
   static create = <T extends AnyZ[]>(...options: F.Narrow<T>): ZUnion<T> => {
+    const optAlreadyAlt = options.find(opt => opt._validator.type === 'alternatives')
+
     return new ZUnion({
-      validator: ZValidator.alternatives(options.map(option => (option as AnyZ)['_validator'])),
+      validator: optAlreadyAlt
+        ? (optAlreadyAlt._validator as ZAlternativesSchema).concat(
+            ZValidator.alternatives(
+              ...options.filter(opt => opt._id !== optAlreadyAlt._id).map(option => option['_validator'])
+            )
+          )
+        : ZValidator.alternatives(...options.map(option => option['_validator'])),
       options: options as T,
     })
   }

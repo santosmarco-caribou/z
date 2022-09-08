@@ -26,7 +26,7 @@ export type ZParserHooks = {
   afterParse: ZParserHook[]
 }
 
-export class ZParser<Z extends AnyZ> implements ZParsingMethods<Z>, ZChecksAndValidationMethods<Z> {
+export class ZParser<Z extends AnyZ = AnyZ> implements ZParsingMethods<Z>, ZChecksAndValidationMethods<Z> {
   private static readonly _DEFAULT_PARSE_OPTIONS: Joi.ValidationOptions &
     O.Required<ParseOptions, PropertyKey, 'deep'> = { abortEarly: false, messages: Z_ISSUE_MAP }
 

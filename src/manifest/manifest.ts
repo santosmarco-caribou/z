@@ -6,7 +6,7 @@ import type { _ZOutput, AnyZ } from '../z/z'
 /*                                                      ZManifest                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZManifest<Z extends AnyZ> {
+export class ZManifest<Z extends AnyZ = AnyZ> {
   private constructor(private readonly _z: Z) {}
 
   get(): ZManifestObject<_ZOutput<Z>> {

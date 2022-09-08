@@ -7,7 +7,7 @@ import type { AnyZ } from '../z/z'
 /*                                                      ZOpenApi                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZOpenApi<Z extends AnyZ> {
+export class ZOpenApi<Z extends AnyZ = AnyZ> {
   private constructor(private readonly _z: Z) {}
 
   generate(): OpenApiSchemaObject {

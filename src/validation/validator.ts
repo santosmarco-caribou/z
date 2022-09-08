@@ -1,8 +1,9 @@
 import Joi from 'joi'
 import type { A } from 'ts-toolbelt'
 
+import type { AnyZDef } from '../def'
 import type { ZObjectUtils, ZUtils } from '../utils'
-import type { AnyZ } from '../z/z'
+import { type AnyZ, type Z, ZArray } from '../z/z'
 import type { ZIssueCode, ZIssueLocalContext } from './issue-map'
 
 const VALIDATION_OK = Symbol('VALIDATION_OK')
@@ -15,6 +16,7 @@ export type ZAlternativesSchema = A.Type<Joi.AlternativesSchema, 'ZAlternativesS
 export type ZArraySchema = A.Type<Joi.ArraySchema, 'ZArraySchema'>
 export type ZBooleanSchema = A.Type<Joi.BooleanSchema, 'ZBooleanSchema'>
 export type ZDateSchema = A.Type<Joi.DateSchema, 'ZDateSchema'>
+export type ZEntriesSchema = A.Type<Joi.AnySchema, 'ZEntriesSchema'>
 export type ZEverythingSchema = A.Type<Joi.AnySchema, 'ZEverythingSchema'>
 export type ZFunctionSchema = A.Type<Joi.FunctionSchema, 'ZFunctionSchema'>
 export type ZNothingSchema = A.Type<Joi.AnySchema, 'ZNothingSchema'>
@@ -35,6 +37,7 @@ export type AnyZSchema =
   | ZArraySchema
   | ZBooleanSchema
   | ZDateSchema
+  | ZEntriesSchema
   | ZEverythingSchema
   | ZFunctionSchema
   | ZNothingSchema
@@ -70,12 +73,18 @@ export type ToJoiSchema<T> = T extends null | undefined
 
 /* ------------------------------------------------ Custom validation ----------------------------------------------- */
 
+export type CustomValidationOkFn<T = any> = (value: T) => [typeof VALIDATION_OK, T]
+export type CustomValidationFailFn<Z extends AnyZ = AnyZ> = <
+  T extends ZIssueCode<Z>,
+  Ctx extends Partial<ZIssueLocalContext<T>>
+>(
+  issue: T,
+  context?: Ctx
+) => [typeof VALIDATION_FAIL, T, Ctx | undefined]
+
 export type CustomValidationHelpers<T, Z extends AnyZ> = {
-  OK(value: T): [typeof VALIDATION_OK, T]
-  FAIL<_T extends ZIssueCode<Z>, Ctx extends Partial<ZIssueLocalContext<ZIssueCode<Z>>>>(
-    issue: _T,
-    context?: Ctx
-  ): [typeof VALIDATION_FAIL, _T, Ctx | undefined]
+  OK: CustomValidationOkFn<T>
+  FAIL: CustomValidationFailFn<Z>
 }
 
 export type CustomValidationResult<T, Z extends AnyZ> = ReturnType<
@@ -152,6 +161,35 @@ export class ZValidator {
    * Only `undefined`.
    */
   static undefined = () => this.ZJoi.any().forbidden() as ZUndefinedSchema
+
+  static entries = <K extends Z<PropertyKey, AnyZDef>, V extends AnyZ>(
+    keyType: K,
+    valueType: V,
+    onGetEntries: (
+      value: any,
+      FAIL: CustomValidationFailFn
+    ) => { entries: [any, any][]; error?: null } | { entries?: null; error: ReturnType<CustomValidationFailFn> },
+    onKeyFail: (FAIL: CustomValidationFailFn) => ReturnType<CustomValidationFailFn>,
+    onValueFail: (FAIL: CustomValidationFailFn) => ReturnType<CustomValidationFailFn>
+  ) =>
+    this.custom<unknown, ZEntriesSchema, AnyZ>(this.any() as unknown as ZEntriesSchema, (value, { OK, FAIL }) => {
+      const { entries, error } = onGetEntries(value, FAIL)
+
+      if (error) return error
+
+      const keyValidator = ZArray.create(keyType)
+      const valueValidator = ZArray.create(valueType)
+
+      const [{ error: keyError }, { error: valueError }] = [
+        keyValidator.safeParse(entries.map(([k]) => k)),
+        valueValidator.safeParse(entries.map(([, v]) => v)),
+      ]
+
+      if (keyError) return onKeyFail(FAIL)
+      if (valueError) return onValueFail(FAIL)
+
+      return OK(value)
+    })
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 

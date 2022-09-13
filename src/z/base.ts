@@ -1,10 +1,23 @@
 import { merge } from 'lodash'
+import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, O } from 'ts-toolbelt'
 import type { CamelCasedProperties } from 'type-fest'
 
-import { AnyZSchema, ZHooks, ZManifest, ZNullable, ZOptional, ZParser, ZType, ZValidator } from '../_internals'
-import { entries, hasProp, isArray } from '../utils'
+import {
+  AnyZSchema,
+  ZArray,
+  ZHooks,
+  ZHooksObject,
+  ZManifest,
+  ZNullable,
+  ZOptional,
+  ZParser,
+  ZType,
+  ZUnion,
+  ZValidator,
+} from '../_internals'
+import { entries, formatHint, hasProp, isArray } from '../utils'
 
 settings.initFunction = '_init'
 
@@ -26,7 +39,10 @@ export type AnyZDef = ZDef<BaseZDef>
 
 export type ZDependencies<Def extends AnyZDef> = {
   validator: Def['Validator']
+  hooks: ZHooksObject<Def>
 }
+
+export type AnyZDependencies = ZDependencies<AnyZDef>
 
 /* ----------------------------------------------------- ZProps ----------------------------------------------------- */
 
@@ -47,26 +63,31 @@ export type AnyBaseZ = BaseZ<AnyZDef>
 /*                                                          Z                                                         */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface Z<Def extends AnyZDef> extends BaseZ<Def>, ZValidator<Def>, ZHooks<Def>, ZParser<Def>, ZManifest<Def> {
-  optional(): ZOptional<this>
-  nullable(): ZNullable<this>
-  nullish(): ZNullable<ZOptional<this>>
-  isOptional(): boolean
-  isNullable(): boolean
-}
+export interface Z<Def extends AnyZDef>
+  extends BaseZ<Def>,
+    ZValidator<Def>,
+    ZHooks<Def>,
+    ZParser<Def>,
+    ZManifest<Def> {}
 
 @mix(ZValidator, ZHooks, ZParser, ZManifest)
 export abstract class Z<Def extends AnyZDef> {
   readonly $_output!: ZOutput<Def>
   readonly $_input!: ZInput<Def>
 
+  readonly _id = nanoid()
+
   abstract readonly name: ZType
-  abstract readonly hint: string
+  protected abstract readonly _hint: string
 
   private $_props: ZProps<Def>
 
   protected constructor(_: ZDependencies<Def>, props: ZProps<Def>) {
     this.$_props = props
+  }
+
+  get hint(): string {
+    return formatHint(this._hint)
   }
 
   protected get _props(): Readonly<ZProps<Def>> {
@@ -85,6 +106,14 @@ export abstract class Z<Def extends AnyZDef> {
 
   nullish(): ZNullable<ZOptional<this>> {
     return this.optional().nullable()
+  }
+
+  array(): ZArray<this> {
+    return ZArray.create(this)
+  }
+
+  or<Z extends AnyZ>(alternative: Z): ZUnion<[this, Z]> {
+    return ZUnion.create(this, alternative)
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -113,6 +142,16 @@ export abstract class Z<Def extends AnyZDef> {
       )
     )
     return this
+  }
+
+  protected mergeDeps<NewDeps extends AnyZDependencies>(newDeps: Partial<NewDeps>): ZDependencies<Def> & NewDeps {
+    return {
+      validator: newDeps.validator ?? this._validator,
+      hooks: {
+        beforeParse: [...(this._hooks.beforeParse ?? []), ...(newDeps.hooks?.beforeParse ?? [])],
+        afterParse: [...(this._hooks.afterParse ?? []), ...(newDeps.hooks?.afterParse ?? [])],
+      },
+    }
   }
 }
 

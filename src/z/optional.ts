@@ -9,7 +9,7 @@ export class ZOptional<T extends AnyZ> extends Z<
   ZDef<{ Output: ZOutput<T> | undefined; Input: ZInput<T> | undefined; Validator: T['_validator'] }, { InnerType: T }>
 > {
   readonly name = ZType.Optional
-  readonly hint = unionizeHints(this._props.innerType.hint, 'undefined')
+  protected readonly _hint = unionizeHints(this._props.innerType.hint, 'undefined')
 
   unwrap(): T {
     return this._props.innerType
@@ -17,12 +17,12 @@ export class ZOptional<T extends AnyZ> extends Z<
 
   static create = <T extends AnyZ>(innerType: T): ZOptional<T> =>
     new ZOptional(
-      {
+      innerType['mergeDeps']({
         validator:
           innerType['_validator'].$_getFlag('presence') === 'forbidden'
             ? innerType['_validator']
             : innerType['_validator'].optional(),
-      },
+      }),
       { innerType: innerType }
     )
 }

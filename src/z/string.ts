@@ -49,9 +49,11 @@ export type ZStringPatternOptions = { name?: string; invert?: boolean } & ZCheck
   'string.pattern.base' | 'string.pattern.name' | 'string.pattern.invert.base' | 'string.pattern.invert.name'
 >
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.StringSchema> }>> {
   readonly name = ZType.String
-  readonly hint = 'string'
+  protected readonly _hint = 'string'
 
   /**
    * Requires the string to only contain `a-z`, `A-Z`, and `0-9`.
@@ -212,5 +214,7 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
     return this._addCheck(v => v.replace(pattern, replacement))
   }
 
-  static create = (): ZString => new ZString({ validator: ZValidator.string() }, {})
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  static create = (): ZString => new ZString({ validator: ZValidator.string(), hooks: {} }, {})
 }

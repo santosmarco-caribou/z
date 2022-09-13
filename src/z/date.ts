@@ -23,7 +23,7 @@ export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<
   >
 > {
   readonly name = ZType.Date
-  readonly hint = 'Date'
+  protected readonly _hint = 'Date'
 
   /**
    * Requires the date to be before a certain date.
@@ -58,7 +58,7 @@ export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<
    */
   strict(): ZDate<{ strict: true }> {
     this._updateValidatorPreferences({ convert: false })
-    return ZDate.$_create(this._validator, { strict: true })
+    return new ZDate(this.mergeDeps({ validator: this._validator }), { options: { strict: true } })
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -70,8 +70,8 @@ export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static $_create = <_Opts extends ZDateOptions>(validator: ZSchema<Joi.DateSchema>, options: _Opts): ZDate<_Opts> =>
-    new ZDate({ validator }, { options })
-
-  static create = Object.assign((): ZDate => this.$_create(ZValidator.date(), { strict: false }), { now: __NOW__ })
+  static create = Object.assign(
+    (): ZDate => new ZDate({ validator: ZValidator.date(), hooks: {} }, { options: { strict: false } }),
+    { now: __NOW__ }
+  )
 }

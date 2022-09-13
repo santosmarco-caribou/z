@@ -8,7 +8,7 @@ import { type ZDef, Z, ZSchema, ZType, ZValidator } from '../_internals'
 
 export class ZNull extends Z<ZDef<{ Output: void; Validator: ZSchema<Joi.AnySchema> }>> {
   readonly name = ZType.Null
-  readonly hint = 'null'
+  protected readonly _hint = 'null'
 
-  static create = (): ZNull => new ZNull({ validator: ZValidator.any().valid(null) }, {})
+  static create = (): ZNull => new ZNull({ validator: ZValidator.any().valid(null), hooks: {} }, {})
 }

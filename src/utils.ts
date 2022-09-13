@@ -1,11 +1,22 @@
 import { cloneDeep, merge } from 'lodash'
-import type { L, O } from 'ts-toolbelt'
+import type { A, L, N, O } from 'ts-toolbelt'
 
 export type Nullable<T> = T | null | undefined
 
 export type MaybeArray<T> = T | T[]
 
 export type OmitInternals<T extends O.Object> = Omit<T, `${'$_' | '_'}${string}`>
+
+export type FixedLengthArray<Element, Length extends number> = [
+  ...O.ListOf<{ [K in Extract<keyof N.Range<1, Length>, `${number}`>]: Element }>
+]
+export type MinLengthArray<Element, Length extends number> = [...FixedLengthArray<Element, Length>, ...Element[]]
+export type MaxLengthArray<Element, Length extends number> = Partial<FixedLengthArray<Element, Length>>
+export type MinMaxLengthArray<Element, Min extends number, Max extends number> = N.Greater<Min, Max> extends 1
+  ? []
+  : A.Equals<Min, Max> extends 1
+  ? FixedLengthArray<Element, Min>
+  : [...MinLengthArray<Element, Min>, ...MaxLengthArray<Element, N.Sub<Max, Min>>]
 
 export const hasProp = <T extends O.Object, P extends PropertyKey>(obj: T, prop: P): obj is T & Record<P, any> => {
   return prop in obj
@@ -22,7 +33,21 @@ export const entries = <T extends O.Object>(
 
 export const isArray = (maybeArr: unknown): maybeArr is any[] => Array.isArray(maybeArr)
 
-export const unionizeHints = (...hints: string[]): string => [...new Set(hints)].join(' | ')
+/* ------------------------------------------------------ Hints ----------------------------------------------------- */
+
+export const unionizeHints = (...hints: string[]): string =>
+  [...new Set(hints)].join(' | ').replaceAll(/\(([^|]*|[^)]*)\)/g, '$1')
+
+export const isComplexHint = (hint: string): boolean => hint.split('\n').length > 1
+
+export const isUnionHint = (hint: string): boolean => hint.includes(' | ')
+
+export const formatHint = (hint: string): string => {
+  if (isUnionHint(hint) || isComplexHint(hint)) {
+    return `(${hint})`
+  }
+  return hint
+}
 
 // import type Joi from 'joi'
 // import _, {

@@ -39,7 +39,7 @@
 //   ZUtils.MapToZInput<Arr>
 // > {
 //   readonly name = ZType.Array
-//   readonly hint = `${this._def.element.hint}[]`
+//   protected readonly _hint = `${this._def.element.hint}[]`
 
 //   /**
 //    * Retrieves the schema of the array's element.
@@ -124,7 +124,7 @@
 //  */
 // export class ZBinary extends Z<Buffer, ZBinaryDef> {
 //   readonly name = ZType.Binary
-//   readonly hint = 'Buffer'
+//   protected readonly _hint = 'Buffer'
 
 //   /**
 //    * Sets the string encoding format if a string input is converted to a buffer.
@@ -178,7 +178,7 @@
 //  */
 // export class ZEnum<T extends string> extends Z<T, ZEnumDef<T>> {
 //   readonly name = ZType.Enum
-//   readonly hint = ZUtils.unionizeHints(...this._def.values.map(value => `'${value}'`).sort())
+//   protected readonly _hint = ZUtils.unionizeHints(...this._def.values.map(value => `'${value}'`).sort())
 
 //   get values(): T[] {
 //     return this._def.values
@@ -220,7 +220,7 @@
 //   ZUtils.Function<ZUtils.MapToZOutput<P>, _ZInput<R>>
 // > {
 //   readonly name = ZType.Function
-//   readonly hint = `(${this._def.parameters.elements.map((z, idx) => `args_${idx}: ${z.hint}`).join(', ')}) => ${
+//   protected readonly _hint = `(${this._def.parameters.elements.map((z, idx) => `args_${idx}: ${z.hint}`).join(', ')}) => ${
 //     this._def.returnType.hint
 //   }`
 
@@ -297,7 +297,7 @@
 //  */
 // export class ZInstanceOf<T extends new (...args: any[]) => any> extends Z<InstanceType<T>, ZInstanceOfDef<T>> {
 //   readonly name = ZType.InstanceOf
-//   readonly hint = `instanceof ${this._def.type.name}`
+//   protected readonly _hint = `instanceof ${this._def.type.name}`
 
 //   /* ---------------------------------------------------------------------------------------------------------------- */
 
@@ -334,7 +334,7 @@
 //   U.IntersectOf<_ZInput<T[number]>>
 // > {
 //   readonly name = ZType.Intersection
-//   readonly hint = this._def.components.map(z => z.hint).join(' & ')
+//   protected readonly _hint = this._def.components.map(z => z.hint).join(' & ')
 
 //   get components(): T {
 //     return this._def.components
@@ -377,7 +377,7 @@
 //  */
 // export class ZLiteral<T extends Primitive> extends Z<T, ZLiteralDef<T>> {
 //   readonly name = ZType.Literal
-//   readonly hint = typeof this._def.value === 'string' ? `'${this._def.value}'` : String(this._def.value)
+//   protected readonly _hint = typeof this._def.value === 'string' ? `'${this._def.value}'` : String(this._def.value)
 
 //   get value(): T {
 //     return this._def.value
@@ -411,7 +411,7 @@
 //   Map<_ZInput<K>, _ZInput<V>>
 // > {
 //   readonly name = ZType.Map
-//   readonly hint = `Map<${this._def.keyType.hint}, ${this._def.valueType.hint}>`
+//   protected readonly _hint = `Map<${this._def.keyType.hint}, ${this._def.valueType.hint}>`
 
 //   get keyType(): K {
 //     return this._def.keyType
@@ -461,7 +461,7 @@
 //  */
 // export class ZNumber extends Z<number, ZNumberDef> {
 //   readonly name = ZType.Number
-//   readonly hint = 'number'
+//   protected readonly _hint = 'number'
 
 //   /**
 //    * Requires the number to be an integer (no floating point).
@@ -646,7 +646,7 @@
 //   ZUtils.WithQuestionMarks<ZUtils.MapToZInput<Shape>>
 // > {
 //   readonly name = ZType.Object
-//   readonly hint = ZUtils.generateZObjectHint(this._def.shape)
+//   protected readonly _hint = ZUtils.generateZObjectHint(this._def.shape)
 
 //   get shape(): Shape {
 //     return this._def.shape
@@ -927,7 +927,7 @@
 //   Record<_ZInput<K>, _ZInput<V>>
 // > {
 //   readonly name = ZType.Record
-//   readonly hint = `{ [k: ${this._def.keyType.hint}]: ${this._def.valueType.hint} }`
+//   protected readonly _hint = `{ [k: ${this._def.keyType.hint}]: ${this._def.valueType.hint} }`
 
 //   get keyType(): K {
 //     return this._def.keyType
@@ -993,7 +993,7 @@
 //  */
 // export class ZSet<T extends AnyZ> extends Z<Set<_ZOutput<T>>, ZSetDef<T>, Set<_ZInput<T>>> {
 //   readonly name = ZType.Set
-//   readonly hint = `Set<${this._def.element.hint}>`
+//   protected readonly _hint = `Set<${this._def.element.hint}>`
 
 //   get element(): T {
 //     return this._def.element
@@ -1120,7 +1120,7 @@
 //  */
 // export class ZString extends Z<string, ZStringDef> {
 //   readonly name = ZType.String
-//   readonly hint = 'string'
+//   protected readonly _hint = 'string'
 
 // /**
 //  * Requires the string to only contain `a-z`, `A-Z`, and `0-9`.
@@ -1295,7 +1295,7 @@
 //  */
 // export class ZTuple<T extends AnyZ[]> extends Z<ZUtils.MapToZOutput<T>, ZTupleDef<T>, ZUtils.MapToZInput<T>> {
 //   readonly name = ZType.Tuple
-//   readonly hint = `[${this._def.elements.map(element => element.hint).join(', ')}]`
+//   protected readonly _hint = `[${this._def.elements.map(element => element.hint).join(', ')}]`
 
 //   /**
 //    * Retrieves the schemas of the tuple's elements.
@@ -1326,7 +1326,7 @@
 //  */
 // export class ZUnion<T extends AnyZ[]> extends Z<_ZOutput<T[number]>, ZUnionDef<T>, _ZInput<T[number]>> {
 //   readonly name = ZType.Union
-//   readonly hint = ZUtils.unionizeHints(...this._def.options.map(option => option.hint))
+//   protected readonly _hint = ZUtils.unionizeHints(...this._def.options.map(option => option.hint))
 
 //   get options(): T {
 //     return this._def.options

@@ -6,6 +6,7 @@ import {
   AnyZ,
   TypeOf,
   ZAny,
+  ZArray,
   ZBigInt,
   ZBoolean,
   ZDate,
@@ -28,6 +29,7 @@ import {
 } from './_internals'
 
 const anyType = ZAny.create
+const arrayType = ZArray.create
 const bigintType = ZBigInt.create
 const booleanType = ZBoolean.create
 const dateType = ZDate.create
@@ -48,6 +50,7 @@ const voidType = ZVoid.create
 
 export {
   anyType as any,
+  arrayType as array,
   bigintType as bigint,
   booleanType as boolean,
   dateType as date,

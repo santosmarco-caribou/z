@@ -14,13 +14,13 @@ export type ParseResultOk<V> = {
   error: undefined
 }
 
-export type ParseResultFail<Def extends AnyZDef> = {
+export type ParseResultFail = {
   ok: false
   value: undefined
   error: /* ZError<Def> */ Error
 }
 
-export type ParseResult<V, Def extends AnyZDef> = ParseResultOk<V> | ParseResultFail<Def>
+export type ParseResult<V> = ParseResultOk<V> | ParseResultFail
 
 /* -------------------------------------------------- ParseOptions -------------------------------------------------- */
 
@@ -33,7 +33,7 @@ export type ParseOptions = {
 export interface ZParser<Def extends AnyZDef> extends BaseZ<Def>, ZValidator<Def>, ZHooks<Def> {}
 
 export class ZParser<Def extends AnyZDef> {
-  safeParse(input: unknown, options?: ParseOptions): ParseResult<ZOutput<this>, Def> {
+  safeParse(input: unknown, options?: ParseOptions): ParseResult<ZOutput<this>> {
     const { error, value } = this._validate(input, options)
     if (error) return this._FAIL(error)
     else return this._OK(value)
@@ -45,7 +45,7 @@ export class ZParser<Def extends AnyZDef> {
     else return value
   }
 
-  safeParseAsync(input: unknown, options?: ParseOptions): Promise<ParseResult<ZOutput<this>, Def>> {
+  safeParseAsync(input: unknown, options?: ParseOptions): Promise<ParseResult<ZOutput<this>>> {
     return new Promise(resolve => resolve(this.safeParse(input, options)))
   }
 
@@ -67,7 +67,7 @@ export class ZParser<Def extends AnyZDef> {
     return { ok: true, value, error: undefined }
   }
 
-  private _FAIL(error: Joi.ValidationError): ParseResultFail<Def> {
+  private _FAIL(error: Joi.ValidationError): ParseResultFail {
     return { ok: false, error, value: undefined }
   }
 }

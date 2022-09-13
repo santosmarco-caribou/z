@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { cloneDeep } from 'lodash'
 import type { O } from 'ts-toolbelt'
+import type { RemoveIndexSignature } from 'type-fest'
 
 import {
   AnyZDef,
@@ -13,7 +14,7 @@ import {
   ZIssueLocalContext,
   ZOutput,
 } from '../_internals'
-import { mergeSafe } from '../utils'
+import { hasProp, mergeSafe } from '../utils'
 
 const ZJoi = Joi.defaults(schema => schema.required())
 
@@ -40,13 +41,12 @@ export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions & Required<ParseO
 
 /* ----------------------------------------------------- Checks ----------------------------------------------------- */
 
-export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = O.Object> = (Omit<
-  ZIssueLocalContext<IssueCode>,
-  'label'
-> extends Record<string, never>
-  ? { message?: string }
-  : { message?: string | ((context: Omit<ZIssueLocalContext<IssueCode>, 'label'>) => string) }) &
-  Extras
+export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = O.Object> = RemoveIndexSignature<
+  (Omit<ZIssueLocalContext<IssueCode>, 'label'> extends Record<string, never>
+    ? { message?: string }
+    : { message?: string | ((context: Omit<ZIssueLocalContext<IssueCode>, 'label'>) => string) }) &
+    Extras
+>
 
 /* ------------------------------------------------ Custom validation ----------------------------------------------- */
 
@@ -104,7 +104,8 @@ export class ZValidator<Def extends AnyZDef> {
 
     fn && this._updateValidator(fn)
 
-    if (options?.message) {
+    if (options && hasProp(options, 'message') && options.message) {
+      console.log(options)
       const ctxTags = [
         ...[...Z_ISSUE_MAP[fnOrIssue].matchAll(/{{#[^}]*}}/g)].map(m => m[0]?.slice(3, -2)),
         'key',
@@ -139,6 +140,8 @@ export class ZValidator<Def extends AnyZDef> {
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static any = (): ZSchema<Joi.AnySchema> => ZJoi.any()
+  static alternatives = (...alts: Joi.Schema[]): ZSchema<Joi.AlternativesSchema> => ZJoi.alternatives(...alts)
+  static array = (element: Joi.Schema): ZSchema<Joi.ArraySchema> => ZJoi.array().items(element)
   static boolean = (): ZSchema<Joi.BooleanSchema> => ZJoi.boolean()
   static date = (): ZSchema<Joi.DateSchema> => ZJoi.date()
   static string = (): ZSchema<Joi.StringSchema> => ZJoi.string()

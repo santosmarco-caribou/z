@@ -8,7 +8,7 @@ import { type ZDef, Z, ZSchema, ZType, ZValidator } from '../_internals'
 
 export class ZVoid extends Z<ZDef<{ Output: void; Validator: ZSchema<Joi.AnySchema> }>> {
   readonly name = ZType.Void
-  readonly hint = 'void'
+  protected readonly _hint = 'void'
 
-  static create = (): ZVoid => new ZVoid({ validator: ZValidator.any() }, {})
+  static create = (): ZVoid => new ZVoid({ validator: ZValidator.any(), hooks: {} }, {})
 }

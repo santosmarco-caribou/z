@@ -8,7 +8,7 @@ import { type ZDef, Z, ZSchema, ZType, ZValidator } from '../_internals'
 
 export class ZUnknown extends Z<ZDef<{ Output: unknown; Validator: ZSchema<Joi.AnySchema> }>> {
   readonly name = ZType.Unknown
-  readonly hint = 'unknown'
+  protected readonly _hint = 'unknown'
 
-  static create = (): ZUnknown => new ZUnknown({ validator: ZValidator.any() }, {})
+  static create = (): ZUnknown => new ZUnknown({ validator: ZValidator.any(), hooks: {} }, {})
 }

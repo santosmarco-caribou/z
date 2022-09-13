@@ -1,26 +1,28 @@
+import { ZSpec } from '../tests/z-spec'
 import { ZDate } from './z'
 
-describe('ZDate', () => {
-  it("should have a hint of 'Date'", () => {
-    const z = ZDate.create()
-    expect(z.hint).toBe('Date')
-  })
-
-  describe('.before()', () => {
-    const targetValue = new Date('December 30, 2017 11:20:00')
-
-    it('should parse a valid date', () => {
-      const z = ZDate.create()
-      const testValue = new Date('December 28, 2017 11:20:00')
-      expect(z.before(targetValue).parse(testValue)).toMatchObject(testValue)
-    })
-
-    it('should not parse an invalid date', () => {
-      const z = ZDate.create()
-      const testValue = new Date('December 31, 2017 11:20:00')
-      expect(() => z.before(targetValue).parse(testValue)).toThrowError(
-        `"value" must be less than or equal to "${targetValue.toISOString()}"`
-      )
-    })
-  })
-})
+ZSpec.create('ZDate', {
+  type: ZDate,
+  typeName: 'ZDate',
+  typeHint: 'Date',
+  shouldParse: {
+    values: [
+      'new Date(0)',
+      { value: 'isodate', castTo: new Date('1995-12-17T03:24:00') },
+      { value: '-1', castTo: new Date(-1) },
+      { value: '-0.5', castTo: new Date(-0.5) },
+      { value: '-0.25', castTo: new Date(-0.25) },
+      { value: '-0.125', castTo: new Date(-0.125) },
+      { value: '0', castTo: new Date(0) },
+      { value: '0.125', castTo: new Date(0.125) },
+      { value: '0.25', castTo: new Date(0.25) },
+      { value: '0.5', castTo: new Date(0.5) },
+      { value: '1', castTo: new Date(1) },
+    ],
+  },
+  shouldNotParse: {
+    defaultErrorCode: 'date.base',
+    defaultErrorMessage: '"value" must be a valid date',
+    values: [{ value: 'undefined', errorCode: 'any.required', errorMessage: '"value" is required' }],
+  },
+}).build()

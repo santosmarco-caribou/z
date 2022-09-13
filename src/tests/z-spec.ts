@@ -33,6 +33,7 @@ const Z_SPEC_VALUE_MAP = {
   // Strings
   '""': '',
   '"test"': 'test',
+  isodate: '1995-12-17T03:24:00',
   // Arrays
   '[]': [],
   '[-1, 0, 1]': [-1, 0, 1],
@@ -41,6 +42,8 @@ const Z_SPEC_VALUE_MAP = {
   'BigInt(-1)': BigInt(-1),
   'BigInt(0)': BigInt(0),
   'BigInt(1)': BigInt(1),
+  // Dates
+  'new Date(0)': new Date(0),
   // Symbols
   symbol: Symbol(),
   'unique symbol': Z_SPEC_UNIQUE_SYMBOL,

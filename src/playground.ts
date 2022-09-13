@@ -1,3 +1,7 @@
-import { z } from './index'
+import { z } from '.'
 
-console.log(z.number().title('a').min(10).manifest)
+const s = z.string().optional().unwrap().safeParse('hello').value
+
+const S: z.infer<typeof s> = 'hello'
+
+console.log(z.string().description('s').deprecated(true).notes('n').optional().unwrap())

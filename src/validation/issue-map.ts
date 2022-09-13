@@ -1,7 +1,8 @@
+import type Joi from 'joi'
 import type { S } from 'ts-toolbelt'
 import type { Replace, Simplify } from 'type-fest'
 
-import type { _ZOutput, AnyZ } from '../z/z'
+import type { AnyBaseZ, AnyZ, AnyZValidatorSchema, ZOutput, ZValidatorSchema } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZIssueMap                                                     */
@@ -160,34 +161,12 @@ export type ZIssueMap = typeof Z_ISSUE_MAP
 
 /* --------------------------------------------------- ZIssueCode --------------------------------------------------- */
 
-export type ZIssueCode<Z extends AnyZ = AnyZ> = Extract<
+export type ZIssueCode<S extends AnyZValidatorSchema> = Extract<
   keyof ZIssueMap,
-  _ZOutput<Z> extends any[] | Set<any>
-    ? `array.${string}`
-    : _ZOutput<Z> extends bigint
-    ? `bigint.${string}`
-    : _ZOutput<Z> extends Buffer
-    ? `binary.${string}`
-    : _ZOutput<Z> extends boolean
-    ? `${'boolean' | 'truthy' | 'falsy'}.${string}`
-    : _ZOutput<Z> extends Date
-    ? `date.${string}`
-    : _ZOutput<Z> extends (...args: any[]) => any
-    ? `function.${string}`
-    : _ZOutput<Z> extends Record<string, any>
-    ? `${'object' | 'record'}.${string}`
-    : _ZOutput<Z> extends Map<any, any>
-    ? `map.${string}`
-    : _ZOutput<Z> extends number
-    ? `${'nan' | 'number'}.${string}`
-    : _ZOutput<Z> extends string
-    ? `string.${string}`
-    : _ZOutput<Z> extends symbol
-    ? `symbol.${string}`
-    : string
+  S extends Joi.StringSchema ? `string.${string}` : string
 >
 
-export type AnyZIssueCode = ZIssueCode<AnyZ>
+export type AnyZIssueCode = ZIssueCode<AnyZValidatorSchema>
 
 /* -------------------------------------------------- ZIssueContext ------------------------------------------------- */
 

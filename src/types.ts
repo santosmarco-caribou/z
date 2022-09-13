@@ -164,7 +164,7 @@ export interface ZManifestMethods<Z extends AnyZ> {
   title(title: string): this
   summary(summary: string): this
   description(description: string): this
-  // default(value: _ZOutput<Z> | ManifestBasicInfoWithValue<_ZOutput<Z>>): this
+  default(value: _ZOutput<Z> | ManifestBasicInfoWithValue<_ZOutput<Z>>): this
   examples(...examples: Array<_ZOutput<Z> | ManifestBasicInfoWithValue<_ZOutput<Z>>>): this
   example(example: _ZOutput<Z> | ManifestBasicInfoWithValue<_ZOutput<Z>>): this
   tags(...tags: (string | ManifestBasicInfoWithValue<string>)[]): this

@@ -237,10 +237,6 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
     return this.transferDependencies(ZIntersection.create(this, incoming))
   }
 
-  default<T extends AnyZ>(defaultValue: T): ZDefault<this, T> {
-    return this.transferDependencies(ZDefault.create(this, defaultValue))
-  }
-
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   isOptional(): boolean {
@@ -311,11 +307,9 @@ export abstract class Z<Output, Def extends AnyZDef, Input = Output>
     return this._manifest.setKey('description', description)
   }
 
-  /*
   default(value: Output | ManifestBasicInfoWithValue<Output>): this {
     return this._manifest.setKey('default', ZUtils.hasProp(value, 'value') ? value : { value: value })
   }
-  */
 
   /**
    * Adds one or more examples to the schema's manifest.
@@ -797,32 +791,6 @@ export class ZDate extends Z<Date, ZDateDef, Date | number | string> {
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = Object.assign((): ZDate => new ZDate({ validator: ZValidator.date() }), { now: __NOW__ } as const)
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZDefault                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-export type ZDefaultDef<T extends AnyZ, D extends AnyZ> = ZDef<
-  { validator: AnyZSchema },
-  { withDefault: T; defaultValue: D }
->
-
-export class ZDefault<T extends AnyZ, D extends AnyZ> extends Z<
-  undefined extends _ZOutput<T> ? Exclude<_ZOutput<T>, undefined> | _ZOutput<D> : _ZOutput<T>,
-  ZDefaultDef<T, D>
-> {
-  readonly name = ZType.Default
-  readonly hint = this._def.withDefault.hint.replace('undefined', this._def.defaultValue.hint)
-
-  static create = <T extends AnyZ, D extends AnyZ>(withDefault: T, defaultValue: D): ZDefault<T, D> => {
-    const validator = withDefault['_validator'].default(defaultValue['_validator'])
-    return new ZDefault({ validator, withDefault, defaultValue })
-  }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1871,7 +1839,7 @@ export class ZSet<T extends AnyZ> extends Z<Set<_ZOutput<T>>, ZSetDef<T>, Set<_Z
   }
 
   static create = <T extends AnyZ>(element: T): ZSet<T> =>
-    new ZSet({ validator: ZValidator.array(element['_validator']).cast('set').unique(), element })
+    new ZSet({ validator: ZValidator.array(element['_validator']).unique().cast('set'), element })
 }
 
 /**

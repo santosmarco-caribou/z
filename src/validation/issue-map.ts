@@ -2,7 +2,7 @@ import type Joi from 'joi'
 import type { S } from 'ts-toolbelt'
 import type { Replace, Simplify } from 'type-fest'
 
-import type { AnyBaseZ, AnyZ, AnyZValidatorSchema, ZOutput, ZValidatorSchema } from '../_internals'
+import type { AnyZSchema } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZIssueMap                                                     */
@@ -51,8 +51,6 @@ export const Z_ISSUE_MAP = {
   'binary.min': '{{#label}} must be at least {{#limit}} bytes',
 
   'boolean.base': '{{#label}} must be a boolean',
-  'truthy.base': '{{#label}} must be truthy',
-  'falsy.base': '{{#label}} must be falsy',
 
   'date.base': '{{#label}} must be a valid date',
   'date.between': '{{#label}} must be a valid date between {{#minDate}} and {{#maxDate}}',
@@ -152,6 +150,7 @@ export const Z_ISSUE_MAP = {
   'string.uriCustomScheme': '{{#label}} must be a valid uri with a scheme matching the {{#scheme}} pattern',
   'string.uriRelativeOnly': '{{#label}} must be a valid relative uri',
   'string.uppercase': '{{#label}} must only contain uppercase characters',
+  'string.transform': '{{#label}} could not be transformed',
 
   'symbol.base': '{{#label}} must be a symbol',
   'symbol.map': '{{#label}} must be one of {{#map}}',
@@ -161,12 +160,24 @@ export type ZIssueMap = typeof Z_ISSUE_MAP
 
 /* --------------------------------------------------- ZIssueCode --------------------------------------------------- */
 
-export type ZIssueCode<S extends AnyZValidatorSchema> = Extract<
+export type ZIssueCode<S extends AnyZSchema> = Extract<
   keyof ZIssueMap,
-  S extends Joi.StringSchema ? `string.${string}` : string
+  S extends Joi.BooleanSchema
+    ? `boolean.${string}`
+    : S extends Joi.DateSchema
+    ? `date.${string}`
+    : S extends Joi.NumberSchema
+    ? `${'nan' | 'number'}.${string}`
+    : S extends Joi.StringSchema
+    ? `string.${string}`
+    : S extends Joi.SymbolSchema
+    ? `symbol.${string}`
+    : S extends Joi.AnySchema
+    ? `any.${string}`
+    : string
 >
 
-export type AnyZIssueCode = ZIssueCode<AnyZValidatorSchema>
+export type AnyZIssueCode = keyof ZIssueMap
 
 /* -------------------------------------------------- ZIssueContext ------------------------------------------------- */
 

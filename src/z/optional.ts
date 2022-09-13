@@ -26,3 +26,7 @@ export class ZOptional<T extends AnyZ> extends Z<
       { innerType: innerType }
     )
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type AnyZOptional = ZOptional<AnyZ>

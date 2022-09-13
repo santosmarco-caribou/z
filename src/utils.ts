@@ -3,9 +3,9 @@ import type { L, O } from 'ts-toolbelt'
 
 export type Nullable<T> = T | null | undefined
 
-export type OmitInternals<T> = {
-  [K in Exclude<keyof T, `${'$_' | '_'}${string}`>]: T[K] extends (...args: any[]) => infer R ? OmitInternals<R> : T[K]
-}
+export type MaybeArray<T> = T | T[]
+
+export type OmitInternals<T extends O.Object> = Omit<T, `${'$_' | '_'}${string}`>
 
 export const hasProp = <T extends O.Object, P extends PropertyKey>(obj: T, prop: P): obj is T & Record<P, any> => {
   return prop in obj

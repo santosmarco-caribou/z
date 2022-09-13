@@ -1,11 +1,3 @@
-import type Joi from 'joi'
-import type { OpenAPIV3 } from 'openapi-types'
-
-import type { AnyZDef, ZDef } from './_internals'
-import type { ZError } from './validation/error'
-import type { AnyZIssueCode, ZIssueLocalContext } from './validation/issue-map'
-import type { _ZOutput, _ZValidator, AnyZ, ZArray, ZIntersection, ZNullable, ZNullish, ZOptional, ZUnion } from './z/z'
-
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZType                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -46,11 +38,3 @@ export enum ZType {
   Unknown = 'ZUnknown',
   Void = 'ZVoid',
 }
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-export type ZDependencies<Def extends AnyZDef> = {
-  validator: Def['Validator']
-}
-
-export type ZInitFn<Def extends AnyZDef> = (dependencies: ZDependencies, def: Def) => void

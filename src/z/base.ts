@@ -3,7 +3,7 @@ import { mix, settings } from 'ts-mixer'
 import type { A, O } from 'ts-toolbelt'
 import type { CamelCasedProperties } from 'type-fest'
 
-import { AnyZValidatorSchema, ZHooks, ZManifest, ZNullable, ZOptional, ZParser, ZType, ZValidator } from '../_internals'
+import { AnyZSchema, ZHooks, ZManifest, ZNullable, ZOptional, ZParser, ZType, ZValidator } from '../_internals'
 import { entries, hasProp, isArray } from '../utils'
 
 settings.initFunction = '_init'
@@ -15,7 +15,7 @@ settings.initFunction = '_init'
 export type BaseZDef = {
   Output: any
   Input?: any
-  Validator: AnyZValidatorSchema
+  Validator: AnyZSchema
 }
 
 export type ZDef<Base extends BaseZDef, Extras extends O.Object | A.x = A.x> = Extras extends A.x ? Base : Extras & Base
@@ -39,8 +39,6 @@ export type ZProps<Def extends AnyZDef> = CamelCasedProperties<Omit<Def, keyof B
 export interface BaseZ<Def extends AnyZDef> {
   readonly $_output: ZOutput<Def>
   readonly $_input: ZInput<Def>
-  readonly _props: Readonly<ZProps<Def>>
-  _updateProps(fn: (def: Readonly<ZProps<Def>>) => ZProps<Def>): this
 }
 
 export type AnyBaseZ = BaseZ<AnyZDef>
@@ -65,16 +63,13 @@ export abstract class Z<Def extends AnyZDef> {
   abstract readonly name: ZType
   abstract readonly hint: string
 
-  private $_props!: ZProps<Def>
+  private $_props: ZProps<Def>
 
-  constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {}
-
-  protected _init(_: ZDependencies<Def>, props: ZProps<Def>): void {
+  protected constructor(_: ZDependencies<Def>, props: ZProps<Def>) {
     this.$_props = props
-    console.log(this)
   }
 
-  get _props(): Readonly<ZProps<Def>> {
+  protected get _props(): Readonly<ZProps<Def>> {
     return Object.freeze(this.$_props)
   }
 
@@ -104,7 +99,7 @@ export abstract class Z<Def extends AnyZDef> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  _updateProps(fn: (props: Readonly<ZProps<Def>>) => ZProps<Def>): this {
+  protected _updateProps(fn: (props: Readonly<ZProps<Def>>) => ZProps<Def>): this {
     const oldDef = this.$_props
     const newDef = fn(this._props)
     merge(

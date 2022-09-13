@@ -1,7 +1,7 @@
 import { merge } from 'lodash'
 import type { O } from 'ts-toolbelt'
 
-import type { AnyZDef, BaseZ, ZDependencies, ZInput, ZOutput, ZProps, ZValidator } from '../_internals'
+import type { AnyZDef, BaseZ, ZInput, ZOutput, ZValidator } from '../_internals'
 import { hasProp, isArray } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -50,21 +50,7 @@ export type ZManifestsObject<Def extends AnyZDef> = {
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface ZManifest<Def extends AnyZDef> extends BaseZ<Def>, ZValidator<Def> {
-  label(label: string): this
-  title(title: string): this
-  summary(summary: string): this
-  description(description: string): this
-  default(value: ZOutput<Def> | ManifestBasicInfoWithValue<ZOutput<Def>>): this
-  examples(...examples: Array<ZOutput<Def> | ManifestBasicInfoWithValue<ZOutput<Def>>>): this
-  example(example: ZOutput<Def> | ManifestBasicInfoWithValue<ZOutput<Def>>): this
-  tags(...tags: (string | ManifestBasicInfoWithValue<string>)[]): this
-  tag(tag: string | ManifestBasicInfoWithValue<string>): this
-  notes(...notes: (string | ManifestBasicInfoWithValue<string>)[]): this
-  note(note: string | ManifestBasicInfoWithValue<string>): this
-  unit(unit: string): this
-  deprecated(deprecated: boolean): this
-}
+export interface ZManifest<Def extends AnyZDef> extends BaseZ<Def>, ZValidator<Def> {}
 
 export class ZManifest<Def extends AnyZDef> {
   private _manifests: ZManifestsObject<Def> = {
@@ -218,14 +204,7 @@ export class ZManifest<Def extends AnyZDef> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  private _prepareManifests(): void {
-    const metaObjs = this._validator.$_terms['metas'] as Array<{ swagger: ZManifestObject<ZOutput<Def>> }>
-    if (!metaObjs[0]) metaObjs[0] = { swagger: {} } // Output manifest
-    if (!metaObjs[1]) metaObjs[1] = { swagger: {} } // Input manifest
-    this._manifests = { output: metaObjs[0].swagger, input: metaObjs[1].swagger }
-  }
-
-  private _updateManifest<T extends 'output' | 'input', K extends keyof AnyZManifestObject>(
+  protected _updateManifest<T extends 'output' | 'input', K extends keyof AnyZManifestObject>(
     type: T,
     key: K,
     value: NonNullable<ZManifestObject<T extends 'output' ? ZOutput<Def> : ZInput<Def>>[K]>
@@ -235,5 +214,12 @@ export class ZManifest<Def extends AnyZDef> {
       [key]: isArray(value) ? [...(isArray(prevValue) ? prevValue : []), ...value] : value,
     })
     return this
+  }
+
+  private _prepareManifests(): void {
+    const metaObjs = this._validator.$_terms['metas'] as Array<{ swagger: ZManifestObject<ZOutput<Def>> }>
+    if (!metaObjs[0]) metaObjs[0] = { swagger: {} } // Output manifest
+    if (!metaObjs[1]) metaObjs[1] = { swagger: {} } // Input manifest
+    this._manifests = { output: metaObjs[0].swagger, input: metaObjs[1].swagger }
   }
 }

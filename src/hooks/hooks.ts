@@ -6,7 +6,7 @@ import type { AnyZDef, ParseResult, ZOutput } from '../_internals'
 
 export type ZHookMap<Def extends AnyZDef> = {
   beforeParse(input: unknown): any
-  afterParse(input: ParseResult<ZOutput<Def>>['value']): ZOutput<Def>
+  afterParse(input: ParseResult<ZOutput<Def>, Def>['value']): ZOutput<Def>
 }
 
 export type ZHookName = keyof ZHookMap<AnyZDef>

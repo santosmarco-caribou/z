@@ -18,3 +18,7 @@ export class ZNullable<T extends AnyZ> extends Z<
   static create = <T extends AnyZ>(innerType: T): ZNullable<T> =>
     new ZNullable({ validator: innerType._validator.allow(null) }, { innerType: innerType })
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type AnyZNullable = ZNullable<AnyZ>

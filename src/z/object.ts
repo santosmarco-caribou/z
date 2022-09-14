@@ -1,29 +1,25 @@
 import type Joi from 'joi'
 import { keys, merge, omit, pick } from 'lodash'
-import type { L, O, U } from 'ts-toolbelt'
+import type { F, L, U } from 'ts-toolbelt'
 
 import {
   AnyZ,
-  AnyZArray,
   Z,
   ZAny,
-  ZArray,
   ZDef,
   ZEnum,
   ZOptional,
-  ZReadonlyArray,
+  ZReadonly,
+  ZReadonlyDeep,
   ZSchema,
   ZType,
   ZValidator,
 } from '../_internals'
-import { deepFreeze, MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
+import { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZObject                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
-
-const MAKE_OBJECT_READONLY_HOOK = 'makeObjectReadonly'
-const MAKE_OBJECT_DEEPLY_READONLY_HOOK = 'makeObjectDeeplyReadonly'
 
 export type AnyZObjectShape = Record<string, AnyZ>
 
@@ -47,7 +43,9 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
   }
 
   keyof(): ZEnum<[U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>]> {
-    return ZEnum.create(keys(this._props.shape) as [U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>])
+    return ZEnum.create(
+      keys(this._props.shape) as F.Narrow<[U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>]>
+    )
   }
 
   pick<K extends keyof Shape>(keys: K[]): ZObject<Pick<Shape, K>> {
@@ -66,40 +64,36 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
     return this.extend(incomingSchema.shape)
   }
 
-  partial(): ZObject<_ToPartialZObjectShape<Shape>> {
+  partial<K extends keyof Shape>(keys?: K[]): ZObject<_ToPartialZObjectShape<Shape, K>> {
     return ZObject.$_create(
       Object.fromEntries(
-        Object.entries(this._props.shape).map(([key, z]) => [key, z.optional()])
-      ) as _ToPartialZObjectShape<Shape>,
+        Object.entries(this._props.shape).map(([key, z]) =>
+          keys && keys.includes(key as K) ? [key, z.optional()] : [key, z]
+        )
+      ) as _ToPartialZObjectShape<Shape, K>,
       this._props.options,
       this._props.catchall
     )
   }
 
-  deepPartial(): ZObject<_ToPartialZObjectShape<Shape, 'deep'>> {
+  partialDeep(): ZObject<_ToPartialZObjectShape<Shape, keyof Shape, 'deep'>> {
     return ZObject.$_create(
       Object.fromEntries(
         Object.entries(this._props.shape).map(([key, z]) => [
           key,
-          z instanceof ZObject ? z.deepPartial().optional() : z.optional(),
+          z instanceof ZObject ? z.partialDeep().optional() : z.optional(),
         ])
-      ) as _ToPartialZObjectShape<Shape, 'deep'>,
+      ) as _ToPartialZObjectShape<Shape, keyof Shape, 'deep'>,
       this._props.options,
       this._props.catchall
     )
   }
 
-  readonly(): ZObject<_ToReadonlyZObjectShape<Shape>> {
-    this._addHook('afterParse', { name: MAKE_OBJECT_READONLY_HOOK, handler: Object.freeze })
-    return this
+  readonly(): ZReadonly<this> {
+    return ZReadonly.create(this)
   }
-
-  deepReadonly(): ZObject<_ToReadonlyZObjectShape<Shape, 'deep'>> {
-    this._addHook('afterParse', {
-      name: MAKE_OBJECT_DEEPLY_READONLY_HOOK,
-      handler: input => deepFreeze(input as O.Object) as this['$_output'],
-    })
-    return this as unknown as ZObject<_ToReadonlyZObjectShape<Shape, 'deep'>>
+  readonlyDeep(): ZReadonlyDeep<this> {
+    return ZReadonlyDeep.create(this)
   }
 
   /* ------------------------------------------------- Configuration ------------------------------------------------ */
@@ -157,41 +151,40 @@ export type AnyZObject = ZObject<AnyZObjectShape>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-type _ToPartialZObjectShape<Shape extends AnyZObjectShape, Depth extends 'flat' | 'deep' = 'flat'> = {
-  flat: {
-    [K in keyof Shape]: ZOptional<Shape[K]>
+type _ToPartialZObjectShape<
+  Shape extends AnyZObjectShape,
+  PickKey extends keyof Shape = keyof Shape,
+  Depth extends 'flat' | 'deep' = 'flat'
+> = {
+  flat: Omit<Shape, PickKey> & {
+    [K in Extract<keyof Shape, PickKey>]: ZOptional<Shape[K]>
   }
-  deep: {
-    [K in keyof Shape]: Shape[K] extends ZObject<infer S>
+  deep: Omit<Shape, PickKey> & {
+    [K in Extract<keyof Shape, PickKey>]: Shape[K] extends ZObject<infer S>
       ? ZOptional<ZObject<_ToPartialZObjectShape<S, 'deep'>>>
       : ZOptional<Shape[K]>
   }
 }[Depth]
 
-export type _ToReadonlyZObjectShape<Shape extends AnyZObjectShape, Depth extends 'flat' | 'deep' = 'flat'> = {
-  flat: { readonly [K in keyof Shape]: Shape[K] }
-  deep: {
-    readonly [K in keyof Shape]: Shape[K] extends ZObject<infer S>
-      ? ZObject<_ToReadonlyZObjectShape<S, 'deep'>>
-      : Shape[K] extends AnyZArray
-      ? ZReadonlyArray<Shape[K]>
-      : Shape[K]
-  }
-}[Depth]
-
-const _generateZObjectHint = (shape: AnyZObjectShape): string => {
-  const _generateHint = (_shape: AnyZObjectShape, indentation = 2): string =>
+const _generateZObjectHint = (shape: AnyZObjectShape, opts?: { readonly?: 'flat' | 'deep' | boolean }): string => {
+  const _generateHint = (
+    _shape: AnyZObjectShape,
+    indentation = 2,
+    _opts?: { readonly?: 'flat' | 'deep' | boolean }
+  ): string =>
     '{\n' +
     Object.entries(_shape)
       .map(
         ([key, z]) =>
-          `${' '.repeat(indentation)}${key}${z.isOptional() ? '?' : ''}: ${
-            z instanceof ZObject ? _generateHint(z.shape as AnyZObjectShape, indentation + 2) : z.hint
+          `${' '.repeat(indentation)}${_opts?.readonly ? 'readonly ' : ''}${key}${z.isOptional() ? '?' : ''}: ${
+            z instanceof ZObject
+              ? _generateHint(z.shape as AnyZObjectShape, indentation + 2, { readonly: _opts?.readonly === 'deep' })
+              : z.hint
           },`
       )
       .join('\n') +
     `\n${' '.repeat(indentation - 2)}}`
-  return _generateHint(shape)
+  return _generateHint(shape, 2, opts)
 }
 
 const _zShapeToJoiSchemaMap = <Shape extends AnyZObjectShape>(shape: Shape): Joi.SchemaMap =>

@@ -2,6 +2,10 @@ import type Joi from 'joi'
 
 import { Z, ZCheckOptions, ZDef, ZSchema, ZType, ZValidator } from '../_internals'
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                       ZBinary                                                      */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 export class ZBinary extends Z<ZDef<{ Output: Buffer; Validator: ZSchema<Joi.BinarySchema> }>> {
   readonly name = ZType.Binary
   protected readonly _hint = 'Buffer'

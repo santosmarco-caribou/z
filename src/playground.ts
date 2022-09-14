@@ -1,11 +1,18 @@
 import { z } from '.'
 
-const Vector = z.tuple([z.number(), z.number(), z.number()])
-
-const Asteroid = z.object({
-  type: z.literal('asteroid'),
-  location: Vector,
-  mass: z.number().nonnegative(),
+const PersonSchema = z.object({
+  firstName: z.string(),
+  middleName: z.string().optional(),
+  lastName: z.string(),
+  age: z.number().nonnegative(),
 })
 
-type Asteroid = z.infer<typeof Asteroid>
+console.log(PersonSchema)
+
+const val = PersonSchema.postprocess(val => val.firstName).parse({
+  firstName: 'Marco',
+  lastName: 'Santos',
+  age: 23,
+})
+
+console.log(val)

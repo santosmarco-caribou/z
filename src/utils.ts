@@ -60,11 +60,12 @@ export const entries = <T extends O.Object>(
   [K in keyof T]: [K, T[K]]
 }[keyof T][] => Object.entries(obj)
 
-export const deepFreeze = <T extends O.Object>(object: T): ReadonlyDeep<T> => {
-  Object.getOwnPropertyNames(object).forEach(prop =>
-    object[prop] && typeof object[prop] === 'object' ? deepFreeze(object[prop]) : Object.freeze(object[prop])
+export const freezeDeep = <T>(x: T): ReadonlyDeep<T> => {
+  const _x = x as Record<PropertyKey, any>
+  Object.getOwnPropertyNames(_x).forEach(prop =>
+    _x[prop] && typeof _x[prop] === 'object' ? freezeDeep(_x[prop]) : Object.freeze(_x[prop])
   )
-  return Object.freeze(object) as ReadonlyDeep<T>
+  return Object.freeze(_x) as ReadonlyDeep<T>
 }
 
 /* ------------------------------------------------------ Hints ----------------------------------------------------- */
@@ -78,7 +79,7 @@ export const isOnlyUnionHint = (typeName: ZType): boolean =>
   [ZType.Union, ZType.Nullable, ZType.Optional].includes(typeName)
 
 export const formatHint = (z: AnyZ): string => {
-  if (isOnlyUnionHint(z.name) || isComplexHint(z['_hint'])) {
+  if ((isOnlyUnionHint(z.name) && z['_hint'].split('|').length > 2) || isComplexHint(z['_hint'])) {
     return `(${z['_hint']})`
   }
   return z['_hint']

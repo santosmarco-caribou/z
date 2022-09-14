@@ -1,6 +1,6 @@
 import { concat } from 'lodash'
 
-import type { AnyZDef, ParseResult, ZDependencies, ZOutput } from '../_internals'
+import type { AnyZDef, ZDependencies, ZOutput } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZHooks                                                       */
@@ -8,7 +8,7 @@ import type { AnyZDef, ParseResult, ZDependencies, ZOutput } from '../_internals
 
 export type ZHookMap<Def extends AnyZDef> = {
   beforeParse(input: unknown): any
-  afterParse(input: ParseResult<ZOutput<Def>, Def>['value']): ZOutput<Def>
+  afterParse(input: ZOutput<Def>): any
 }
 
 export type ZHookTrigger<Def extends AnyZDef = AnyZDef> = keyof ZHookMap<Def>

@@ -14,7 +14,7 @@ export class ZNaN extends Z<ZDef<{ Output: A.Type<number, 'NaN'>; Validator: ZSc
   static create = (): ZNaN =>
     new ZNaN(
       {
-        validator: ZValidator.custom((value, { OK, FAIL }) => (Number.isNaN(value) ? OK(value) : FAIL('nan.base', {}))),
+        validator: ZValidator.custom((value, { OK, FAIL }) => (Number.isNaN(value) ? OK(value) : FAIL('nan.base'))),
         hooks: {},
       },
       {}

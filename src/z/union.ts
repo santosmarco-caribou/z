@@ -3,6 +3,10 @@ import type Joi from 'joi'
 import { AnyZ, Z, ZDef, ZInput, ZOutput, ZSchema, ZType, ZValidator } from '../_internals'
 import { unionizeHints } from '../utils'
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                       ZUnion                                                       */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 export class ZUnion<T extends [AnyZ, ...AnyZ[]]> extends Z<
   ZDef<
     { Output: ZOutput<T[number]>; Input: ZInput<T[number]>; Validator: ZSchema<Joi.AlternativesSchema> },

@@ -27,6 +27,7 @@ export type ManifestFormat =
   | 'port'
   | 'uri'
   | 'uuid'
+  | 'bigint'
 
 /* ------------------------------------------------- ZManifestObject ------------------------------------------------ */
 

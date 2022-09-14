@@ -1,9 +1,14 @@
 import type Joi from 'joi'
+import { F } from 'ts-toolbelt'
 
 import { Z, ZDef, ZSchema, ZType, ZValidator } from '../_internals'
 import { unionizeHints } from '../utils'
 
-export class ZEnum<T extends [string, ...string[]]> extends Z<
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                        ZEnum                                                       */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export class ZEnum<T extends readonly [string, ...string[]]> extends Z<
   ZDef<{ Output: T[number]; Validator: ZSchema<Joi.StringSchema> }, { values: T }>
 > {
   readonly name = ZType.Enum
@@ -24,6 +29,6 @@ export class ZEnum<T extends [string, ...string[]]> extends Z<
     )
   }
 
-  static create = <T extends [string, ...string[]]>(values: T): ZEnum<T> =>
-    new ZEnum({ validator: ZValidator.string().valid(...values), hooks: {} }, { values })
+  static create = <T extends readonly [string, ...string[]]>(values: F.Narrow<T>): ZEnum<T> =>
+    new ZEnum({ validator: ZValidator.string().valid(...values), hooks: {} }, { values: values as T })
 }

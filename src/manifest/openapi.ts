@@ -1,17 +1,12 @@
-/*
-import j2s from 'joi-to-swagger'
+import j2s, { SwaggerSchema } from 'joi-to-swagger'
+import { Merge } from 'type-fest'
 
-import type { OpenApiSchemaObject } from '../types'
-import type { AnyZ } from '../z/z'
+import { AnyZDef, ZManifest, ZManifestObject, ZOutput, ZValidator } from '../_internals'
 
-
-export class ZOpenApi<Z extends AnyZ = AnyZ> {
-  private constructor(private readonly _z: Z) {}
-
-  generate(): OpenApiSchemaObject {
-    return Object.assign(j2s(this._z._validator).swagger, this._z.manifest)
+export interface ZOpenApi<Def extends AnyZDef> extends ZManifest<Def>, ZValidator<Def> {}
+export class ZOpenApi<Def extends AnyZDef> {
+  toOpenApi(): Merge<SwaggerSchema, ZManifestObject<ZOutput<Def>>> {
+    console.log(this.manifest)
+    return Object.assign(j2s(this._validator).swagger, this.manifest)
   }
-
-  static create = <Z extends AnyZ>(z: Z): ZOpenApi<Z> => new ZOpenApi(z)
 }
-*/

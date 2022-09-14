@@ -1,10 +1,14 @@
 import type Joi from 'joi'
 import { A } from 'ts-toolbelt'
 
-import { AnyZ, Z, ZDef, ZInput, ZOutput, ZSchema, ZType, ZValidator } from '../_internals'
+import { AnyZ, Z, ZDef, ZInput, ZOutput, ZReadonly, ZReadonlyDeep, ZSchema, ZType, ZValidator } from '../_internals'
 import type { MapToZInput, MapToZOutput } from '../utils'
 
-export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]], R extends AnyZ = never> extends Z<
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                       ZTuple                                                       */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = never> extends Z<
   ZDef<
     {
       Output: A.Equals<[R], [never]> extends 1 ? [...MapToZOutput<T>, ...ZOutput<R>[]] : MapToZOutput<T>
@@ -33,7 +37,14 @@ export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]], R extends AnyZ = never
     )
   }
 
-  static create = <T extends readonly [AnyZ, ...AnyZ[]], R extends AnyZ = never>(
+  readonly(): ZReadonly<this> {
+    return ZReadonly.create(this)
+  }
+  readonlyDeep(): ZReadonlyDeep<this> {
+    return ZReadonlyDeep.create(this)
+  }
+
+  static create = <T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = never>(
     elements: T,
     restType?: R
   ): ZTuple<T, R> =>

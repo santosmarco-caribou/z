@@ -152,6 +152,8 @@ export const Z_ISSUE_MAP = {
   'string.uppercase': '{{#label}} must only contain uppercase characters',
   'string.transform': '{{#label}} could not be transformed',
 
+  'set.base': '{{#label}} must be either an array or a set',
+
   'symbol.base': '{{#label}} must be a symbol',
   'symbol.map': '{{#label}} must be one of {{#map}}',
 } as const
@@ -174,6 +176,8 @@ export type ZIssueCode<S extends AnyZSchema> = Extract<
     ? `date.${string}`
     : S extends Joi.NumberSchema
     ? `${'nan' | 'number'}.${string}`
+    : S extends Joi.ObjectSchema
+    ? `${'object' | 'record'}.${string}`
     : S extends Joi.StringSchema
     ? `string.${string}`
     : S extends Joi.SymbolSchema

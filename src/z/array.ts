@@ -1,6 +1,18 @@
 import type Joi from 'joi'
 
-import { type ZDef, AnyZ, Z, ZCheckOptions, ZInput, ZOutput, ZSchema, ZType, ZValidator } from '../_internals'
+import {
+  type ZDef,
+  AnyZ,
+  Z,
+  ZCheckOptions,
+  ZInput,
+  ZOutput,
+  ZReadonly,
+  ZReadonlyDeep,
+  ZSchema,
+  ZType,
+  ZValidator,
+} from '../_internals'
 import { isComplexHint } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -85,8 +97,14 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' = 'many'>
   /**
    * Transforms the array into a readonly version after parsing.
    */
-  readonly(): ZReadonlyArray<this> {
-    return ZReadonlyArray.create(this)
+  readonly(): ZReadonly<this> {
+    return ZReadonly.create(this)
+  }
+  /**
+   * Transforms the array and its items into a readonly version after parsing.
+   */
+  readonlyDeep(): ZReadonlyDeep<this> {
+    return ZReadonlyDeep.create(this)
   }
 
   static create = <T extends AnyZ>(element: T): ZArray<T> =>
@@ -94,47 +112,3 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' = 'many'>
 }
 
 export type AnyZArray = ZArray<AnyZ, 'many' | 'atleastone'>
-
-/* ------------------------------------------------- ZReadonlyArray ------------------------------------------------- */
-
-const MAKE_ARRAY_READONLY_HOOK = 'makeArrayReadonly'
-
-export class ZReadonlyArray<T extends AnyZArray> extends Z<
-  ZDef<
-    {
-      Output: T extends ZArray<infer Element, infer Card>
-        ? Card extends 'atleastone'
-          ? readonly [ZOutput<Element>, ...ZOutput<Element>[]]
-          : readonly ZOutput<Element>[]
-        : never
-      Input: T extends ZArray<infer Element, infer Card>
-        ? Card extends 'atleastone'
-          ? readonly [ZInput<Element>, ...ZInput<Element>[]]
-          : readonly ZInput<Element>[]
-        : never
-      Validator: ZSchema<Joi.ArraySchema>
-    },
-    { InnerArray: T }
-  >
-> {
-  readonly name = ZType.ReadonlyArray
-  protected readonly _hint = this._props.innerArray.hint.startsWith('Array')
-    ? `Readonly${this._props.innerArray.hint}`
-    : `readonly ${this._props.innerArray.hint}`
-
-  writable(): T {
-    this._removeHook('afterParse', MAKE_ARRAY_READONLY_HOOK)
-    return this._props.innerArray
-  }
-
-  static create = <T extends AnyZArray>(innerArray: T): ZReadonlyArray<T> =>
-    new ZReadonlyArray(
-      {
-        validator: innerArray._validator,
-        hooks: {
-          afterParse: [{ name: MAKE_ARRAY_READONLY_HOOK, handler: Object.freeze }],
-        },
-      },
-      { innerArray }
-    )
-}

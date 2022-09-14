@@ -1,13 +1,15 @@
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
-import type { A, O } from 'ts-toolbelt'
+import type { A, F, O, T } from 'ts-toolbelt'
 import type { CamelCasedProperties, Simplify } from 'type-fest'
 
 import {
   AnyZSchema,
   ZArray,
+  ZBrand,
   ZHooks,
   ZHooksObject,
+  ZIntersection,
   ZManifest,
   ZNullable,
   ZOptional,
@@ -17,6 +19,7 @@ import {
   ZUnion,
   ZValidator,
 } from '../_internals'
+import { ZOpenApi } from '../manifest/openapi'
 import { formatHint } from '../utils'
 
 settings.initFunction = '_init'
@@ -69,9 +72,10 @@ export interface Z<Def extends AnyZDef>
     ZPropsManager<Def>,
     ZHooks<Def>,
     ZParser<Def>,
-    ZManifest<Def> {}
+    ZManifest<Def>,
+    ZOpenApi<Def> {}
 
-@mix(ZValidator, ZPropsManager, ZHooks, ZParser, ZManifest)
+@mix(ZValidator, ZPropsManager, ZHooks, ZParser, ZManifest, ZOpenApi)
 export abstract class Z<Def extends AnyZDef> {
   readonly $_output!: ZOutput<Def>
   readonly $_input!: ZInput<Def>
@@ -81,7 +85,7 @@ export abstract class Z<Def extends AnyZDef> {
   abstract readonly name: ZType
   protected abstract readonly _hint: string
 
-  constructor(_: ZDependencies<Def>, __: ZProps<Def>) {
+  constructor(private readonly $__deps: ZDependencies<Def>, private readonly $__props: ZProps<Def>) {
     this._id = nanoid()
   }
 
@@ -111,6 +115,14 @@ export abstract class Z<Def extends AnyZDef> {
     return ZUnion.create([this, alternative])
   }
 
+  and<Z extends AnyZ>(intersection: Z): ZIntersection<[this, Z]> {
+    return ZIntersection.create([this, intersection])
+  }
+
+  brand<B extends string | number | symbol>(brand: F.Narrow<B>): ZBrand<this, B> {
+    return ZBrand.create(this, brand as B)
+  }
+
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   isOptional(): boolean {
@@ -123,9 +135,14 @@ export abstract class Z<Def extends AnyZDef> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  preprocess(fn: (value: unknown) => ZOutput<Def>): this {
+  preprocess(fn: (value: unknown) => unknown): this {
     this._addHook('beforeParse', { name: `preprocess-${nanoid()}`, handler: fn })
     return this
+  }
+
+  postprocess<T>(fn: (value: ZOutput<Def>) => T): Z<{ Output: T; Validator: Def['Validator'] }> {
+    this._addHook('afterParse', { name: `postprocess-${nanoid()}`, handler: fn })
+    return this as any
   }
 }
 
@@ -147,4 +164,4 @@ export type ZInput<T extends AnyBaseZ | AnyZDef> = T extends AnyBaseZ
     : ZOutput<T>
   : never
 
-export type TypeOf<T extends AnyBaseZ> = Simplify<ZOutput<T>, { deep: true }>
+export type TypeOf<T extends AnyBaseZ> = ZOutput<T> extends Set<any> ? ZOutput<T> : Simplify<ZOutput<T>, { deep: true }>

@@ -36,6 +36,7 @@ export type AnyZSchema = ZSchema<Joi.Schema>
 
 export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions & Required<ParseOptions> = {
   abortEarly: false,
+  messages: Z_ISSUE_MAP,
 }
 
 /* ----------------------------------------------------- Checks ----------------------------------------------------- */
@@ -50,13 +51,19 @@ export type CustomValidationHelpers<Output> = {
   OK<V extends Output = Output>(value: V): [typeof VALIDATION_OK, V]
   FAIL<IssueCode extends AnyZIssueCode>(
     issue: IssueCode,
-    context: Omit<ZIssueLocalContext<IssueCode>, 'label'>
+    ...args: Omit<ZIssueLocalContext<IssueCode>, 'label'> extends EmptyObject
+      ? never[]
+      : [Omit<ZIssueLocalContext<IssueCode>, 'label'>]
   ): [typeof VALIDATION_FAIL, IssueCode, Omit<ZIssueLocalContext<IssueCode>, 'label'>]
 }
 
-export type CustomValidationResult<Output> = ReturnType<
-  CustomValidationHelpers<Output>[keyof CustomValidationHelpers<Output>]
->
+export type CustomValidationResult =
+  | [typeof VALIDATION_OK, any]
+  | [typeof VALIDATION_FAIL, AnyZIssueCode, Record<string, any>]
+
+export type CustomValidationOptions = {
+  baseValidator?: Joi.Schema
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -79,7 +86,10 @@ export class ZValidator<Def extends AnyZDef> {
     const _opts = mergeSafe(DEFAULT_VALIDATION_OPTIONS, options ?? {})
     const _input = this.hooks.beforeParse.reduce((acc, hook) => hook.handler(acc), cloneDeep(input))
     const result = this._validator.validate<ZOutput<this>>(_input, _opts)
-    return this.hooks.afterParse.reduce((acc, hook) => ({ ...acc, result: hook.handler(acc.value) }), cloneDeep(result))
+    return this.hooks.afterParse.reduce(
+      (acc, hook) => ({ ...acc, value: acc.value ? hook.handler(acc.value) : undefined }),
+      cloneDeep(result)
+    )
   }
 
   protected _addCheck(fn: (validator: Def['Validator']) => Def['Validator']): this
@@ -136,30 +146,33 @@ export class ZValidator<Def extends AnyZDef> {
 
   static any = (): ZSchema<Joi.AnySchema> => ZJoi.any()
   static alternatives = (...alts: Joi.Schema[]): ZSchema<Joi.AlternativesSchema> => ZJoi.alternatives(...alts)
-  static array = (element: Joi.Schema): ZSchema<Joi.ArraySchema> => ZJoi.array().items(element)
+  static array = (element?: Joi.Schema): ZSchema<Joi.ArraySchema> =>
+    element ? ZJoi.array().items(element) : ZJoi.array()
   static binary = () => ZJoi.binary()
   static boolean = (): ZSchema<Joi.BooleanSchema> => ZJoi.boolean()
   static date = (): ZSchema<Joi.DateSchema> => ZJoi.date()
+  static function = (): ZSchema<Joi.FunctionSchema> => ZJoi.function()
   static number = (): ZSchema<Joi.NumberSchema> => ZJoi.number()
   static string = (): ZSchema<Joi.StringSchema> => ZJoi.string()
   static symbol = (): ZSchema<Joi.SymbolSchema> => ZJoi.symbol()
   static tuple = (...elements: Joi.Schema[]): ZSchema<Joi.ArraySchema> => ZJoi.array().ordered(...elements)
-  static object = (schema: Joi.SchemaMap): ZSchema<Joi.ObjectSchema> => ZJoi.object(schema)
+  static object = (schema?: Joi.SchemaMap): ZSchema<Joi.ObjectSchema> => (schema ? ZJoi.object(schema) : ZJoi.object())
 
-  static custom = <Output>(
-    fn: (value: unknown, helpers: CustomValidationHelpers<Output>) => CustomValidationResult<Output>
-  ): ZSchema<Joi.Schema<Output>> => {
+  static custom = <Output, Opts extends CustomValidationOptions>(
+    fn: (value: unknown, helpers: CustomValidationHelpers<Output>) => CustomValidationResult,
+    options?: Opts
+  ): ZSchema<Opts['baseValidator'] extends Joi.Schema ? Opts['baseValidator'] : Joi.Schema<Output>> => {
     const helpers: CustomValidationHelpers<Output> = {
       OK: <V extends Output = Output>(value: V) => [VALIDATION_OK, value],
-      FAIL: (issue, ctx) => [VALIDATION_FAIL, issue, ctx],
+      FAIL: (issue, ...args) => [VALIDATION_FAIL, issue, args[0]],
     }
 
     const validator: Joi.CustomValidator<Output> = (_value, _helpers) => {
-      const [result, valueOrIssue] = fn(_value, helpers)
+      const [result, valueOrIssue, ctx] = fn(_value, helpers)
       if (result === VALIDATION_OK) return valueOrIssue
-      else return _helpers.error(valueOrIssue)
+      else return _helpers.error(valueOrIssue, ctx)
     }
 
-    return ZJoi.custom(validator)
+    return (options?.baseValidator ? options.baseValidator : ZJoi).custom(validator)
   }
 }

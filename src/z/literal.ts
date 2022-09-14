@@ -4,6 +4,10 @@ import type { Primitive } from 'type-fest'
 
 import { Z, ZDef, ZSchema, ZType, ZValidator } from '../_internals'
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                      ZLiteral                                                      */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 export class ZLiteral<T extends Primitive> extends Z<
   ZDef<{ Output: T; Validator: ZSchema<Joi.AnySchema> }, { value: T }>
 > {

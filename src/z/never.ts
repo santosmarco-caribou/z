@@ -11,5 +11,5 @@ export class ZNever extends Z<ZDef<{ Output: never; Validator: ZSchema<Joi.AnySc
   protected readonly _hint = 'never'
 
   static create = (): ZNever =>
-    new ZNever({ validator: ZValidator.custom((_, { FAIL }) => FAIL('any.unknown', {})), hooks: {} }, {})
+    new ZNever({ validator: ZValidator.custom((_, { FAIL }) => FAIL('any.unknown')), hooks: {} }, {})
 }

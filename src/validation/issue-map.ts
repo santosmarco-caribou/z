@@ -248,3 +248,5 @@ export type ZIssueLocalContext<
       : any
   }
 }[T]
+
+export type AnyZIssueLocalContext = ZIssueLocalContext<AnyZIssueCode>

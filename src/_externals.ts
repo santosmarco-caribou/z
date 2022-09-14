@@ -11,6 +11,7 @@ import {
   ZBinary,
   ZBoolean,
   ZDate,
+  ZEnum,
   ZFalse,
   ZInput,
   ZInstanceOf,
@@ -20,6 +21,7 @@ import {
   ZNull,
   ZNullable,
   ZNumber,
+  ZObject,
   ZOptional,
   ZOutput,
   ZString,
@@ -38,6 +40,7 @@ const bigintType = ZBigInt.create
 const binaryType = ZBinary.create
 const booleanType = ZBoolean.create
 const dateType = ZDate.create
+const enumType = ZEnum.create
 const falseType = ZFalse.create
 const instanceofType = ZInstanceOf.create
 const literalType = ZLiteral.create
@@ -46,6 +49,7 @@ const neverType = ZNever.create
 const nullableType = ZNullable.create
 const nullType = ZNull.create
 const numberType = ZNumber.create
+const objectType = ZObject.create
 const optionalType = ZOptional.create
 const stringType = ZString.create
 const symbolType = ZSymbol.create
@@ -63,6 +67,7 @@ export {
   binaryType as binary,
   booleanType as boolean,
   dateType as date,
+  enumType as enum,
   falseType as false,
   instanceofType as instanceof,
   literalType as literal,
@@ -71,6 +76,7 @@ export {
   nullType as null,
   nullableType as nullable,
   numberType as number,
+  objectType as object,
   optionalType as optional,
   stringType as string,
   symbolType as symbol,

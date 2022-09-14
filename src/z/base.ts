@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, O } from 'ts-toolbelt'
-import type { CamelCasedProperties } from 'type-fest'
+import type { CamelCasedProperties, Simplify } from 'type-fest'
 
 import {
   AnyZSchema,
@@ -108,7 +108,7 @@ export abstract class Z<Def extends AnyZDef> {
   }
 
   or<Z extends AnyZ>(alternative: Z): ZUnion<[this, Z]> {
-    return ZUnion.create(this, alternative)
+    return ZUnion.create([this, alternative])
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -119,6 +119,13 @@ export abstract class Z<Def extends AnyZDef> {
 
   isNullable(): boolean {
     return this.safeParse(null).ok
+  }
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  preprocess(fn: (value: unknown) => ZOutput<Def>): this {
+    this._addHook('beforeParse', { name: `preprocess-${nanoid()}`, handler: fn })
+    return this
   }
 }
 
@@ -140,4 +147,4 @@ export type ZInput<T extends AnyBaseZ | AnyZDef> = T extends AnyBaseZ
     : ZOutput<T>
   : never
 
-export type TypeOf<T extends AnyBaseZ> = ZOutput<T>
+export type TypeOf<T extends AnyBaseZ> = Simplify<ZOutput<T>, { deep: true }>

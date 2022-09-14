@@ -50,7 +50,7 @@ export type CustomValidationHelpers<Output> = {
   OK<V extends Output = Output>(value: V): [typeof VALIDATION_OK, V]
   FAIL<IssueCode extends AnyZIssueCode>(
     issue: IssueCode,
-    localContext: Omit<ZIssueLocalContext<IssueCode>, 'label'>
+    context: Omit<ZIssueLocalContext<IssueCode>, 'label'>
   ): [typeof VALIDATION_FAIL, IssueCode, Omit<ZIssueLocalContext<IssueCode>, 'label'>]
 }
 
@@ -144,18 +144,19 @@ export class ZValidator<Def extends AnyZDef> {
   static string = (): ZSchema<Joi.StringSchema> => ZJoi.string()
   static symbol = (): ZSchema<Joi.SymbolSchema> => ZJoi.symbol()
   static tuple = (...elements: Joi.Schema[]): ZSchema<Joi.ArraySchema> => ZJoi.array().ordered(...elements)
+  static object = (schema: Joi.SchemaMap): ZSchema<Joi.ObjectSchema> => ZJoi.object(schema)
 
   static custom = <Output>(
     fn: (value: unknown, helpers: CustomValidationHelpers<Output>) => CustomValidationResult<Output>
   ): ZSchema<Joi.Schema<Output>> => {
     const helpers: CustomValidationHelpers<Output> = {
       OK: <V extends Output = Output>(value: V) => [VALIDATION_OK, value],
-      FAIL: (issue, localCtx) => [VALIDATION_FAIL, issue, localCtx],
+      FAIL: (issue, ctx) => [VALIDATION_FAIL, issue, ctx],
     }
 
     const validator: Joi.CustomValidator<Output> = (_value, _helpers) => {
-      const [status, valueOrIssue] = fn(_value, helpers)
-      if (status === VALIDATION_OK) return valueOrIssue
+      const [result, valueOrIssue] = fn(_value, helpers)
+      if (result === VALIDATION_OK) return valueOrIssue
       else return _helpers.error(valueOrIssue)
     }
 

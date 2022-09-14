@@ -25,40 +25,7 @@
 //  */
 // export type AnyZArray = ZArray<AnyZ, AnyZ[]>
 
-// /* ------------------------------------------------------------------------------------------------------------------ */
-// /* ------------------------------------------------------------------------------------------------------------------ */
-// /* ------------------------------------------------------------------------------------------------------------------ */
-// /*                                                        ZEnum                                                       */
-// /* ------------------------------------------------------------------------------------------------------------------ */
-// /* ------------------------------------------------------------------------------------------------------------------ */
-// /* ------------------------------------------------------------------------------------------------------------------ */
-
-// export type ZEnumDef<T extends string> = ZDef<{ validator: ZStringOnlySchema }, { values: T[] }>
-
-// /**
-//  * @group ZTypes
-//  */
-// export class ZEnum<T extends string> extends Z<T, ZEnumDef<T>> {
-//   readonly name = ZType.Enum
-//   protected readonly _hint = ZUtils.unionizeHints(...this._def.values.map(value => `'${value}'`).sort())
-
-//   get values(): T[] {
-//     return this._def.values
-//   }
-
-//   static create: {
-//     <T extends string>(values: F.Narrow<T>[]): ZEnum<T>
-//     <T extends string>(...values: F.Narrow<T>[]): ZEnum<T>
-//   } = <T extends string>(...values: T[] | [T[]]): ZEnum<T> => {
-//     const _values = (Array.isArray(values[0]) ? values[0] : values) as T[]
-//     return new ZEnum({ validator: ZValidator.string.only(..._values), values: _values })
-//   }
-// }
-
-// /**
-//  * @group Type utils
-//  */
-// export type AnyZEnum = ZEnum<string>
+//
 
 // /* ------------------------------------------------------------------------------------------------------------------ */
 // /* ------------------------------------------------------------------------------------------------------------------ */

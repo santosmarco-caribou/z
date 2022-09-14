@@ -16,7 +16,7 @@ export class ZUnion<T extends [AnyZ, ...AnyZ[]]> extends Z<
     return this._props.options
   }
 
-  static create = <T extends [AnyZ, ...AnyZ[]]>(...options: T): ZUnion<T> => {
+  static create = <T extends [AnyZ, ...AnyZ[]]>(options: T): ZUnion<T> => {
     const optAlreadyAlt = options.find(opt => opt._validator.type === 'alternatives')
 
     return new ZUnion(

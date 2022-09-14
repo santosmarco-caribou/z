@@ -6,10 +6,6 @@ import type { AnyZDef, ParseResult, ZDependencies, ZOutput } from '../_internals
 /*                                                       ZHooks                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export enum ZHookName {
-  MakeArrayReadonly,
-}
-
 export type ZHookMap<Def extends AnyZDef> = {
   beforeParse(input: unknown): any
   afterParse(input: ParseResult<ZOutput<Def>, Def>['value']): ZOutput<Def>
@@ -18,7 +14,7 @@ export type ZHookMap<Def extends AnyZDef> = {
 export type ZHookTrigger<Def extends AnyZDef = AnyZDef> = keyof ZHookMap<Def>
 export type ZHookHandler<Def extends AnyZDef, Trigger extends ZHookTrigger<Def>> = ZHookMap<Def>[Trigger]
 export type ZHook<Def extends AnyZDef, Trigger extends ZHookTrigger<Def>> = {
-  name: ZHookName
+  name: string
   handler: ZHookHandler<Def, Trigger>
 }
 
@@ -53,7 +49,7 @@ export class ZHooks<Def extends AnyZDef> {
     return this
   }
 
-  protected _removeHook<T extends ZHookTrigger>(trigger: T, name: ZHookName): this {
+  protected _removeHook<T extends ZHookTrigger>(trigger: T, name: string): this {
     if (trigger === 'beforeParse') this._hooks.beforeParse = this._hooks.beforeParse?.filter(hook => hook.name !== name)
     else this._hooks.afterParse = this._hooks.afterParse?.filter(hook => hook.name !== name)
     return this

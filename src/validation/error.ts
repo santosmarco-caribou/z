@@ -1,4 +1,6 @@
 import type Joi from 'joi'
+import { omit } from 'lodash'
+import type { Simplify } from 'type-fest'
 import util from 'util'
 
 import type { AnyZDef, Z, ZIssueCode, ZManifestObject, ZOutput, ZType } from '../_internals'
@@ -7,7 +9,7 @@ import type { OmitInternals } from '../utils'
 /* ----------------------------------------------------- ZIssue ----------------------------------------------------- */
 
 export type ZIssue<Def extends AnyZDef> = {
-  code: ZIssueCode<Def['Validator']>
+  code: Simplify<ZIssueCode<Def['Validator']>>
   message: string
   path: Array<string | number>
   received: any
@@ -58,7 +60,7 @@ export class ZError<Def extends AnyZDef> extends Error {
       typeHint: this.typeHint,
       typeManifest: this.typeManifest,
       annotate: () => this.annotate(),
-      toString: () => util.inspect(this.toPlainObject(), { colors: true, depth: Infinity }),
+      toString: () => util.inspect(omit(this.toPlainObject(), 'toString'), { colors: true, depth: Infinity }),
     }
   }
 

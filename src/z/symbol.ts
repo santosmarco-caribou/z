@@ -32,7 +32,7 @@ export class ZUniqueSymbol<S extends symbol> extends Z<
   static $_create = <S extends symbol>(parent: ZSymbol, symbol: S): ZUniqueSymbol<S> => {
     if (!symbol.description) throw new Error('The provided symbol must have a description')
     return new ZUniqueSymbol<S>(
-      parent['mergeDeps']({ validator: parent._validator.map({ [symbol.description]: symbol }) }),
+      { validator: parent._validator.map({ [symbol.description]: symbol }), hooks: parent['_hooks'] },
       { symbol }
     )
   }

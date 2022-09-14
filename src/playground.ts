@@ -1,22 +1,24 @@
-import type { N } from 'ts-toolbelt'
-
 import { z } from '.'
 
-console.log(z.string().uri())
-
-const a = z.array(z.string()).length(2)
-console.log(a)
+const a = z
+  .string()
+  .or(z.binary())
+  .array()
+  .min(2, { message: ctx => `${ctx.limit} is awesome!` })
+  .max(3)
+  .readonly()
 type A = z.infer<typeof a>
 
-const b: A = ['s', 'c', 's']
+console.log(a)
 
-type C = N.Greater<1, 2>
+const result = a.safeParse(['b'])
+console.log(result.error?.issues[0]?.code === '')
 
-const d = z.array(z.string().or(z.boolean())).min(2)
-const e = z.array(z.string().or(z.true()).or(z.nan()).or(z.false())).max(10)
-const f = z.array(z.string()).length(100)
-const g = z.array(z.string()).nonempty()
+const l = z.literal(Symbol('s'))
+console.log(l)
 
-console.log(d.hint, e.hint, f.hint, g.hint)
-type D = z.infer<typeof e>
-console.log(e.element())
+const tple = z.tuple([z.string(), z.number(), z.boolean(), z.literal(2).or(z.array(z.true()).length(5))], z.binary())
+
+type AAA = z.infer<typeof tple>
+
+console.log(tple.safeParse(2))

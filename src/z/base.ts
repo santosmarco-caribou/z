@@ -1,4 +1,3 @@
-import { merge } from 'lodash'
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, O } from 'ts-toolbelt'
@@ -13,11 +12,12 @@ import {
   ZNullable,
   ZOptional,
   ZParser,
+  ZPropsManager,
   ZType,
   ZUnion,
   ZValidator,
 } from '../_internals'
-import { entries, formatHint, hasProp, isArray } from '../utils'
+import { formatHint } from '../utils'
 
 settings.initFunction = '_init'
 
@@ -66,32 +66,27 @@ export type AnyBaseZ = BaseZ<AnyZDef>
 export interface Z<Def extends AnyZDef>
   extends BaseZ<Def>,
     ZValidator<Def>,
+    ZPropsManager<Def>,
     ZHooks<Def>,
     ZParser<Def>,
     ZManifest<Def> {}
 
-@mix(ZValidator, ZHooks, ZParser, ZManifest)
+@mix(ZValidator, ZPropsManager, ZHooks, ZParser, ZManifest)
 export abstract class Z<Def extends AnyZDef> {
   readonly $_output!: ZOutput<Def>
   readonly $_input!: ZInput<Def>
 
-  readonly _id = nanoid()
+  readonly _id: string
 
   abstract readonly name: ZType
   protected abstract readonly _hint: string
 
-  private $_props: ZProps<Def>
-
-  protected constructor(_: ZDependencies<Def>, props: ZProps<Def>) {
-    this.$_props = props
+  constructor(_: ZDependencies<Def>, __: ZProps<Def>) {
+    this._id = nanoid()
   }
 
   get hint(): string {
-    return formatHint(this._hint)
-  }
-
-  protected get _props(): Readonly<ZProps<Def>> {
-    return Object.freeze(this.$_props)
+    return formatHint(this)
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -124,34 +119,6 @@ export abstract class Z<Def extends AnyZDef> {
 
   isNullable(): boolean {
     return this.safeParse(null).ok
-  }
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  protected _updateProps(fn: (props: Readonly<ZProps<Def>>) => ZProps<Def>): this {
-    const oldDef = this.$_props
-    const newDef = fn(this._props)
-    merge(
-      this.$_props,
-      entries(newDef).reduce(
-        (acc, [k, v]) => ({
-          ...acc,
-          [k]: isArray(v) ? [...(hasProp(oldDef, k) && isArray(oldDef[k]) ? oldDef[k] : []), ...v] : v,
-        }),
-        {}
-      )
-    )
-    return this
-  }
-
-  protected mergeDeps<NewDeps extends AnyZDependencies>(newDeps: Partial<NewDeps>): ZDependencies<Def> & NewDeps {
-    return {
-      validator: newDeps.validator ?? this._validator,
-      hooks: {
-        beforeParse: [...(this._hooks.beforeParse ?? []), ...(newDeps.hooks?.beforeParse ?? [])],
-        afterParse: [...(this._hooks.afterParse ?? []), ...(newDeps.hooks?.afterParse ?? [])],
-      },
-    }
   }
 }
 

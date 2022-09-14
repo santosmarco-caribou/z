@@ -17,12 +17,13 @@ export class ZOptional<T extends AnyZ> extends Z<
 
   static create = <T extends AnyZ>(innerType: T): ZOptional<T> =>
     new ZOptional(
-      innerType['mergeDeps']({
+      {
         validator:
           innerType['_validator'].$_getFlag('presence') === 'forbidden'
             ? innerType['_validator']
             : innerType['_validator'].optional(),
-      }),
+        hooks: innerType['_hooks'],
+      },
       { innerType: innerType }
     )
 }

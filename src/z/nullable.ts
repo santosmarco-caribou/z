@@ -16,7 +16,7 @@ export class ZNullable<T extends AnyZ> extends Z<
   }
 
   static create = <T extends AnyZ>(innerType: T): ZNullable<T> =>
-    new ZNullable(innerType['mergeDeps']({ validator: innerType._validator.allow(null) }), { innerType: innerType })
+    new ZNullable({ validator: innerType._validator.allow(null), hooks: innerType['_hooks'] }, { innerType: innerType })
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

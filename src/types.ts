@@ -25,6 +25,7 @@ export enum ZType {
   Number = 'ZNumber',
   Object = 'ZObject',
   Optional = 'ZOptional',
+  ReadonlyArray = 'ZReadonlyArray',
   Record = 'ZRecord',
   Set = 'ZSet',
   String = 'ZString',

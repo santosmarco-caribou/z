@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import type { AnyZDef, BaseZ, ZHooks, ZOutput, ZValidator } from '../_internals'
+import { AnyZDef, BaseZ, Z, ZError, ZHooks, ZOutput, ZValidator } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZParser                                                      */
@@ -14,13 +14,13 @@ export type ParseResultOk<V> = {
   error: undefined
 }
 
-export type ParseResultFail = {
+export type ParseResultFail<Def extends AnyZDef> = {
   ok: false
   value: undefined
-  error: /* ZError<Def> */ Error
+  error: ReturnType<ZError<Def>['toPlainObject']>
 }
 
-export type ParseResult<V> = ParseResultOk<V> | ParseResultFail
+export type ParseResult<V, Def extends AnyZDef> = ParseResultOk<V> | ParseResultFail<Def>
 
 /* -------------------------------------------------- ParseOptions -------------------------------------------------- */
 
@@ -33,7 +33,7 @@ export type ParseOptions = {
 export interface ZParser<Def extends AnyZDef> extends BaseZ<Def>, ZValidator<Def>, ZHooks<Def> {}
 
 export class ZParser<Def extends AnyZDef> {
-  safeParse(input: unknown, options?: ParseOptions): ParseResult<ZOutput<this>> {
+  safeParse(input: unknown, options?: ParseOptions): ParseResult<ZOutput<this>, Def> {
     const { error, value } = this._validate(input, options)
     if (error) return this._FAIL(error)
     else return this._OK(value)
@@ -45,7 +45,7 @@ export class ZParser<Def extends AnyZDef> {
     else return value
   }
 
-  safeParseAsync(input: unknown, options?: ParseOptions): Promise<ParseResult<ZOutput<this>>> {
+  safeParseAsync(input: unknown, options?: ParseOptions): Promise<ParseResult<ZOutput<this>, Def>> {
     return new Promise(resolve => resolve(this.safeParse(input, options)))
   }
 
@@ -67,7 +67,7 @@ export class ZParser<Def extends AnyZDef> {
     return { ok: true, value, error: undefined }
   }
 
-  private _FAIL(error: Joi.ValidationError): ParseResultFail {
-    return { ok: false, error, value: undefined }
+  private _FAIL(error: Joi.ValidationError): ParseResultFail<Def> {
+    return { ok: false, error: ZError.create(this as unknown as Z<Def>, error).toPlainObject(), value: undefined }
   }
 }

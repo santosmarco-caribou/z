@@ -1,11 +1,9 @@
+/*
 import j2s from 'joi-to-swagger'
 
 import type { OpenApiSchemaObject } from '../types'
 import type { AnyZ } from '../z/z'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZOpenApi                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
 
 export class ZOpenApi<Z extends AnyZ = AnyZ> {
   private constructor(private readonly _z: Z) {}
@@ -16,3 +14,4 @@ export class ZOpenApi<Z extends AnyZ = AnyZ> {
 
   static create = <Z extends AnyZ>(z: Z): ZOpenApi<Z> => new ZOpenApi(z)
 }
+*/

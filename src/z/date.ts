@@ -58,7 +58,10 @@ export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<
    */
   strict(): ZDate<{ strict: true }> {
     this._updateValidatorPreferences({ convert: false })
-    return new ZDate(this.mergeDeps({ validator: this._validator }), { options: { strict: true } })
+    return new ZDate<{ strict: true }>(
+      { validator: this._validator, hooks: this._hooks },
+      { options: { strict: true } }
+    )
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */

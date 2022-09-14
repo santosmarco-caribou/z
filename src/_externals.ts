@@ -8,20 +8,24 @@ import {
   ZAny,
   ZArray,
   ZBigInt,
+  ZBinary,
   ZBoolean,
   ZDate,
   ZFalse,
   ZInput,
   ZInstanceOf,
+  ZLiteral,
   ZNaN,
   ZNever,
   ZNull,
   ZNullable,
+  ZNumber,
   ZOptional,
   ZOutput,
   ZString,
   ZSymbol,
   ZTrue,
+  ZTuple,
   ZUndefined,
   ZUniqueSymbol,
   ZUnknown,
@@ -31,18 +35,22 @@ import {
 const anyType = ZAny.create
 const arrayType = ZArray.create
 const bigintType = ZBigInt.create
+const binaryType = ZBinary.create
 const booleanType = ZBoolean.create
 const dateType = ZDate.create
 const falseType = ZFalse.create
 const instanceofType = ZInstanceOf.create
+const literalType = ZLiteral.create
 const nanType = ZNaN.create
 const neverType = ZNever.create
 const nullableType = ZNullable.create
 const nullType = ZNull.create
+const numberType = ZNumber.create
 const optionalType = ZOptional.create
 const stringType = ZString.create
 const symbolType = ZSymbol.create
 const trueType = ZTrue.create
+const tupleType = ZTuple.create
 const undefinedType = ZUndefined.create
 const uniqsymbolType = ZUniqueSymbol.create
 const unknownType = ZUnknown.create
@@ -52,18 +60,22 @@ export {
   anyType as any,
   arrayType as array,
   bigintType as bigint,
+  binaryType as binary,
   booleanType as boolean,
   dateType as date,
   falseType as false,
   instanceofType as instanceof,
+  literalType as literal,
   nanType as nan,
   neverType as never,
   nullType as null,
   nullableType as nullable,
+  numberType as number,
   optionalType as optional,
   stringType as string,
   symbolType as symbol,
   trueType as true,
+  tupleType as tuple,
   undefinedType as undefined,
   uniqsymbolType as uniqsymbol,
   unknownType as unknown,

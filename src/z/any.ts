@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import { type ZDef, Z, ZSchema, ZType, ZValidator } from '../_internals'
+import { type ZDef, type ZSchema, Z, ZType, ZValidator } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZAny                                                        */

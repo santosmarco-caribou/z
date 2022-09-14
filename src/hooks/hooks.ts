@@ -1,39 +1,61 @@
-import type { AnyZDef, ParseResult, ZOutput } from '../_internals'
+import { concat } from 'lodash'
+
+import type { AnyZDef, ParseResult, ZDependencies, ZOutput } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZHooks                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+export enum ZHookName {
+  MakeArrayReadonly,
+}
+
 export type ZHookMap<Def extends AnyZDef> = {
   beforeParse(input: unknown): any
-  afterParse(input: ParseResult<ZOutput<Def>>['value']): ZOutput<Def>
+  afterParse(input: ParseResult<ZOutput<Def>, Def>['value']): ZOutput<Def>
 }
 
-export type ZHookName<Def extends AnyZDef = AnyZDef> = keyof ZHookMap<Def>
-export type ZHookHandler<Def extends AnyZDef, Name extends ZHookName<Def>> = ZHookMap<Def>[Name]
+export type ZHookTrigger<Def extends AnyZDef = AnyZDef> = keyof ZHookMap<Def>
+export type ZHookHandler<Def extends AnyZDef, Trigger extends ZHookTrigger<Def>> = ZHookMap<Def>[Trigger]
+export type ZHook<Def extends AnyZDef, Trigger extends ZHookTrigger<Def>> = {
+  name: ZHookName
+  handler: ZHookHandler<Def, Trigger>
+}
 
 export type ZHooksObject<Def extends AnyZDef> = {
-  [Name in ZHookName]?: ZHookHandler<Def, Name>[]
+  [T in ZHookTrigger]?: ZHook<Def, T>[]
 }
 export type ZHooksReadonlyObjectDeep<Def extends AnyZDef> = {
-  readonly [Name in ZHookName]: readonly ZHookHandler<Def, Name>[]
+  readonly [T in ZHookTrigger]: readonly ZHook<Def, T>[]
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export class ZHooks<Def extends AnyZDef> {
-  private _hooks: ZHooksObject<Def> = {
-    beforeParse: [],
-    afterParse: [],
+  protected _hooks: ZHooksObject<Def> = {}
+
+  constructor(deps: ZDependencies<Def>) {
+    this._hooks = {
+      beforeParse: concat(this._hooks.beforeParse ?? [], deps.hooks.beforeParse ?? []),
+      afterParse: concat(this._hooks.afterParse ?? [], deps.hooks.afterParse ?? []),
+    }
   }
 
   protected get hooks(): ZHooksReadonlyObjectDeep<Def> {
     return this._hooks as ZHooksReadonlyObjectDeep<Def>
   }
 
-  protected _addHook<T extends ZHookName>(name: T, handler: ZHookHandler<Def, T>): this {
-    if (!this._hooks[name]) this._hooks[name] = [handler]
-    else this._hooks[name]?.push(handler)
+  protected _addHook<T extends ZHookTrigger>(trigger: T, hook: ZHook<Def, T>): this {
+    if (!this._hooks[trigger]) {
+      this._hooks[trigger] = []
+    }
+    this._hooks[trigger]?.push(hook)
+    return this
+  }
+
+  protected _removeHook<T extends ZHookTrigger>(trigger: T, name: ZHookName): this {
+    if (trigger === 'beforeParse') this._hooks.beforeParse = this._hooks.beforeParse?.filter(hook => hook.name !== name)
+    else this._hooks.afterParse = this._hooks.afterParse?.filter(hook => hook.name !== name)
     return this
   }
 }

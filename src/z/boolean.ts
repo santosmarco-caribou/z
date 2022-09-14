@@ -33,7 +33,7 @@ export class ZTrue extends Z<ZDef<{ Output: true; Validator: ZSchema<Joi.Boolean
   protected readonly _hint = 'true'
 
   static $_create = (parent: ZBoolean): ZTrue =>
-    new ZTrue(parent['mergeDeps']({ validator: parent._validator.valid(true) }), {})
+    new ZTrue({ validator: parent._validator.valid(true), hooks: parent['_hooks'] }, {})
 
   static create = (): ZTrue => this.$_create(ZBoolean.create())
 }
@@ -45,7 +45,7 @@ export class ZFalse extends Z<ZDef<{ Output: false; Validator: ZSchema<Joi.Boole
   protected readonly _hint = 'false'
 
   static $_create = (parent: ZBoolean): ZFalse =>
-    new ZFalse(parent['mergeDeps']({ validator: parent._validator.valid(false) }), {})
+    new ZFalse({ validator: parent._validator.valid(false), hooks: parent['_hooks'] }, {})
 
   static create = (): ZFalse => this.$_create(ZBoolean.create())
 }

@@ -1,7 +1,6 @@
 import Joi from 'joi'
 import { cloneDeep } from 'lodash'
 import type { O } from 'ts-toolbelt'
-import type { RemoveIndexSignature } from 'type-fest'
 
 import {
   AnyZDef,
@@ -14,7 +13,7 @@ import {
   ZIssueLocalContext,
   ZOutput,
 } from '../_internals'
-import { hasProp, mergeSafe } from '../utils'
+import { EmptyObject, mergeSafe } from '../utils'
 
 const ZJoi = Joi.defaults(schema => schema.required())
 
@@ -41,12 +40,9 @@ export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions & Required<ParseO
 
 /* ----------------------------------------------------- Checks ----------------------------------------------------- */
 
-export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = O.Object> = RemoveIndexSignature<
-  (Omit<ZIssueLocalContext<IssueCode>, 'label'> extends Record<string, never>
-    ? { message?: string }
-    : { message?: string | ((context: Omit<ZIssueLocalContext<IssueCode>, 'label'>) => string) }) &
-    Extras
->
+export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = EmptyObject> = {
+  message?: string | ((context: ZIssueLocalContext<IssueCode>) => string)
+} & Extras
 
 /* ------------------------------------------------ Custom validation ----------------------------------------------- */
 
@@ -81,9 +77,9 @@ export class ZValidator<Def extends AnyZDef> {
 
   protected _validate(input: unknown, options: ParseOptions | undefined): Joi.ValidationResult<ZOutput<this>> {
     const _opts = mergeSafe(DEFAULT_VALIDATION_OPTIONS, options ?? {})
-    const _input = this.hooks.beforeParse.reduce((acc, hook) => hook(acc), cloneDeep(input))
+    const _input = this.hooks.beforeParse.reduce((acc, hook) => hook.handler(acc), cloneDeep(input))
     const result = this._validator.validate<ZOutput<this>>(_input, _opts)
-    return this.hooks.afterParse.reduce((acc, hook) => hook(acc.value), cloneDeep(result))
+    return this.hooks.afterParse.reduce((acc, hook) => ({ ...acc, result: hook.handler(acc.value) }), cloneDeep(result))
   }
 
   protected _addCheck(fn: (validator: Def['Validator']) => Def['Validator']): this
@@ -104,8 +100,7 @@ export class ZValidator<Def extends AnyZDef> {
 
     fn && this._updateValidator(fn)
 
-    if (options && hasProp(options, 'message') && options.message) {
-      console.log(options)
+    if (options?.message) {
       const ctxTags = [
         ...[...Z_ISSUE_MAP[fnOrIssue].matchAll(/{{#[^}]*}}/g)].map(m => m[0]?.slice(3, -2)),
         'key',
@@ -142,21 +137,20 @@ export class ZValidator<Def extends AnyZDef> {
   static any = (): ZSchema<Joi.AnySchema> => ZJoi.any()
   static alternatives = (...alts: Joi.Schema[]): ZSchema<Joi.AlternativesSchema> => ZJoi.alternatives(...alts)
   static array = (element: Joi.Schema): ZSchema<Joi.ArraySchema> => ZJoi.array().items(element)
+  static binary = () => ZJoi.binary()
   static boolean = (): ZSchema<Joi.BooleanSchema> => ZJoi.boolean()
   static date = (): ZSchema<Joi.DateSchema> => ZJoi.date()
+  static number = (): ZSchema<Joi.NumberSchema> => ZJoi.number()
   static string = (): ZSchema<Joi.StringSchema> => ZJoi.string()
   static symbol = (): ZSchema<Joi.SymbolSchema> => ZJoi.symbol()
+  static tuple = (...elements: Joi.Schema[]): ZSchema<Joi.ArraySchema> => ZJoi.array().ordered(...elements)
 
   static custom = <Output>(
     fn: (value: unknown, helpers: CustomValidationHelpers<Output>) => CustomValidationResult<Output>
   ): ZSchema<Joi.Schema<Output>> => {
     const helpers: CustomValidationHelpers<Output> = {
       OK: <V extends Output = Output>(value: V) => [VALIDATION_OK, value],
-      FAIL: <IssueCode extends AnyZIssueCode>(issue: IssueCode, localCtx: ZIssueLocalContext<IssueCode>) => [
-        VALIDATION_FAIL,
-        issue,
-        localCtx,
-      ],
+      FAIL: (issue, localCtx) => [VALIDATION_FAIL, issue, localCtx],
     }
 
     const validator: Joi.CustomValidator<Output> = (_value, _helpers) => {

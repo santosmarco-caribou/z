@@ -1,6 +1,17 @@
 import type Joi from 'joi'
 
-import { type ZDef, AnyZ, Z, ZCheckOptions, ZInput, ZOutput, ZSchema, ZType, ZValidator } from '../_internals'
+import {
+  type ZDef,
+  AnyZ,
+  Z,
+  ZCheckOptions,
+  ZHookName,
+  ZInput,
+  ZOutput,
+  ZSchema,
+  ZType,
+  ZValidator,
+} from '../_internals'
 import { isComplexHint, MaxLengthArray, MinLengthArray, MinMaxLengthArray } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -10,13 +21,9 @@ import { isComplexHint, MaxLengthArray, MinLengthArray, MinMaxLengthArray } from
 export type ZArrayOptions = {
   minLength: number | null
   maxLength: number | null
-  readonly: boolean
 }
 
-export class ZArray<
-  T extends AnyZ,
-  Opts extends ZArrayOptions = { minLength: null; maxLength: null; readonly: false }
-> extends Z<
+export class ZArray<T extends AnyZ, Opts extends ZArrayOptions = { minLength: null; maxLength: null }> extends Z<
   ZDef<
     {
       Output: Opts['minLength'] extends number
@@ -35,7 +42,7 @@ export class ZArray<
         : ZInput<T>[]
       Validator: ZSchema<Joi.ArraySchema>
     },
-    { element: T; options: Opts }
+    { Element: T; Options: Opts }
   >
 > {
   readonly name = ZType.Array
@@ -54,9 +61,11 @@ export class ZArray<
       ? `[${new Array(this._props.options.minLength).fill(this._props.element.hint).join(', ')}, ...${
           this._props.element.hint
         }[]]`
-      : `[${new Array(this._props.options.maxLength).fill(this._props.element.hint).join('?, ')}?]`
+      : typeof this._props.options.maxLength === 'number'
+      ? `[${new Array(this._props.options.maxLength).fill(this._props.element.hint).join('?, ')}?]`
+      : `${this._props.element.hint}[]`
 
-  element(): T {
+  get element(): T {
     return this._props.element
   }
 
@@ -83,9 +92,9 @@ export class ZArray<
   min<L extends number>(
     min: L,
     options?: ZCheckOptions<'array.min'>
-  ): ZArray<T, { minLength: L; maxLength: Opts['maxLength']; readonly: Opts['readonly'] }> {
-    return new ZArray(
-      { validator: this._addCheck('array.min', v => v.min(min), options)._validator },
+  ): ZArray<T, { minLength: L; maxLength: Opts['maxLength'] }> {
+    return new ZArray<T, { minLength: L; maxLength: Opts['maxLength'] }>(
+      { validator: this._addCheck('array.min', v => v.min(min), options)._validator, hooks: this._hooks },
       { element: this._props.element, options: { ...this._props.options, minLength: min } }
     )
   }
@@ -97,9 +106,9 @@ export class ZArray<
   max<L extends number>(
     max: L,
     options?: ZCheckOptions<'array.max'>
-  ): ZArray<T, { maxLength: L; minLength: Opts['minLength']; readonly: Opts['readonly'] }> {
-    return new ZArray(
-      { validator: this._addCheck('array.max', v => v.max(max), options)._validator },
+  ): ZArray<T, { maxLength: L; minLength: Opts['minLength'] }> {
+    return new ZArray<T, { maxLength: L; minLength: Opts['minLength'] }>(
+      { validator: this._addCheck('array.max', v => v.max(max), options)._validator, hooks: this._hooks },
       { element: this._props.element, options: { ...this._props.options, maxLength: max } }
     )
   }
@@ -111,35 +120,65 @@ export class ZArray<
   length<L extends number>(
     length: L,
     options?: ZCheckOptions<'array.length'>
-  ): ZArray<T, { minLength: L; maxLength: L; readonly: Opts['readonly'] }> {
-    return new ZArray(
-      { validator: this._addCheck('array.length', v => v.length(length), options)._validator },
-      { element: this._props.element, options: { ...this._props.options, minLength: length, maxLength: length } }
+  ): ZArray<T, { minLength: L; maxLength: L }> {
+    return new ZArray<T, { minLength: L; maxLength: L }>(
+      { validator: this._addCheck('array.length', v => v.length(length), options)._validator, hooks: this._hooks },
+      { element: this._props.element, options: { minLength: length, maxLength: length } }
     )
   }
 
   /**
    * Requires the array to have at least one element.
    */
-  nonempty(
-    options?: ZCheckOptions<'array.min'>
-  ): ZArray<T, { minLength: 1; maxLength: null; readonly: Opts['readonly'] }> {
+  nonempty(options?: ZCheckOptions<'array.min'>): ZArray<T, { minLength: 1; maxLength: null }> {
     return this.min(1, options)
   }
 
-  readonly(): ZArray<T, Omit<Opts, 'readonly'> & { readonly: true }> {
-    this._addHook('afterParse', Object.freeze)
-    return this as any
-  }
-
-  writable(): ZArray<T, Omit<Opts, 'readonly'> & { readonly: false }> {
-    this._addHook('afterParse', Object.freeze)
-    return this as any
+  readonly(): ZReadonlyArray<this> {
+    return ZReadonlyArray.create(this)
   }
 
   static create = <T extends AnyZ>(element: T): ZArray<T> =>
-    new ZArray(
-      { validator: ZValidator.array(element._validator) },
-      { element, options: { minLength: null, maxLength: null, readonly: false } }
+    new ZArray<
+      T,
+      {
+        minLength: null
+        maxLength: null
+      }
+    >(
+      { validator: ZValidator.array(element._validator), hooks: {} },
+      { element, options: { minLength: null, maxLength: null } }
+    )
+}
+
+export type AnyZArray = ZArray<AnyZ>
+
+/* ------------------------------------------------- ZReadonlyArray ------------------------------------------------- */
+
+export class ZReadonlyArray<T extends AnyZArray> extends Z<
+  ZDef<
+    { Output: ReadonlyArray<ZOutput<T>>; Input: ReadonlyArray<ZInput<T>>; Validator: ZSchema<Joi.ArraySchema> },
+    { InnerArray: T }
+  >
+> {
+  readonly name = ZType.ReadonlyArray
+  protected readonly _hint = this._props.innerArray.hint.startsWith('Array')
+    ? `Readonly${this._props.innerArray.hint}`
+    : `readonly ${this._props.innerArray.hint}`
+
+  writable(): T {
+    this._removeHook('afterParse', ZHookName.MakeArrayReadonly)
+    return this._props.innerArray
+  }
+
+  static create = <T extends AnyZArray>(innerArray: T): ZReadonlyArray<T> =>
+    new ZReadonlyArray(
+      {
+        validator: innerArray._validator,
+        hooks: {
+          afterParse: [{ name: ZHookName.MakeArrayReadonly, handler: Object.freeze }],
+        },
+      },
+      { innerArray }
     )
 }

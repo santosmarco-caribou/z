@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 import type { S } from 'ts-toolbelt'
-import type { Replace, Simplify } from 'type-fest'
+import type { Replace } from 'type-fest'
 
 import type { AnyZSchema } from '../_internals'
 
@@ -162,7 +162,13 @@ export type ZIssueMap = typeof Z_ISSUE_MAP
 
 export type ZIssueCode<S extends AnyZSchema> = Extract<
   keyof ZIssueMap,
-  S extends Joi.BooleanSchema
+  S extends Joi.AlternativesSchema
+    ? `alternatives.${string}`
+    : S extends Joi.ArraySchema
+    ? `array.${string}`
+    : S extends Joi.BinarySchema
+    ? `binary.${string}`
+    : S extends Joi.BooleanSchema
     ? `boolean.${string}`
     : S extends Joi.DateSchema
     ? `date.${string}`
@@ -231,16 +237,14 @@ export type ZIssueLocalContextOpts = GetLocalCtxTagOpts & { WithBraces?: boolean
 export type ZIssueLocalContext<
   T extends AnyZIssueCode,
   Opts extends ZIssueLocalContextOpts = { Extras: false; WithBraces: false }
-> = Simplify<
-  {
-    [K in T]: {
-      [KK in Opts['WithBraces'] extends true
-        ? GetLocalCtxTag<K, Opts>
-        : RemoveLocalCtxTagBraces<
-            GetLocalCtxTag<K, Opts>
-          >]: RemoveLocalCtxTagBraces<KK> extends keyof ZIssueLocalCtxTagTypeMap
-        ? ZIssueLocalCtxTagTypeMap[RemoveLocalCtxTagBraces<KK>]
-        : any
-    }
-  }[T]
->
+> = {
+  [K in T]: {
+    [KK in Opts['WithBraces'] extends true
+      ? GetLocalCtxTag<K, Opts>
+      : RemoveLocalCtxTagBraces<
+          GetLocalCtxTag<K, Opts>
+        >]: RemoveLocalCtxTagBraces<KK> extends keyof ZIssueLocalCtxTagTypeMap
+      ? ZIssueLocalCtxTagTypeMap[RemoveLocalCtxTagBraces<KK>]
+      : any
+  }
+}[T]

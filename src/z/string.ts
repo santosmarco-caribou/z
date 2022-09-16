@@ -7,7 +7,7 @@ import type { MaybeArray } from '../utils'
 /*                                                       ZString                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZStringDataUriBaseOptions = {
+export type ZStringBase64BaseOptions = {
   paddingRequired?: boolean
 }
 
@@ -18,7 +18,7 @@ export type ZStringDomainTldsOptions = {
 
 export type ZStringBase64Options = ZCheckOptions<
   'string.base64',
-  ZStringDataUriBaseOptions & {
+  ZStringBase64BaseOptions & {
     urlSafe?: boolean
   }
 >
@@ -26,6 +26,11 @@ export type ZStringBase64Options = ZCheckOptions<
 export type ZStringHexadecimalOptions = ZCheckOptions<
   'string.hex',
   {
+    /**
+     * Whether to require the input to be byte aligned.
+     *
+     * @default false
+     */
     byteAligned?: boolean
   }
 >
@@ -33,9 +38,30 @@ export type ZStringHexadecimalOptions = ZCheckOptions<
 export type ZStringDomainOptions = ZCheckOptions<
   'string.domain',
   {
+    /**
+     * Whether to allow domains ending with a `.` character.
+     *
+     * @default false
+     */
     allowFullyQualified?: boolean
+    /**
+     * Whether to allow Unicode characters.
+     *
+     * @default true
+     */
     allowUnicode?: boolean
+    /**
+     * Minimum number of segments required for the domain.
+     *
+     * @default 2
+     */
     minDomainSegments?: number
+    /**
+     * Options for TLD (top-level domain) validation.
+     * By default, the TLD must be a valid name listed on the [IANA registry](http://data.iana.org/TLD/tlds-alpha-by-domain.txt).
+     *
+     * @default { allow: true }
+     */
     tlds?: ZStringDomainTldsOptions | false
   }
 >
@@ -59,7 +85,7 @@ export type ZStringUriOptions = ZCheckOptions<
   }
 >
 
-export type ZStringDataUriOptions = ZCheckOptions<'string.dataUri', ZStringDataUriBaseOptions>
+export type ZStringDataUriOptions = ZCheckOptions<'string.dataUri', ZStringBase64BaseOptions>
 
 export type ZStringEmailOptions = ZCheckOptions<
   'string.email',

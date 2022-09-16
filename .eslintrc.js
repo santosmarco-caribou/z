@@ -8,6 +8,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    // 'plugin:jsdoc/recommended',
     'prettier',
   ],
   parser: '@typescript-eslint/parser',
@@ -16,7 +17,7 @@ module.exports = {
     sourceType: 'module',
     project: './tsconfig.json',
   },
-  plugins: ['@typescript-eslint', 'unicorn', 'simple-import-sort' /* 'eslint-plugin-tsdoc' */],
+  plugins: ['@typescript-eslint', 'unicorn', 'simple-import-sort', 'jsdoc'],
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
@@ -25,6 +26,5 @@ module.exports = {
     '@typescript-eslint/prefer-as-const': 'off',
     'simple-import-sort/imports': 'warn',
     'simple-import-sort/exports': 'warn',
-    // 'tsdoc/syntax': 'warn',
   },
 }

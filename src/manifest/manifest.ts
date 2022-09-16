@@ -21,14 +21,15 @@ export type ManifestBasicInfoWithValue<T> = ManifestBasicInfo & {
 export type ManifestFormat =
   | 'alphanumeric'
   | 'base64'
+  | 'bigint'
   | 'data-uri'
   | 'date-time'
   | 'email'
   | 'hexadecimal'
+  | 'ip'
   | 'port'
   | 'uri'
   | 'uuid'
-  | 'bigint'
 
 /* ------------------------------------------------- ZManifestObject ------------------------------------------------ */
 

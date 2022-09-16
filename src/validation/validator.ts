@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { cloneDeep } from 'lodash'
 import type { O } from 'ts-toolbelt'
+import type { Simplify } from 'type-fest'
 
 import {
   AnyZDef,
@@ -41,9 +42,10 @@ export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions & Required<ParseO
 
 /* ----------------------------------------------------- Checks ----------------------------------------------------- */
 
-export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = EmptyObject> = {
-  message?: string | ((context: ZIssueLocalContext<IssueCode>) => string)
-} & Extras
+export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = EmptyObject> = Simplify<
+  { message?: string | ((context: ZIssueLocalContext<IssueCode>) => string) } & Extras,
+  { deep: true }
+>
 
 /* ------------------------------------------------ Custom validation ----------------------------------------------- */
 

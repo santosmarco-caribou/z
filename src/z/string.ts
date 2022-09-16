@@ -7,7 +7,28 @@ import type { MaybeArray } from '../utils'
 /*                                                       ZString                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZStringDomainTldsOptions = { allow?: string[] | boolean; deny?: string[] }
+export type ZStringDataUriBaseOptions = {
+  paddingRequired?: boolean
+}
+
+export type ZStringDomainTldsOptions = {
+  allow?: string[] | boolean
+  deny?: string[]
+}
+
+export type ZStringBase64Options = ZCheckOptions<
+  'string.base64',
+  ZStringDataUriBaseOptions & {
+    urlSafe?: boolean
+  }
+>
+
+export type ZStringHexadecimalOptions = ZCheckOptions<
+  'string.hex',
+  {
+    byteAligned?: boolean
+  }
+>
 
 export type ZStringDomainOptions = ZCheckOptions<
   'string.domain',
@@ -21,7 +42,10 @@ export type ZStringDomainOptions = ZCheckOptions<
 
 export type ZStringIpOptions = ZCheckOptions<
   'string.ip',
-  { version?: MaybeArray<'ipv4' | 'ipv6' | 'ipvfuture'>; cidr?: 'optional' | 'required' | 'forbidden' }
+  {
+    version?: MaybeArray<'ipv4' | 'ipv6' | 'ipvfuture'>
+    cidr?: 'optional' | 'required' | 'forbidden'
+  }
 >
 
 export type ZStringUriOptions = ZCheckOptions<
@@ -35,18 +59,31 @@ export type ZStringUriOptions = ZCheckOptions<
   }
 >
 
+export type ZStringDataUriOptions = ZCheckOptions<'string.dataUri', ZStringDataUriBaseOptions>
+
 export type ZStringEmailOptions = ZCheckOptions<
   'string.email',
-  ZStringDomainOptions & { ignoreLength?: boolean; multiple?: boolean; separator?: MaybeArray<string> }
+  ZStringDomainOptions & {
+    ignoreLength?: boolean
+    multiple?: boolean
+    separator?: MaybeArray<string>
+  }
 >
 
 export type ZStringUuidOptions = ZCheckOptions<
   'string.guid',
-  { version?: MaybeArray<'uuidv1' | 'uuidv2' | 'uuidv3' | 'uuidv4' | 'uuidv5'>; separator?: '-' | ':' | boolean }
+  {
+    version?: MaybeArray<'uuidv1' | 'uuidv2' | 'uuidv3' | 'uuidv4' | 'uuidv5'>
+    separator?: '-' | ':' | boolean
+  }
 >
 
-export type ZStringPatternOptions = { name?: string; invert?: boolean } & ZCheckOptions<
-  'string.pattern.base' | 'string.pattern.name' | 'string.pattern.invert.base' | 'string.pattern.invert.name'
+export type ZStringPatternOptions = ZCheckOptions<
+  'string.pattern.base' | 'string.pattern.name' | 'string.pattern.invert.base' | 'string.pattern.invert.name',
+  {
+    name?: string
+    invert?: boolean
+  }
 >
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -73,8 +110,8 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   /**
    * Requires the string to be a valid `base64` string.
    */
-  base64(options?: ZCheckOptions<'string.base64'>): this {
-    this._addCheck('string.base64', v => v.base64(), { message: options?.message })
+  base64(options?: ZStringBase64Options): this {
+    this._addCheck('string.base64', v => v.base64(options), { message: options?.message })
     this._updateManifest('output', 'format', 'base64')
     return this
   }
@@ -82,38 +119,55 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   /**
    * Requires the string to be a valid hexadecimal string.
    */
-  hexadecimal(options?: ZCheckOptions<'string.hex'>): this {
-    this._addCheck('string.hex', v => v.hex(), { message: options?.message })
+  hexadecimal(options?: ZStringHexadecimalOptions): this {
+    this._addCheck('string.hex', v => v.hex(options), { message: options?.message })
     this._updateManifest('output', 'format', 'hexadecimal')
     return this
   }
   /**
    * {@inheritDoc ZString#hexadecimal}
    */
-  hex(options?: ZCheckOptions<'string.hex'>): this {
+  hex(options?: ZStringHexadecimalOptions): this {
     return this.hexadecimal(options)
   }
 
+  /**
+   * Requires the string value to be a valid domain.
+   */
   domain(options?: ZStringDomainOptions): this {
     return this._addCheck('string.domain', v => v.domain(options), { message: options?.message })
   }
 
+  /**
+   * Requires the string value to be a valid hostname as per RFC1123.
+   */
   hostname(options?: ZCheckOptions<'string.hostname'>): this {
     return this._addCheck('string.hostname', v => v.hostname(), { message: options?.message })
   }
 
+  /**
+   * Requires the string value to be a valid IP address.
+   */
   ip(options?: ZStringIpOptions): this {
-    return this._addCheck('string.ip', v => v.ip(options), { message: options?.message })
+    this._addCheck('string.ip', v => v.ip(options), { message: options?.message })
+    this._updateManifest('output', 'format', 'ip')
+    return this
   }
 
+  /**
+   * Requires the string value to be a valid RFC 3986 URI.
+   */
   uri(options?: ZStringUriOptions): this {
     this._addCheck('string.uri', v => v.uri(options), { message: options?.message })
     this._updateManifest('output', 'format', 'uri')
     return this
   }
 
-  dataUri(options?: ZCheckOptions<'string.dataUri'>): this {
-    this._addCheck('string.dataUri', v => v.dataUri(), { message: options?.message })
+  /**
+   * Requires the string value to be a valid data URI string.
+   */
+  dataUri(options?: ZStringDataUriOptions): this {
+    this._addCheck('string.dataUri', v => v.dataUri(options), { message: options?.message })
     this._updateManifest('output', 'format', 'data-uri')
     return this
   }

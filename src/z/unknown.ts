@@ -10,5 +10,5 @@ export class ZUnknown extends Z<ZDef<{ Output: unknown; Validator: ZSchema<Joi.A
   readonly name = ZType.Unknown
   protected readonly _hint = 'unknown'
 
-  static create = (): ZUnknown => new ZUnknown({ validator: ZValidator.any(), hooks: {} }, {})
+  static create = (): ZUnknown => new ZUnknown({ validator: ZValidator.any().optional(), hooks: {} }, {})
 }

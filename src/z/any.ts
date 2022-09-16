@@ -10,5 +10,5 @@ export class ZAny extends Z<ZDef<{ Output: any; Validator: ZSchema<Joi.AnySchema
   readonly name = ZType.Any
   protected readonly _hint = 'any'
 
-  static create = (): ZAny => new ZAny({ validator: ZValidator.any(), hooks: {} }, {})
+  static create = (): ZAny => new ZAny({ validator: ZValidator.any().optional(), hooks: {} }, {})
 }

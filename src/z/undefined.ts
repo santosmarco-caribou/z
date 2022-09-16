@@ -10,6 +10,5 @@ export class ZUndefined extends Z<ZDef<{ Output: undefined; Validator: ZSchema<J
   readonly name = ZType.Undefined
   protected readonly _hint = 'undefined'
 
-  static create = (): ZUndefined =>
-    new ZUndefined({ validator: ZValidator.any().forbidden().optional(), hooks: {} }, {})
+  static create = (): ZUndefined => new ZUndefined({ validator: ZValidator.any().forbidden(), hooks: {} }, {})
 }

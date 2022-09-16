@@ -93,7 +93,7 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   protected readonly _hint = 'string'
 
   /**
-   * Requires the string to only contain `a-z`, `A-Z`, and `0-9`.
+   * Requires the input to only contain `a-z`, `A-Z`, and `0-9`.
    */
   alphanumeric(options?: ZCheckOptions<'string.alphanum'>): this {
     this._addCheck('string.alphanum', v => v.alphanum(), { message: options?.message })
@@ -108,7 +108,7 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   /**
-   * Requires the string to be a valid `base64` string.
+   * Requires the input to be a valid `base64` string.
    */
   base64(options?: ZStringBase64Options): this {
     this._addCheck('string.base64', v => v.base64(options), { message: options?.message })
@@ -117,7 +117,7 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   /**
-   * Requires the string to be a valid hexadecimal string.
+   * Requires the input to be a valid hexadecimal string.
    */
   hexadecimal(options?: ZStringHexadecimalOptions): this {
     this._addCheck('string.hex', v => v.hex(options), { message: options?.message })
@@ -132,21 +132,21 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   /**
-   * Requires the string value to be a valid domain.
+   * Requires the input to be a valid domain string.
    */
   domain(options?: ZStringDomainOptions): this {
     return this._addCheck('string.domain', v => v.domain(options), { message: options?.message })
   }
 
   /**
-   * Requires the string value to be a valid hostname as per RFC1123.
+   * Requires the input to be a valid hostname string as per RFC1123.
    */
   hostname(options?: ZCheckOptions<'string.hostname'>): this {
     return this._addCheck('string.hostname', v => v.hostname(), { message: options?.message })
   }
 
   /**
-   * Requires the string value to be a valid IP address.
+   * Requires the input to be a valid IP address.
    */
   ip(options?: ZStringIpOptions): this {
     this._addCheck('string.ip', v => v.ip(options), { message: options?.message })
@@ -155,7 +155,7 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   /**
-   * Requires the string value to be a valid RFC 3986 URI.
+   * Requires the input to be a valid RFC 3986 URI string.
    */
   uri(options?: ZStringUriOptions): this {
     this._addCheck('string.uri', v => v.uri(options), { message: options?.message })
@@ -164,7 +164,7 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   /**
-   * Requires the string value to be a valid data URI string.
+   * Requires the input to be a valid data URI string.
    */
   dataUri(options?: ZStringDataUriOptions): this {
     this._addCheck('string.dataUri', v => v.dataUri(options), { message: options?.message })
@@ -172,6 +172,9 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
     return this
   }
 
+  /**
+   * Requires the input to be a valid email address.
+   */
   email(options?: ZStringEmailOptions): this {
     this._addCheck('string.email', v => v.email(options), { message: options?.message })
     this._updateManifest('output', 'format', 'email')
@@ -179,7 +182,7 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   /**
-   * Requires the string to be a valid UUID/GUID.
+   * Requires the input to be a valid UUID/GUID.
    *
    * @param options - Rule options
    */
@@ -222,7 +225,7 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   /**
-   * Requires the string to match a certain pattern.
+   * Requires the input to match a certain pattern.
    *
    * @param regex - The regular expression against which to match the string.
    * @param options - Rule options

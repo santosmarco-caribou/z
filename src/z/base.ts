@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
-import type { A, F, O, T } from 'ts-toolbelt'
+import type { A, F, O } from 'ts-toolbelt'
 import type { CamelCasedProperties, Simplify } from 'type-fest'
 
 import {

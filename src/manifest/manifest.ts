@@ -20,6 +20,7 @@ export type ManifestBasicInfoWithValue<T> = ManifestBasicInfo & {
 
 export type ManifestFormat =
   | 'alphanumeric'
+  | 'base64'
   | 'data-uri'
   | 'date-time'
   | 'email'

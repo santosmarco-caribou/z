@@ -74,7 +74,9 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * Requires the string to be a valid `base64` string.
    */
   base64(options?: ZCheckOptions<'string.base64'>): this {
-    return this._addCheck('string.base64', v => v.base64(), { message: options?.message })
+    this._addCheck('string.base64', v => v.base64(), { message: options?.message })
+    this._updateManifest('output', 'format', 'base64')
+    return this
   }
 
   /**

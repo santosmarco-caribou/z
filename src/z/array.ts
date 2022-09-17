@@ -1,10 +1,12 @@
 import type Joi from 'joi'
+import type { ReadonlyTuple } from 'type-fest'
 
 import {
   type _ZInput,
   type _ZOutput,
   type AnyZ,
   type ZCheckOptions,
+  type ZHooksObject,
   type ZManifestObject,
   Z,
   ZJoi,
@@ -16,13 +18,25 @@ import { isComplexHint } from '../utils'
 /*                                                       ZArray                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' = 'many'> extends Z<{
-  Output: Card extends 'atleastone' ? [_ZOutput<T>, ..._ZOutput<T>[]] : _ZOutput<T>[]
-  Input: Card extends 'atleastone' ? [_ZInput<T>, ..._ZInput<T>[]] : _ZInput<T>[]
+type ZArrayDef<T extends AnyZ, Card extends 'many' | 'atleastone' | number> = {
+  Output: Card extends number
+    ? ReadonlyTuple<_ZOutput<T>, Card>
+    : Card extends 'atleastone'
+    ? [_ZOutput<T>, ..._ZOutput<T>[]]
+    : _ZOutput<T>[]
+  Input: Card extends number
+    ? ReadonlyTuple<_ZInput<T>, Card>
+    : Card extends 'atleastone'
+    ? [_ZInput<T>, ..._ZInput<T>[]]
+    : _ZInput<T>[]
   Schema: Joi.ArraySchema
   Element: T
   Cardinality: Card
-}> {
+}
+
+export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number = 'many'> extends Z<
+  ZArrayDef<T, Card>
+> {
   readonly name = ZType.Array
   protected readonly _hint =
     this._getProp('cardinality') === 'atleastone'
@@ -73,9 +87,16 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' = 'many'>
    *
    * @param length - The number of elements in the array.
    */
-  length(length: number, options?: ZCheckOptions<'array.length'>): this {
+  length<L extends number>(length: L, options?: ZCheckOptions<'array.length'>): ZArray<T, L> {
     this._addCheck('array.length', v => v.length(length), options)
-    return this
+    return new ZArray<T, L>(
+      {
+        schema: this.$_schema,
+        manifest: this.$_manifest as ZManifestObject<_ZOutput<ZArrayDef<T, L>>>,
+        hooks: this.$_hooks as ZHooksObject<ZArrayDef<T, L>>,
+      },
+      { element: this._getProp('element'), cardinality: length }
+    )
   }
 
   /**
@@ -86,8 +107,8 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' = 'many'>
     return new ZArray<T, 'atleastone'>(
       {
         schema: updated.$_schema,
-        manifest: updated.$_manifest as ZManifestObject<[_ZOutput<T>, ..._ZOutput<T>[]]>,
-        hooks: updated.$_hooks,
+        manifest: updated.$_manifest as ZManifestObject<_ZOutput<ZArrayDef<T, 'atleastone'>>>,
+        hooks: updated.$_hooks as ZHooksObject<ZArrayDef<T, 'atleastone'>>,
       },
       { element: updated._getProp('element'), cardinality: 'atleastone' }
     )

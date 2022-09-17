@@ -14,6 +14,8 @@ export class ZVoid extends Z<{
   readonly name = ZType.Void
   protected readonly _hint = 'void'
 
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
   static create = (): ZVoid =>
     new ZVoid(
       {

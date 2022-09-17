@@ -1,12 +1,8 @@
 import {
   type _ZInput,
   type _ZOutput,
-  type AnyZInstanceOf,
-  type AnyZNullable,
-  type AnyZOptional,
-  type AnyZUniqueSymbol,
-  AnyZ,
-  TypeOf,
+  type AnyZ,
+  type TypeOf,
   ZAny,
   ZArray,
   ZBigInt,
@@ -114,7 +110,6 @@ export {
   unknownType as unknown,
   voidType as void,
 }
-export type { AnyZInstanceOf, AnyZNullable, AnyZOptional, AnyZUniqueSymbol }
 
 export type input<T extends AnyZ> = _ZInput<T>
 export type output<T extends AnyZ> = _ZOutput<T>

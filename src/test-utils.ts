@@ -126,11 +126,11 @@ export const generateBaseSpec = <Z extends AnyZ>(
           })
 
           test(`with issue code ${safeJsonStringify(val.expectedIssue.code)}`, () => {
-            expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0].code).toBe(val.expectedIssue.code)
+            expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0]?.code).toBe(val.expectedIssue.code)
           })
 
           test(`with message ${safeJsonStringify(val.expectedIssue.message)}`, () => {
-            expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0].message).toBe(val.expectedIssue.message)
+            expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0]?.message).toBe(val.expectedIssue.message)
           })
         })
       })

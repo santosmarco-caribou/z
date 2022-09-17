@@ -9,77 +9,195 @@ const BASE_SPEC_TEST_VALUE_MAP = {
   null: null,
   true: true,
   false: false,
+  'BigInt(-100)': BigInt(-100),
+  'BigInt(0)': BigInt(0),
+  'BigInt(100)': BigInt(100),
 } as const
 
 type BaseSpecTestValues = typeof BASE_SPEC_TEST_VALUE_MAP
 type BaseSpecTestValuesKey = keyof BaseSpecTestValues
+
+type ExpectedHintsConfig = {
+  default: string
+  optional: string
+  nullable: string
+  nullish: string
+}
+
+type ExpectedIssue = {
+  code: string
+  message: string
+}
 
 type ShouldParseConfig = {
   parse: true
 }
 type ShouldNotParseConfig = {
   parse: false
-  expectedIssue: {
-    code: string
-    message: string
-  }
+  expectedIssue: ExpectedIssue
 }
 
 type ShouldConfig = {
-  [K in BaseSpecTestValuesKey]: ShouldParseConfig | ShouldNotParseConfig
+  [K in BaseSpecTestValuesKey]: (ShouldParseConfig | ShouldNotParseConfig) & {
+    when?: {
+      [K in Exclude<keyof ExpectedHintsConfig, 'default'>]?: { expectedIssue?: ExpectedIssue }
+    }
+  }
 }
 
-type BaseSpecConfig = {
+type AdditionalSpecConfig<Z extends AnyZ> = {
+  title: `should ${string}`
+  spec: (z: Z) => void
+}
+
+type BaseSpecConfig<Z extends AnyZ> = {
   expectedTypeName: string
-  expectedHint: string
+  expectedHints: ExpectedHintsConfig
   should: ShouldConfig
+  additionalSpecs?: AdditionalSpecConfig<Z>[]
 }
 
-export const generateBaseSpec = (sut: { create: () => AnyZ }, config: BaseSpecConfig): void => {
-  let z: AnyZ
+export const generateBaseSpec = <Z extends AnyZ>(
+  title: string,
+  sut: { create: () => Z },
+  config: BaseSpecConfig<Z>
+): void => {
+  const _generateBaseSpec = <_Z extends AnyZ>(
+    sut: { create: () => _Z },
+    config: Omit<BaseSpecConfig<_Z>, 'expectedHints' | 'should'> & {
+      expectedHint: string
+      shouldParse: Partial<Record<BaseSpecTestValuesKey, ShouldParseConfig>>
+      shouldNotParse: Partial<Record<BaseSpecTestValuesKey, ShouldNotParseConfig>>
+    }
+  ): void => {
+    let z: _Z
 
-  beforeEach(() => {
-    z = sut.create()
-  })
-
-  test(`should have a name of ${JSON.stringify(config.expectedTypeName)}`, () => {
-    expect(z.name).toBe(config.expectedTypeName)
-  })
-
-  test(`should have a hint of ${JSON.stringify(config.expectedHint)}`, () => {
-    expect(z.hint).toBe(config.expectedHint)
-  })
-
-  const shouldParse = Object.entries(config.should).filter(([_, { parse }]) => parse) as Entries<
-    Record<BaseSpecTestValuesKey, ShouldParseConfig>
-  >
-  const shouldNotParse = Object.entries(config.should).filter(([_, { parse }]) => !parse) as Entries<
-    Record<BaseSpecTestValuesKey, ShouldNotParseConfig>
-  >
-
-  describe('should parse', () => {
-    shouldParse.forEach(([key]) => {
-      test(key, () => {
-        expect(z.parse(BASE_SPEC_TEST_VALUE_MAP[key])).toStrictEqual(BASE_SPEC_TEST_VALUE_MAP[key])
-      })
+    beforeEach(() => {
+      z = sut.create()
     })
-  })
 
-  describe('should not parse', () => {
-    shouldNotParse.forEach(([key, val]) => {
-      describe(key, () => {
-        test(`with only one issue`, () => {
-          expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues).toHaveLength(1)
-        })
+    test(`should have a name of ${JSON.stringify(config.expectedTypeName)}`, () => {
+      expect(z.name).toBe(config.expectedTypeName)
+    })
 
-        test(`with issue code ${JSON.stringify(val.expectedIssue.code)}`, () => {
-          expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0].code).toBe(val.expectedIssue.code)
-        })
+    test(`should have a hint of ${JSON.stringify(config.expectedHint)}`, () => {
+      expect(z.hint).toBe(config.expectedHint)
+    })
 
-        test(`with message ${JSON.stringify(val.expectedIssue.message)}`, () => {
-          expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0].message).toBe(val.expectedIssue.message)
+    const shouldParse = Object.entries(config.shouldParse) as Entries<Record<BaseSpecTestValuesKey, ShouldParseConfig>>
+    const shouldNotParse = Object.entries(config.shouldNotParse) as Entries<
+      Record<BaseSpecTestValuesKey, ShouldNotParseConfig>
+    >
+
+    describe('should parse', () => {
+      shouldParse.forEach(([key]) => {
+        test(key, () => {
+          expect(z.parse(BASE_SPEC_TEST_VALUE_MAP[key])).toStrictEqual(BASE_SPEC_TEST_VALUE_MAP[key])
         })
       })
     })
+
+    describe('should not parse', () => {
+      shouldNotParse.forEach(([key, val]) => {
+        describe(key, () => {
+          test(`with only one issue`, () => {
+            expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues).toHaveLength(1)
+          })
+
+          test(`with issue code ${JSON.stringify(val.expectedIssue.code)}`, () => {
+            expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0].code).toBe(val.expectedIssue.code)
+          })
+
+          test(`with message ${JSON.stringify(val.expectedIssue.message)}`, () => {
+            expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0].message).toBe(val.expectedIssue.message)
+          })
+        })
+      })
+    })
+
+    config.additionalSpecs?.forEach(({ title, spec }) => {
+      test(title, () => spec(z))
+    })
+  }
+
+  const shouldParse = Object.entries(config.should).filter(([_, { parse }]) => parse)
+  const shouldNotParse = Object.entries(config.should).filter(([_, { parse }]) => !parse)
+
+  describe(title, () => {
+    _generateBaseSpec(sut, {
+      ...config,
+      expectedHint: config.expectedHints.default,
+      shouldParse: Object.fromEntries(shouldParse),
+      shouldNotParse: Object.fromEntries(shouldNotParse),
+      additionalSpecs: config.additionalSpecs,
+    })
+  })
+
+  describe('#optional()', () => {
+    _generateBaseSpec(
+      { create: () => sut.create().optional() },
+      {
+        expectedTypeName: 'ZOptional',
+        expectedHint: config.expectedHints.optional,
+        shouldParse: {
+          ...Object.fromEntries(shouldParse),
+          undefined: { parse: true },
+        },
+        shouldNotParse: Object.fromEntries(
+          shouldNotParse
+            .map(([key, val]) => [key, val.when?.optional ? { ...val, ...val.when.optional } : val])
+            .filter(([key]) => key !== 'undefined')
+        ),
+        additionalSpecs: [
+          { title: 'should have #isOptional() evaluate to true', spec: z => expect(z.isOptional()).toBe(true) },
+        ],
+      }
+    )
+  })
+
+  describe('#nullable()', () => {
+    _generateBaseSpec(
+      { create: () => sut.create().nullable() },
+      {
+        expectedTypeName: 'ZNullable',
+        expectedHint: config.expectedHints.nullable,
+        shouldParse: {
+          ...Object.fromEntries(shouldParse),
+          null: { parse: true },
+        },
+        shouldNotParse: Object.fromEntries(
+          shouldNotParse
+            .map(([key, val]) => [key, val.when?.nullable ? { ...val, ...val.when.nullable } : val])
+            .filter(([key]) => key !== 'null')
+        ),
+        additionalSpecs: [
+          { title: 'should have #isNullable() evaluate to true', spec: z => expect(z.isNullable()).toBe(true) },
+        ],
+      }
+    )
+  })
+
+  describe('#nullish()', () => {
+    _generateBaseSpec(
+      { create: () => sut.create().nullish() },
+      {
+        expectedTypeName: 'ZNullable',
+        expectedHint: config.expectedHints.nullish,
+        shouldParse: {
+          ...Object.fromEntries(shouldParse),
+          undefined: { parse: true },
+          null: { parse: true },
+        },
+        shouldNotParse: Object.fromEntries(
+          shouldNotParse
+            .map(([key, val]) => [key, val.when?.nullish ? { ...val, ...val.when.nullish } : val])
+            .filter(([key]) => key !== 'undefined' && key !== 'null')
+        ),
+        additionalSpecs: [
+          { title: 'should have #isOptional() evaluate to true', spec: z => expect(z.isOptional()).toBe(true) },
+          { title: 'should have #isNullable() evaluate to true', spec: z => expect(z.isNullable()).toBe(true) },
+        ],
+      }
+    )
   })
 }

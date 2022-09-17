@@ -206,6 +206,7 @@ export type ZIssueLocalCtxTagTypeMap = {
   multiple: number
   n: any
   name: string
+  order: any
   pattern: string
   peersWithLabels: string[]
   presentWithLabels: string[]
@@ -215,9 +216,9 @@ export type ZIssueLocalCtxTagTypeMap = {
   type: string
   types: any
   unknownMisses: number
+  valids: string[]
   value: any
-  version: any
-  order: any
+  version: string
 }
 
 export type GetLocalCtxTagOpts = { Extras?: boolean }
@@ -225,7 +226,9 @@ export type GetLocalCtxTag<
   IssueCode extends AnyZIssueCode = AnyZIssueCode,
   Opts extends GetLocalCtxTagOpts = { Extras: false }
 > =
-  | Extract<S.Split<ZIssueMap[IssueCode], ' '>[number], `${'{' | ''}{${':' | ''}#${string}}${'}' | ''}`>
+  | (IssueCode extends 'any.only'
+      ? '{{#label}}' | '{{#valids}}'
+      : Extract<S.Split<ZIssueMap[IssueCode], ' '>[number], `${'{' | ''}{${':' | ''}#${string}}${'}' | ''}`>)
   | (Opts['Extras'] extends true ? 'key' | 'value' : never)
 
 export type RemoveLocalCtxTagBraces<Tag extends string> = Replace<

@@ -32,7 +32,7 @@ export class ZBoolean extends Z<{
   static create = (): ZBoolean =>
     new ZBoolean(
       {
-        schema: ZJoi.boolean(),
+        schema: ZJoi.boolean().preferences({ abortEarly: true }),
         manifest: {
           type: 'boolean',
         },

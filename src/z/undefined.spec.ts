@@ -1,23 +1,22 @@
 import { ZUndefined } from '../_internals'
 import { generateBaseSpec } from '../test-utils'
 
-generateBaseSpec(ZUndefined, {
+generateBaseSpec('ZUndefined', ZUndefined, {
   expectedTypeName: 'ZUndefined',
-  expectedHint: 'undefined',
+  expectedHints: {
+    default: 'undefined',
+    optional: 'undefined',
+    nullable: 'undefined | null',
+    nullish: 'undefined | null',
+  },
   should: {
     undefined: { parse: true },
     // NOT
-    null: {
-      parse: false,
-      expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' },
-    },
-    true: {
-      parse: false,
-      expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' },
-    },
-    false: {
-      parse: false,
-      expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' },
-    },
+    null: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    true: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    false: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    'BigInt(-100)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    'BigInt(0)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    'BigInt(100)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
   },
 })

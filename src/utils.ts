@@ -74,8 +74,14 @@ export const freezeDeep = <T>(x: T): ReadonlyDeep<T> => {
 
 /* ------------------------------------------------------ Hints ----------------------------------------------------- */
 
-export const unionizeHints = (...hints: string[]): string =>
-  [...new Set(hints)].join(' | ').replaceAll(/\(([^|]*|[^)]*)\)/g, '$1')
+export const unionizeHints = (...hints: string[]): string => {
+  const deunionized = hints.flatMap(h => h.split(' | '))
+  const unionized = [...new Set(deunionized)].join(' | ').replaceAll(/\(([^|]*|[^)]*)\)/g, '$1')
+  if (unionized.split(' | ').includes('any')) return 'any'
+  if (unionized.split(' | ').includes('never')) return 'never'
+  if (unionized.split(' | ').includes('unknown')) return 'unknown'
+  return unionized
+}
 
 export const isComplexHint = (hint: string): boolean => hint.split('\n').length > 1
 
@@ -83,7 +89,7 @@ export const isOnlyUnionHint = (typeName: ZType): boolean =>
   [ZType.Union, ZType.Nullable, ZType.Optional].includes(typeName)
 
 export const formatHint = (z: AnyZ): string => {
-  if ((isOnlyUnionHint(z.name) && z['_hint'].split('|').length > 2) || isComplexHint(z['_hint'])) {
+  if ((z.name === ZType.Array && z['_hint'].split('|').length > 2) || isComplexHint(z['_hint'])) {
     return `(${z['_hint']})`
   }
   return z['_hint']

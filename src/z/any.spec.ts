@@ -1,13 +1,21 @@
 import { ZAny } from '../_internals'
 import { generateBaseSpec } from '../test-utils'
 
-generateBaseSpec(ZAny, {
+generateBaseSpec('ZAny', ZAny, {
   expectedTypeName: 'ZAny',
-  expectedHint: 'any',
+  expectedHints: {
+    default: 'any',
+    optional: 'any',
+    nullable: 'any',
+    nullish: 'any',
+  },
   should: {
     undefined: { parse: true },
     null: { parse: true },
     true: { parse: true },
     false: { parse: true },
+    'BigInt(-100)': { parse: true },
+    'BigInt(0)': { parse: true },
+    'BigInt(100)': { parse: true },
   },
 })

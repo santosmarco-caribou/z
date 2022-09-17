@@ -1,13 +1,13 @@
-import { ZUnknown } from '../_internals'
+import { ZVoid } from '../_internals'
 import { generateBaseSpec } from '../test-utils'
 
-generateBaseSpec('ZUnknown', ZUnknown, {
-  expectedTypeName: 'ZUnknown',
+generateBaseSpec('ZVoid', ZVoid, {
+  expectedTypeName: 'ZVoid',
   expectedHints: {
-    default: 'unknown',
-    optional: 'unknown',
-    nullable: 'unknown',
-    nullish: 'unknown',
+    default: 'void',
+    optional: 'void | undefined',
+    nullable: 'void | null',
+    nullish: 'void | undefined | null',
   },
   should: {
     undefined: { parse: true },

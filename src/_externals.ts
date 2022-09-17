@@ -24,6 +24,7 @@ import {
   ZNumber,
   ZObject,
   ZOptional,
+  ZPromise,
   ZReadonly,
   ZReadonlyDeep,
   ZRecord,
@@ -44,10 +45,11 @@ const arrayType = ZArray.create
 const bigintType = ZBigInt.create
 const binaryType = ZBinary.create
 const booleanType = ZBoolean.create
+const brandType = ZBrand.create
 const dateType = ZDate.create
 const enumType = ZEnum.create
-const functionType = ZFunction.create
 const falseType = ZFalse.create
+const functionType = ZFunction.create
 const instanceofType = ZInstanceOf.create
 const intersectionType = ZIntersection.create
 const literalType = ZLiteral.create
@@ -59,8 +61,9 @@ const nullType = ZNull.create
 const numberType = ZNumber.create
 const objectType = ZObject.create
 const optionalType = ZOptional.create
-const readonlyType = ZReadonly.create
+const promiseType = ZPromise.create
 const readonlyDeepType = ZReadonlyDeep.create
+const readonlyType = ZReadonly.create
 const recordType = ZRecord.create
 const setType = ZSet.create
 const stringType = ZString.create
@@ -72,7 +75,6 @@ const unionType = ZUnion.create
 const uniqsymbolType = ZUniqueSymbol.create
 const unknownType = ZUnknown.create
 const voidType = ZVoid.create
-const brandType = ZBrand.create
 
 export {
   anyType as any,
@@ -96,6 +98,7 @@ export {
   numberType as number,
   objectType as object,
   optionalType as optional,
+  promiseType as promise,
   readonlyType as readonly,
   readonlyDeepType as readonlydeep,
   recordType as record,

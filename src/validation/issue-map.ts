@@ -116,6 +116,8 @@ export const Z_ISSUE_MAP = {
   'record.key.base': '{{#label}} keys must be of type {{#type}}',
   'record.value.base': '{{#label}} values must be of type {{#type}}',
 
+  'promise.base': '{{#label}} must be a Promise',
+
   'string.alphanum': '{{#label}} must only contain alpha-numeric characters',
   'string.base': '{{#label}} must be a string',
   'string.base64': '{{#label}} must be a valid base64 string',

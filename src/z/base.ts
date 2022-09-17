@@ -18,6 +18,7 @@ import {
   ZOpenApi,
   ZOptional,
   ZParser,
+  ZPromise,
   ZPropsManager,
   ZReadonly,
   ZReadonlyDeep,
@@ -84,15 +85,24 @@ export interface Z<Def extends ZDef>
 
 @mix(ZValidator, ZPropsManager, ZHooks, ZParser, ZManifest, ZOpenApi)
 export abstract class Z<Def extends ZDef> {
+  /** @internal */
   readonly $_output!: Def['Output']
+  /** @internal */
   readonly $_input!: Def['Input']
 
+  /** @internal */
   readonly $_schema: _ZSchema<Def>
+  /** @internal */
   readonly $_manifest: ZManifestObject<Def['Output']>
 
+  /** @internal */
   readonly _id: string
 
+  /**
+   * The unique name of the `ZType`.
+   */
   abstract readonly name: ZType
+  /** @internal */
   protected abstract readonly _hint: string
 
   constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {
@@ -118,10 +128,32 @@ export abstract class Z<Def extends ZDef> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
+  /**
+   * Retrieves an optional version of the `ZType`.
+   *
+   * @example
+   * ```ts
+   * const optionalString = z.string().optional() // string | undefined
+   *
+   * // equivalent to
+   * z.optional(z.string())
+   * ```
+   */
   optional(): ZOptional<this> {
     return ZOptional.create(this)
   }
 
+  /**
+   * Retrieves a nullable version of the `ZType`.
+   *
+   * @example
+   * ```ts
+   * const nullableNumber = z.number().nullable() // number | null
+   *
+   * // equivalent to
+   * z.nullable(z.number())
+   * ```
+   */
   nullable(): ZNullable<this> {
     return ZNullable.create(this)
   }
@@ -140,6 +172,10 @@ export abstract class Z<Def extends ZDef> {
 
   and<Z extends AnyZ>(intersection: Z): ZIntersection<[this, Z]> {
     return ZIntersection.create([this, intersection])
+  }
+
+  promise(): ZPromise<this> {
+    return ZPromise.create(this)
   }
 
   brand<B extends string | number | symbol>(brand: F.Narrow<B>): ZBrand<this, B> {

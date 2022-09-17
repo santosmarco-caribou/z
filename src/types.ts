@@ -27,6 +27,7 @@ export enum ZType {
   Number = 'ZNumber',
   Object = 'ZObject',
   Optional = 'ZOptional',
+  Promise = 'ZPromise',
   Readonly = 'ZReadonly',
   ReadonlyDeep = 'ZReadonlyDeep',
   Record = 'ZRecord',

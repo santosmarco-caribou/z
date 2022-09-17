@@ -1,3 +1,5 @@
+import { cloneDeep } from 'lodash'
+
 import type { BaseZ, ZDef, ZProps } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -13,7 +15,7 @@ export class ZPropsManager<Def extends ZDef> {
   }
 
   protected _getProp<P extends keyof ZProps<Def>>(prop: P): ZProps<Def>[P] {
-    return this._getProps()[prop]
+    return cloneDeep(this._getProps())[prop]
   }
 
   protected _updateProps(fn: (props: Readonly<ZProps<Def>>) => ZProps<Def>): this {

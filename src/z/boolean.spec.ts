@@ -18,6 +18,10 @@ generateBaseSpec('ZBoolean', ZBoolean, {
     'BigInt(-100)': { parse: false, expectedIssue: { code: 'boolean.base', message: '"value" must be a boolean' } },
     'BigInt(0)': { parse: false, expectedIssue: { code: 'boolean.base', message: '"value" must be a boolean' } },
     'BigInt(100)': { parse: false, expectedIssue: { code: 'boolean.base', message: '"value" must be a boolean' } },
+    NaN: { parse: false, expectedIssue: { code: 'boolean.base', message: '"value" must be a boolean' } },
+    A: { parse: false, expectedIssue: { code: 'boolean.base', message: '"value" must be a boolean' } },
+    B: { parse: false, expectedIssue: { code: 'boolean.base', message: '"value" must be a boolean' } },
+    C: { parse: false, expectedIssue: { code: 'boolean.base', message: '"value" must be a boolean' } },
   },
   additionalSpecs: [
     { title: 'should have .true() evaluate to a ZTrue instance', spec: z => expect(z.true()).toBeInstanceOf(ZTrue) },
@@ -73,6 +77,38 @@ generateBaseSpec('ZTrue', ZTrue, {
         nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
       },
     },
+    NaN: {
+      parse: false,
+      expectedIssue: { code: 'any.only', message: '"value" must be [true]' },
+      when: {
+        nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
+        nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
+      },
+    },
+    A: {
+      parse: false,
+      expectedIssue: { code: 'any.only', message: '"value" must be [true]' },
+      when: {
+        nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
+        nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
+      },
+    },
+    B: {
+      parse: false,
+      expectedIssue: { code: 'any.only', message: '"value" must be [true]' },
+      when: {
+        nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
+        nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
+      },
+    },
+    C: {
+      parse: false,
+      expectedIssue: { code: 'any.only', message: '"value" must be [true]' },
+      when: {
+        nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
+        nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [true, null]' } },
+      },
+    },
   },
 })
 
@@ -114,6 +150,38 @@ generateBaseSpec('ZFalse', ZFalse, {
       },
     },
     'BigInt(100)': {
+      parse: false,
+      expectedIssue: { code: 'any.only', message: '"value" must be [false]' },
+      when: {
+        nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [false, null]' } },
+        nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [false, null]' } },
+      },
+    },
+    NaN: {
+      parse: false,
+      expectedIssue: { code: 'any.only', message: '"value" must be [false]' },
+      when: {
+        nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [false, null]' } },
+        nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [false, null]' } },
+      },
+    },
+    A: {
+      parse: false,
+      expectedIssue: { code: 'any.only', message: '"value" must be [false]' },
+      when: {
+        nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [false, null]' } },
+        nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [false, null]' } },
+      },
+    },
+    B: {
+      parse: false,
+      expectedIssue: { code: 'any.only', message: '"value" must be [false]' },
+      when: {
+        nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [false, null]' } },
+        nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [false, null]' } },
+      },
+    },
+    C: {
       parse: false,
       expectedIssue: { code: 'any.only', message: '"value" must be [false]' },
       when: {

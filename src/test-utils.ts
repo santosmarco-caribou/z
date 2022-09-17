@@ -12,6 +12,10 @@ const BASE_SPEC_TEST_VALUE_MAP = {
   'BigInt(-100)': BigInt(-100),
   'BigInt(0)': BigInt(0),
   'BigInt(100)': BigInt(100),
+  NaN: Number.NaN,
+  A: 'A',
+  B: 'B',
+  C: 'C',
 } as const
 
 type BaseSpecTestValues = typeof BASE_SPEC_TEST_VALUE_MAP

@@ -11,7 +11,7 @@ import { unionizeHints } from '../utils'
 export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
   Output: T[number]
   Input: T[number]
-  Schema: Joi.StringSchema
+  Schema: Joi.AnySchema
   Values: T
 }> {
   readonly name = ZType.Enum
@@ -41,7 +41,7 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
   static create = <T extends readonly [string, ...string[]]>(values: F.Narrow<T>): ZEnum<T> =>
     new ZEnum(
       {
-        schema: ZJoi.string().valid(...values),
+        schema: ZJoi.any().valid(...values),
         manifest: {},
         hooks: {},
       },

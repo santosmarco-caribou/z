@@ -18,5 +18,9 @@ generateBaseSpec('ZNever', ZNever, {
     'BigInt(-100)': { parse: false, expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' } },
     'BigInt(0)': { parse: false, expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' } },
     'BigInt(100)': { parse: false, expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' } },
+    NaN: { parse: false, expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' } },
+    A: { parse: false, expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' } },
+    B: { parse: false, expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' } },
+    C: { parse: false, expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' } },
   },
 })

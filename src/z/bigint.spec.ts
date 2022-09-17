@@ -18,5 +18,9 @@ generateBaseSpec('ZBigInt', ZBigInt, {
     null: { parse: false, expectedIssue: { code: 'bigint.base', message: '"value" must be a bigint' } },
     true: { parse: false, expectedIssue: { code: 'bigint.base', message: '"value" must be a bigint' } },
     false: { parse: false, expectedIssue: { code: 'bigint.base', message: '"value" must be a bigint' } },
+    NaN: { parse: false, expectedIssue: { code: 'bigint.base', message: '"value" must be a bigint' } },
+    A: { parse: false, expectedIssue: { code: 'bigint.base', message: '"value" must be a bigint' } },
+    B: { parse: false, expectedIssue: { code: 'bigint.base', message: '"value" must be a bigint' } },
+    C: { parse: false, expectedIssue: { code: 'bigint.base', message: '"value" must be a bigint' } },
   },
 })

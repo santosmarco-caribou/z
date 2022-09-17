@@ -17,5 +17,9 @@ generateBaseSpec('ZUnknown', ZUnknown, {
     'BigInt(-100)': { parse: true },
     'BigInt(0)': { parse: true },
     'BigInt(100)': { parse: true },
+    NaN: { parse: true },
+    A: { parse: true },
+    B: { parse: true },
+    C: { parse: true },
   },
 })

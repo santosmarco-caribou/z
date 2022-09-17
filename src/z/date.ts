@@ -10,9 +10,7 @@ const __NOW__ = Symbol('__NOW__')
 
 type ZDateCheckInput = Date | typeof __NOW__
 
-export type ZDateOptions = { strict: boolean }
-
-export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<{
+export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends Z<{
   Output: Date
   Input: Opts['strict'] extends true ? Date : Date | number | string
   Schema: Joi.DateSchema

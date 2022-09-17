@@ -18,5 +18,9 @@ generateBaseSpec('ZUndefined', ZUndefined, {
     'BigInt(-100)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
     'BigInt(0)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
     'BigInt(100)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    NaN: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    A: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    B: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
+    C: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [undefined]' } },
   },
 })

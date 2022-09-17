@@ -18,5 +18,9 @@ generateBaseSpec('ZNull', ZNull, {
     'BigInt(-100)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [null]' } },
     'BigInt(0)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [null]' } },
     'BigInt(100)': { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [null]' } },
+    NaN: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [null]' } },
+    A: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [null]' } },
+    B: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [null]' } },
+    C: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [null]' } },
   },
 })

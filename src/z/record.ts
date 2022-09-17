@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZTuple, ZType } from '../_internals'
+import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZPropertyKey, ZTuple, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZRecord                                                      */
@@ -29,18 +29,39 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = <K extends AnyZ<PropertyKey>, V extends AnyZ>(keyType: K, valueType: V): ZRecord<K, V> =>
-    new ZRecord<K, V>(
-      {
-        schema: ZJoi.object().pattern(keyType.$_schema, valueType.$_schema),
-        manifest: {
-          keys: keyType.$_manifest,
-          values: valueType.$_manifest,
+  static create: {
+    <V extends AnyZ>(valueType: V): ZRecord<ZPropertyKey, V>
+    <K extends AnyZ<PropertyKey>, V extends AnyZ>(keyType: K, valueType: V): ZRecord<K, V>
+  } = <T extends AnyZ<PropertyKey> | AnyZ, U extends AnyZ = never>(
+    keyOrValueType: T,
+    valueType?: U
+  ): ZRecord<ZPropertyKey, T> | ZRecord<T, U> => {
+    if (valueType) {
+      return new ZRecord(
+        {
+          schema: ZJoi.object().pattern(keyOrValueType.$_schema, valueType.$_schema),
+          manifest: {
+            keys: keyOrValueType.$_manifest,
+            values: valueType.$_manifest,
+          },
+          hooks: {},
         },
-        hooks: {},
-      },
-      { keyType, valueType }
-    )
+        { keyType: keyOrValueType, valueType }
+      )
+    } else {
+      return new ZRecord(
+        {
+          schema: ZJoi.object().pattern(/./, keyOrValueType.$_schema),
+          manifest: {
+            keys: {},
+            values: keyOrValueType.$_manifest,
+          },
+          hooks: {},
+        },
+        { keyType: ZPropertyKey.create(), valueType: keyOrValueType }
+      )
+    }
+  }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

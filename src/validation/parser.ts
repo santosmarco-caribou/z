@@ -60,6 +60,9 @@ export class ZParser<Def extends ZDef> {
   isValid(input: unknown, options?: ParseOptions): input is _ZOutput<Def> {
     return this.safeParse(input, options).ok
   }
+  guard(input: unknown, options?: ParseOptions): input is _ZOutput<Def> {
+    return this.isValid(input, options)
+  }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 

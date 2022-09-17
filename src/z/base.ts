@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, F, O } from 'ts-toolbelt'
-import type { CamelCasedProperties, Simplify } from 'type-fest'
+import type { CamelCasedProperties } from 'type-fest'
 
 import {
   AnyZSchema,
@@ -164,4 +164,6 @@ export type ZInput<T extends AnyBaseZ | AnyZDef> = T extends AnyBaseZ
     : ZOutput<T>
   : never
 
-export type TypeOf<T extends AnyBaseZ> = ZOutput<T> extends Set<any> ? ZOutput<T> : Simplify<ZOutput<T>, { deep: true }>
+export type TypeOf<T extends AnyBaseZ> = ZOutput<T> extends Map<any, any> | Set<any>
+  ? ZOutput<T>
+  : A.Compute<ZOutput<T>, 'deep'>

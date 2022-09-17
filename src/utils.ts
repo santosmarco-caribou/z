@@ -49,6 +49,8 @@ export type WithQuestionMarks<T extends O.Object> = Pick<T, RequiredKeys<T>> & P
 
 export const toUpperCase = <T extends string>(str: T): Uppercase<T> => str.toUpperCase() as Uppercase<T>
 
+export const toLowerCase = <T extends string>(str: T): Lowercase<T> => str.toLowerCase() as Lowercase<T>
+
 /* ----------------------------------------------------- Arrays ----------------------------------------------------- */
 
 export const isArray = (maybeArr: unknown): maybeArr is any[] => Array.isArray(maybeArr)

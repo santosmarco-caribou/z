@@ -1,8 +1,8 @@
 import type Joi from 'joi'
 import type { F } from 'ts-toolbelt'
 
-import { Z, ZJoi, ZManifestObject, ZType } from '../_internals'
-import { toUpperCase, unionizeHints } from '../utils'
+import { Z, ZJoi, ZType } from '../_internals'
+import { toLowerCase, toUpperCase, unionizeHints } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZEnum                                                       */
@@ -36,14 +36,27 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
     )
   }
 
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
   uppercase(): ZEnum<{ [K in keyof T]: Uppercase<T[K]> }> {
-    return new ZEnum<{ [K in keyof T]: Uppercase<T[K]> }>(
+    return this._transform(values => values.map(toUpperCase) as { [K in keyof T]: Uppercase<T[K]> })
+  }
+
+  lowercase(): ZEnum<{ [K in keyof T]: Lowercase<T[K]> }> {
+    return this._transform(values => values.map(toLowerCase) as { [K in keyof T]: Lowercase<T[K]> })
+  }
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  private _transform<_T extends readonly [string, ...string[]]>(fn: (values: T) => _T): ZEnum<_T> {
+    const transformedValues = fn(this._getProp('values'))
+    return new ZEnum<_T>(
       {
-        schema: ZJoi.any().valid(ZJoi.override, ...this._getProp('values').map(toUpperCase)),
-        manifest: this.$_manifest as ZManifestObject<{ [K in keyof T]: Uppercase<T[K]> }[number]>,
+        schema: ZJoi.any().valid(...transformedValues),
+        manifest: this.$_manifest,
         hooks: this._getHooks(),
       },
-      { values: this._getProp('values').map(toUpperCase) as { [K in keyof T]: Uppercase<T[K]> } }
+      { values: transformedValues }
     )
   }
 

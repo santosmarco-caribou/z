@@ -1,7 +1,6 @@
 import j2s from 'joi-to-swagger'
 import { includes } from 'lodash'
 import type { SchemaObject } from 'openapi3-ts'
-import type { U } from 'ts-toolbelt'
 import type { Merge } from 'type-fest'
 
 import type { _ZOutput, AnyZManifestObject, BaseZ, ZDef, ZManifestObject } from '../_internals'
@@ -11,12 +10,12 @@ import { mergeSafe } from '../utils'
 /*                                                      ZOpenApi                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-const OPEN_API_PROPERTIES: U.ListOf<Extract<keyof AnyZManifestObject, keyof SchemaObject>> = [
+const OPEN_API_PROPERTIES: Extract<keyof AnyZManifestObject, keyof SchemaObject>[] = [
   'title',
   'description',
   'type',
-  'format',
   'default',
+  'format',
   'examples',
   'deprecated',
   'minimum',

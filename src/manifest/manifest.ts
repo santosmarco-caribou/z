@@ -1,5 +1,4 @@
-import { merge } from 'lodash'
-import type { O } from 'ts-toolbelt'
+import { mergeWith } from 'lodash'
 
 import type { _ZOutput, BaseZ, ZDef, ZValidator } from '../_internals'
 import { hasProp, isArray } from '../utils'
@@ -67,16 +66,6 @@ export type AnyZManifestObject = ZManifestObject<any>
 export interface ZManifest<Def extends ZDef> extends BaseZ<Def>, ZValidator<Def> {}
 
 export class ZManifest<Def extends ZDef> {
-  protected _init(): void {
-    this._prepareManifest()
-  }
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  get manifest(): O.Readonly<ZManifestObject<_ZOutput<Def>>, 'deep'> {
-    return this.$_manifest
-  }
-
   /**
    * Overrides the key name in error messages.
    *
@@ -217,18 +206,9 @@ export class ZManifest<Def extends ZDef> {
     key: K,
     value: NonNullable<ZManifestObject<_ZOutput<Def>>[K]>
   ): this {
-    const prevValue = this.$_manifest[key]
-    merge(this.$_manifest, {
-      [key]: isArray(value) ? [...(isArray(prevValue) ? prevValue : []), ...value] : value,
-    })
+    mergeWith(this.$_manifest, { [key]: value }, (objValue, srcValue) =>
+      isArray(objValue) ? objValue.concat(srcValue) : undefined
+    )
     return this
-  }
-
-  private _prepareManifest(): void {
-    const metaObjs = this.$_schema.$_terms['metas'] as Array<{
-      swagger: ZManifestObject<_ZOutput<Def>>
-    }>
-    if (!metaObjs[0]) metaObjs[0] = { swagger: this.$_manifest ?? {} }
-    this.$_manifest = metaObjs[0].swagger
   }
 }

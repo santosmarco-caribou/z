@@ -1,6 +1,7 @@
 /* eslint-disable simple-import-sort/exports */
 export * from './hooks/hooks'
 export * from './manifest/manifest'
+export * from './manifest/openapi'
 export * from './props/props'
 export * from './types'
 export * from './validation/error'

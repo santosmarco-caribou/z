@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { isArray, mergeWith } from 'lodash'
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, F } from 'ts-toolbelt'
@@ -13,6 +14,7 @@ import {
   ZManifest,
   ZManifestObject,
   ZNullable,
+  ZOpenApi,
   ZOptional,
   ZParser,
   ZPropsManager,
@@ -22,7 +24,6 @@ import {
   ZUnion,
   ZValidator,
 } from '../_internals'
-import { ZOpenApi } from '../manifest/openapi'
 import { formatHint } from '../utils'
 
 settings.initFunction = '_init'
@@ -97,16 +98,27 @@ export abstract class Z<Def extends ZDef> {
   abstract readonly name: ZType
   protected abstract readonly _hint: string
 
-  constructor(dependencies: ZDependencies<Def>, properties: ZProps<Def>) {
-    const { schema, manifest, hooks } = dependencies
-    this.$_schema = schema
-    this.$_manifest = manifest
-    this.$_hooks = {
-      beforeParse: hooks.beforeParse ?? [],
-      afterParse: hooks.afterParse ?? [],
-    }
+  constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {
+    const { schema, manifest, hooks } = deps
 
-    this.$_props = properties
+    this.$_schema = schema
+
+    const metas = this.$_schema.$_terms['metas']
+    const [meta] = (isArray(metas) ? (metas.length > 0 ? metas : [{}]) : [metas]) as Array<{
+      _manifest: ZManifestObject<Def['Output']>
+      _hooks: ZHooksObject<Def>
+      _props: CamelCasedProperties<Omit<Def, keyof ZDef>>
+    }>
+    mergeWith(
+      meta,
+      { _manifest: {}, _hooks: { beforeParse: [], afterParse: [] }, _props: {} },
+      { _manifest: manifest, _hooks: hooks, _props: props },
+      (objValue, srcValue) => (isArray(objValue) ? objValue.concat(srcValue) : undefined)
+    )
+
+    this.$_manifest = meta._manifest
+    this.$_hooks = meta._hooks
+    this.$_props = meta._props
 
     this._id = nanoid()
   }

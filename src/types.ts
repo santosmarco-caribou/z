@@ -34,6 +34,7 @@ export enum ZType {
   Set = 'ZSet',
   String = 'ZString',
   Symbol = 'ZSymbol',
+  Template = 'ZTemplate',
   True = 'ZTrue',
   Truthy = 'ZTruthy',
   Tuple = 'ZTuple',

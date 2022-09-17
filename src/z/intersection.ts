@@ -14,7 +14,7 @@ export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   Components: T
 }> {
   readonly name = ZType.Intersection
-  protected readonly _hint = this._getProp('components')
+  protected readonly _hint: string = this._getProp('components')
     .map(z => z.hint)
     .join(' & ')
 
@@ -30,7 +30,7 @@ export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
     return new ZIntersection(
       {
         schema: (compAlreadyAlt
-          ? (compAlreadyAlt.$_schema as Joi.AlternativesSchema).concat(
+          ? (compAlreadyAlt.$_schema as ReturnType<typeof ZJoi['alternatives']>).concat(
               ZJoi.alternatives(
                 ...components.filter(comp => comp._id !== compAlreadyAlt._id).map(comp => comp.$_schema)
               )

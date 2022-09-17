@@ -1,5 +1,4 @@
 import Joi from 'joi'
-import { isArray, mergeWith } from 'lodash'
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, F } from 'ts-toolbelt'
@@ -13,6 +12,7 @@ import {
   ZIntersection,
   ZManifest,
   ZManifestObject,
+  ZMeta,
   ZNullable,
   ZOpenApi,
   ZOptional,
@@ -53,16 +53,6 @@ export type AnyZDependencies = ZDependencies<ZDef>
 export type ZProps<Def extends ZDef> = CamelCasedProperties<Omit<Def, keyof ZDef>>
 
 export type AnyZProps = ZProps<ZDef>
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                        ZMeta                                                       */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-export type ZMeta<Def extends ZDef> = {
-  _manifest: ZManifestObject<Def['Output']>
-  _hooks: ZHooksObject<Def>
-  _props: ZProps<Def>
-}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        BaseZ                                                       */
@@ -113,22 +103,12 @@ export abstract class Z<Def extends ZDef> {
 
     this.$_schema = schema
 
-    const metas = this.$_schema.$_terms['metas']
-    const [meta] = (isArray(metas) ? (metas.length > 0 ? metas : [{}]) : [metas]) as ZMeta<Def>[]
-
-    const initialMeta: ZMeta<Def> = {
-      _manifest: {},
-      _hooks: { beforeParse: [], afterParse: [] },
-      _props: {} as ZProps<Def>,
-    }
-
-    mergeWith(meta, initialMeta, { _manifest: manifest, _hooks: hooks, _props: props }, (objValue, srcValue) =>
-      isArray(objValue) ? objValue.concat(srcValue) : undefined
-    )
+    const meta = this.$_schema.$_terms.metas[0]
+    meta.update({ _manifest: manifest, _hooks: hooks, _props: props })
 
     this.$_manifest = meta._manifest
     this.$_hooks = meta._hooks
-    this.$_props = meta._props
+    this.$_props = meta._props as ZProps<Def>
 
     this._id = nanoid()
   }
@@ -147,8 +127,8 @@ export abstract class Z<Def extends ZDef> {
     return ZNullable.create(this)
   }
 
-  nullish(): ZNullable<ZOptional<this>> {
-    return this.optional().nullable()
+  nullish(): ZOptional<ZNullable<this>> {
+    return this.nullable().optional()
   }
 
   array(): ZArray<this> {
@@ -198,11 +178,15 @@ export type _ZOutput<T extends ZDef | AnyBaseZ> = T extends ZDef
 
 export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef ? T['Input'] : T extends AnyBaseZ ? T['$_input'] : never
 
-export type _ZSchema<T extends ZDef | AnyBaseZ> = T extends ZDef
+export type _ZSchema<T extends ZDef | AnyBaseZ> = (T extends ZDef
   ? T['Schema']
   : T extends AnyBaseZ
   ? T['$_schema']
-  : never
+  : never) & {
+  $_terms: {
+    metas: [ZMeta]
+  }
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

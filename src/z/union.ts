@@ -28,7 +28,7 @@ export class ZUnion<T extends [AnyZ, ...AnyZ[]]> extends Z<{
     return new ZUnion(
       {
         schema: optAlreadyAlt
-          ? (optAlreadyAlt.$_schema as Joi.AlternativesSchema).concat(
+          ? (optAlreadyAlt.$_schema as ReturnType<typeof ZJoi['alternatives']>).concat(
               ZJoi.alternatives(...options.filter(opt => opt._id !== optAlreadyAlt._id).map(option => option.$_schema))
             )
           : ZJoi.alternatives(...options.map(option => option.$_schema)),

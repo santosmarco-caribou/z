@@ -1,8 +1,7 @@
-import { mergeWith } from 'lodash'
-import { O } from 'ts-toolbelt'
+import type { O } from 'ts-toolbelt'
 
 import type { _ZOutput, BaseZ, ZDef, ZValidator } from '../_internals'
-import { hasProp, isArray } from '../utils'
+import { hasProp } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZManifest                                                     */
@@ -46,6 +45,7 @@ export type ZManifestObject<T> = ManifestBasicInfo & {
   notes?: ManifestBasicInfoWithValue<string>[]
   unit?: string
   deprecated?: boolean
+  /* ---------------------------------------------------------------------------------------------------------------- */
   // ZNumber
   minimum?: number
   maximum?: number
@@ -211,9 +211,7 @@ export class ZManifest<Def extends ZDef> {
     key: K,
     value: NonNullable<ZManifestObject<_ZOutput<Def>>[K]>
   ): this {
-    mergeWith(this.$_manifest, { [key]: value }, (objValue, srcValue) =>
-      isArray(objValue) ? objValue.concat(srcValue) : undefined
-    )
+    this.$_schema.$_terms.metas[0].update({ _manifest: { [key]: value } })
     return this
   }
 }

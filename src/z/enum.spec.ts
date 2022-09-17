@@ -10,7 +10,7 @@ generateBaseSpec(
       default: "'A' | 'B' | 'C'",
       optional: "'A' | 'B' | 'C' | undefined",
       nullable: "'A' | 'B' | 'C' | null",
-      nullish: "'A' | 'B' | 'C' | undefined | null",
+      nullish: "'A' | 'B' | 'C' | null | undefined",
     },
     should: {
       A: { parse: true },
@@ -60,6 +60,110 @@ generateBaseSpec(
         },
       },
       NaN: {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '-100.123': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '-100': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '-10': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '-1': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '0': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '1': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '10': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '100': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      '100.123': {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      yesterday: {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      now: {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      tomorrow: {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
+        when: {
+          nullable: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+          nullish: { expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C, null]' } },
+        },
+      },
+      isostring: {
         parse: false,
         expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' },
         when: {

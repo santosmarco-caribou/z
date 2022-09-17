@@ -3,6 +3,7 @@
 import { Entries } from 'type-fest'
 
 import { AnyZ } from './_internals'
+import { safeJsonStringify } from './utils'
 
 const BASE_SPEC_TEST_VALUE_MAP = {
   undefined: undefined,
@@ -16,6 +17,19 @@ const BASE_SPEC_TEST_VALUE_MAP = {
   A: 'A',
   B: 'B',
   C: 'C',
+  '-100.123': -100.123,
+  '-100': -100,
+  '-10': -10,
+  '-1': -1,
+  '0': 0,
+  '1': 1,
+  '10': 10,
+  '100': 100,
+  '100.123': 100.123,
+  yesterday: new Date(Date.now() - 86_400_000),
+  now: new Date(),
+  tomorrow: new Date(Date.now() + 86_400_000),
+  isostring: '1997-10-13T00:10:20.500Z',
 } as const
 
 type BaseSpecTestValues = typeof BASE_SPEC_TEST_VALUE_MAP
@@ -80,11 +94,11 @@ export const generateBaseSpec = <Z extends AnyZ>(
       z = sut.create()
     })
 
-    test(`should have a name of ${JSON.stringify(config.expectedTypeName)}`, () => {
+    test(`should have a name of ${safeJsonStringify(config.expectedTypeName)}`, () => {
       expect(z.name).toBe(config.expectedTypeName)
     })
 
-    test(`should have a hint of ${JSON.stringify(config.expectedHint)}`, () => {
+    test(`should have a hint of ${safeJsonStringify(config.expectedHint)}`, () => {
       expect(z.hint).toBe(config.expectedHint)
     })
 
@@ -96,7 +110,10 @@ export const generateBaseSpec = <Z extends AnyZ>(
     describe('should parse', () => {
       shouldParse.forEach(([key]) => {
         test(key, () => {
-          expect(z.parse(BASE_SPEC_TEST_VALUE_MAP[key])).toStrictEqual(BASE_SPEC_TEST_VALUE_MAP[key])
+          const parsed = z.parse(BASE_SPEC_TEST_VALUE_MAP[key])
+          expect(typeof parsed === 'bigint' ? parsed.toString() : parsed).toStrictEqual(
+            typeof parsed === 'bigint' ? parsed.toString() : parsed
+          )
         })
       })
     })
@@ -108,11 +125,11 @@ export const generateBaseSpec = <Z extends AnyZ>(
             expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues).toHaveLength(1)
           })
 
-          test(`with issue code ${JSON.stringify(val.expectedIssue.code)}`, () => {
+          test(`with issue code ${safeJsonStringify(val.expectedIssue.code)}`, () => {
             expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0].code).toBe(val.expectedIssue.code)
           })
 
-          test(`with message ${JSON.stringify(val.expectedIssue.message)}`, () => {
+          test(`with message ${safeJsonStringify(val.expectedIssue.message)}`, () => {
             expect(z.safeParse(BASE_SPEC_TEST_VALUE_MAP[key]).error?.issues[0].message).toBe(val.expectedIssue.message)
           })
         })
@@ -137,7 +154,7 @@ export const generateBaseSpec = <Z extends AnyZ>(
     })
   })
 
-  describe('#optional()', () => {
+  describe('.optional()', () => {
     _generateBaseSpec(
       { create: () => sut.create().optional() },
       {
@@ -153,13 +170,13 @@ export const generateBaseSpec = <Z extends AnyZ>(
             .filter(([key]) => key !== 'undefined')
         ),
         additionalSpecs: [
-          { title: 'should have #isOptional() evaluate to true', spec: z => expect(z.isOptional()).toBe(true) },
+          { title: 'should have .isOptional() evaluate to true', spec: z => expect(z.isOptional()).toBe(true) },
         ],
       }
     )
   })
 
-  describe('#nullable()', () => {
+  describe('.nullable()', () => {
     _generateBaseSpec(
       { create: () => sut.create().nullable() },
       {
@@ -175,17 +192,17 @@ export const generateBaseSpec = <Z extends AnyZ>(
             .filter(([key]) => key !== 'null')
         ),
         additionalSpecs: [
-          { title: 'should have #isNullable() evaluate to true', spec: z => expect(z.isNullable()).toBe(true) },
+          { title: 'should have .isNullable() evaluate to true', spec: z => expect(z.isNullable()).toBe(true) },
         ],
       }
     )
   })
 
-  describe('#nullish()', () => {
+  describe('.nullish()', () => {
     _generateBaseSpec(
       { create: () => sut.create().nullish() },
       {
-        expectedTypeName: 'ZNullable',
+        expectedTypeName: 'ZOptional',
         expectedHint: config.expectedHints.nullish,
         shouldParse: {
           ...Object.fromEntries(shouldParse),
@@ -198,9 +215,21 @@ export const generateBaseSpec = <Z extends AnyZ>(
             .filter(([key]) => key !== 'undefined' && key !== 'null')
         ),
         additionalSpecs: [
-          { title: 'should have #isOptional() evaluate to true', spec: z => expect(z.isOptional()).toBe(true) },
-          { title: 'should have #isNullable() evaluate to true', spec: z => expect(z.isNullable()).toBe(true) },
+          { title: 'should have .isOptional() evaluate to true', spec: z => expect(z.isOptional()).toBe(true) },
+          { title: 'should have .isNullable() evaluate to true', spec: z => expect(z.isNullable()).toBe(true) },
         ],
+      }
+    )
+  })
+
+  describe('.brand()', () => {
+    _generateBaseSpec(
+      { create: () => sut.create().brand(title) },
+      {
+        expectedTypeName: 'ZBrand',
+        expectedHint: title,
+        shouldParse: Object.fromEntries(shouldParse),
+        shouldNotParse: Object.fromEntries(shouldNotParse),
       }
     )
   })

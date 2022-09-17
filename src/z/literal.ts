@@ -2,13 +2,13 @@ import type Joi from 'joi'
 import type { F } from 'ts-toolbelt'
 import type { Primitive } from 'type-fest'
 
-import { Z, ZJoi, ZType } from '../_internals'
+import { Z, ZJoi, ZType, ZValidator } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZLiteral                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZLiteral<T extends Primitive> extends Z<{
+export class ZLiteral<T extends NonNullable<Primitive>> extends Z<{
   Output: T
   Input: T
   Schema: Joi.AnySchema
@@ -23,10 +23,17 @@ export class ZLiteral<T extends Primitive> extends Z<{
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = <T extends Primitive>(value: F.Narrow<T>): ZLiteral<T> =>
+  static create = <T extends NonNullable<Primitive>>(value: F.Narrow<T>): ZLiteral<T> =>
     new ZLiteral(
       {
-        schema: value === undefined ? ZJoi.any().forbidden().optional() : ZJoi.any().valid(value),
+        schema:
+          typeof value === 'bigint'
+            ? ZValidator.custom(ZJoi.any(), (_value, { schema, OK, FAIL }) =>
+                typeof _value === 'bigint' && _value.valueOf() === value.valueOf()
+                  ? OK(_value)
+                  : FAIL('any.only', { valids: [`BigInt(${value})`, ...(schema._valids?._values ?? [])] })
+              )
+            : ZJoi.any().valid(value),
         manifest: {},
         hooks: {},
       },
@@ -36,7 +43,7 @@ export class ZLiteral<T extends Primitive> extends Z<{
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-const generateHint = (value: Primitive): string => {
+const generateHint = (value: NonNullable<Primitive>): string => {
   switch (typeof value) {
     case 'string':
       return `'${value}'`

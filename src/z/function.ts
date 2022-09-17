@@ -46,7 +46,7 @@ export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ
       {
         schema: this.$_schema,
         manifest: this.$_manifest as ZManifestObject<(...args: MapToZOutput<T>) => _ZOutput<R>>,
-        hooks: this.$_hooks,
+        hooks: this.$_hooks as any,
       },
       { ...this.$_props, parameters: ZTuple.create(parameters) }
     )

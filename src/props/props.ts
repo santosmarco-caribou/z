@@ -1,7 +1,4 @@
-import { merge } from 'lodash'
-
 import type { BaseZ, ZDef, ZProps } from '../_internals'
-import { entries, hasProp, isArray } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                    ZPropsManager                                                   */
@@ -16,18 +13,7 @@ export class ZPropsManager<Def extends ZDef> {
   }
 
   protected _updateProps(fn: (props: Readonly<ZProps<Def>>) => ZProps<Def>): this {
-    const oldDef = this.$_props
-    const newDef = fn(this.$_props)
-    merge(
-      this.$_props,
-      entries(newDef).reduce(
-        (acc, [k, v]) => ({
-          ...acc,
-          [k]: isArray(v) ? [...(hasProp(oldDef, k) && isArray(oldDef[k]) ? oldDef[k] : []), ...v] : v,
-        }),
-        {}
-      )
-    )
+    this.$_schema.$_terms.metas[0].update({ _props: fn(this.$_props) })
     return this
   }
 }

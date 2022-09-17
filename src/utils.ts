@@ -1,4 +1,4 @@
-import { cloneDeep, merge } from 'lodash'
+import { cloneDeep, mergeWith } from 'lodash'
 import type { L, N, O } from 'ts-toolbelt'
 import type { ReadonlyDeep, ReadonlyTuple } from 'type-fest'
 
@@ -56,7 +56,9 @@ export const hasProp = <T extends O.Object, P extends PropertyKey>(obj: T, prop:
 }
 
 export const mergeSafe = <T extends [O.Object, ...O.Object[]]>(...objs: T): O.MergeAll<T[0], L.Tail<T>> =>
-  merge({}, ...objs.map(cloneDeep))
+  mergeWith({}, ...objs.map(cloneDeep), (objValue: any, srcValue: any) =>
+    isArray(objValue) ? objValue.concat(srcValue) : undefined
+  )
 
 export const entries = <T extends O.Object>(
   obj: T
@@ -76,7 +78,7 @@ export const freezeDeep = <T>(x: T): ReadonlyDeep<T> => {
 
 export const unionizeHints = (...hints: string[]): string => {
   const deunionized = hints.flatMap(h => h.split(' | '))
-  const unionized = [...new Set(deunionized)].join(' | ').replaceAll(/\(([^|]*|[^)]*)\)/g, '$1')
+  const unionized = [...new Set(deunionized)].join(' | ')
   if (unionized.split(' | ').includes('any')) return 'any'
   if (unionized.split(' | ').includes('never')) return 'never'
   if (unionized.split(' | ').includes('unknown')) return 'unknown'
@@ -94,3 +96,8 @@ export const formatHint = (z: AnyZ): string => {
   }
   return z['_hint']
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export const safeJsonStringify = (value: any): string =>
+  JSON.stringify(value, (_, val) => (typeof val === 'bigint' ? `BigInt(${val.toString()})` : val))

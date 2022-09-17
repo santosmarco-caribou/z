@@ -1,22 +1,72 @@
 import Joi from 'joi'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, isArray, mergeWith } from 'lodash'
 import type { O } from 'ts-toolbelt'
-import type { Simplify } from 'type-fest'
+import type { PartialDeep, SetReturnType, Simplify } from 'type-fest'
 
 import {
   _ZOutput,
   _ZSchema,
   AnyZIssueCode,
+  AnyZManifestObject,
   BaseZ,
   ParseOptions,
   Z_ISSUE_MAP,
   ZDef,
   ZHooks,
+  ZHooksObject,
   ZIssueLocalContext,
+  ZProps,
 } from '../_internals'
 import { EmptyObject, mergeSafe } from '../utils'
 
-export const ZJoi = Joi.defaults(schema => schema.required())
+/* ------------------------------------------------------ ZMeta ----------------------------------------------------- */
+
+export interface ZMeta {
+  _manifest: AnyZManifestObject
+  _hooks: ZHooksObject<ZDef>
+  _props: ZProps<ZDef>
+  get(): this
+  update(meta: PartialDeep<ZMeta>): this
+}
+
+/* ------------------------------------------------------ ZJoi ------------------------------------------------------ */
+
+export type ZJoiSchema<Original extends Joi.Schema> = Original & {
+  $_terms: { metas: [ZMeta] }
+  _valids?: { _values?: Set<any> }
+}
+
+export type AnyZJoiSchema = ZJoiSchema<Joi.Schema>
+
+export type ZJoi = Omit<Joi.Root, Joi.Types> & {
+  [T in Joi.Types]: SetReturnType<Joi.Root[T], ZJoiSchema<ReturnType<Joi.Root[T]>>>
+}
+
+export const ZJoi = Joi.defaults(_schema => {
+  let schema = _schema
+
+  const metas = schema.$_terms['metas'] as any[]
+
+  if (metas.length === 0) {
+    const initialMeta: ZMeta = {
+      _manifest: {},
+      _hooks: { beforeParse: [], afterParse: [] },
+      _props: {},
+
+      get() {
+        return this
+      },
+      update(meta: PartialDeep<ZMeta>) {
+        mergeWith(this, meta, (objValue, srcValue) => (isArray(objValue) ? objValue.concat(srcValue) : undefined))
+        return this
+      },
+    }
+
+    schema = schema.meta(initialMeta)
+  }
+
+  return schema.required()
+}) as ZJoi
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -35,15 +85,14 @@ export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions & Required<ParseO
 /* ----------------------------------------------------- Checks ----------------------------------------------------- */
 
 export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = EmptyObject> = Simplify<
-  {
-    message?: string | ((context: ZIssueLocalContext<IssueCode>) => string)
-  } & Extras,
+  { message?: string | ((context: ZIssueLocalContext<IssueCode>) => string) } & Extras,
   { deep: true }
 >
 
 /* ------------------------------------------------ Custom validation ----------------------------------------------- */
 
-export type CustomValidationHelpers<Output> = {
+export type CustomValidationHelpers<Output, Schema extends AnyZJoiSchema> = {
+  schema: Schema
   OK<V extends Output = Output>(value: V): [typeof VALIDATION_OK, V]
   FAIL<IssueCode extends AnyZIssueCode>(
     issue: IssueCode,
@@ -129,14 +178,15 @@ export class ZValidator<Def extends ZDef> {
 
   static custom = <Output, BaseSchema extends Joi.Schema<Output>>(
     baseSchema: BaseSchema,
-    fn: (value: unknown, helpers: CustomValidationHelpers<Output>) => CustomValidationResult
+    fn: (value: unknown, helpers: CustomValidationHelpers<Output, ZJoiSchema<BaseSchema>>) => CustomValidationResult
   ): BaseSchema => {
-    const helpers: CustomValidationHelpers<Output> = {
-      OK: <V extends Output = Output>(value: V) => [VALIDATION_OK, value],
-      FAIL: (issue, ...args) => [VALIDATION_FAIL, issue, args[0]],
-    }
-
     const validator: Joi.CustomValidator<Output> = (_value, _helpers) => {
+      const helpers: CustomValidationHelpers<Output, ZJoiSchema<BaseSchema>> = {
+        schema: _helpers.schema as ZJoiSchema<BaseSchema>,
+        OK: <V extends Output = Output>(value: V) => [VALIDATION_OK, value],
+        FAIL: (issue, ...args) => [VALIDATION_FAIL, issue, args[0]],
+      }
+
       const [result, valueOrIssue, ctx] = fn(_value, helpers)
       if (result === VALIDATION_OK) return valueOrIssue
       else return _helpers.error(valueOrIssue, ctx)

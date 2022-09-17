@@ -18,7 +18,7 @@ export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = 
   readonly name = ZType.Tuple
   protected readonly _hint = `[${this._getProp('elements')
     .map(element => element.hint)
-    .join(', ')}${this._getProp('restType') ? `, ...${this._getProp('restType')?.hint}[]` : ''}]`
+    .join(', ')}${this._getProp('restType') ? `, ...${this._getProp('restType')?.hint ?? ''}[]` : ''}]`
 
   /**
    * Retrieves the schemas of the tuple's elements.

@@ -106,6 +106,7 @@ export abstract class Z<Def extends ZDef> {
   /** @internal */
   protected abstract readonly _hint: string
 
+  /** @internal */
   constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {
     const { schema, manifest, hooks } = deps
 
@@ -178,6 +179,18 @@ export abstract class Z<Def extends ZDef> {
     return ZNullable.create(this)
   }
 
+  /**
+   * Retrieves a nullish version of the `ZType`.
+   * Nullish `ZTypes` will accept both `undefined` and `null`.
+   *
+   * @example
+   * ```ts
+   * const nullishBoolean = z.boolean().nullish() // boolean | null | undefined
+   *
+   * // equivalent to
+   * z.boolean().nullable().optional();
+   * ```
+   */
   nullish(): ZOptional<ZNullable<this>> {
     return this.nullable().optional()
   }

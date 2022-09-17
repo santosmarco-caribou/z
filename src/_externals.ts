@@ -25,12 +25,14 @@ import {
   ZObject,
   ZOptional,
   ZPromise,
+  ZPropertyKey,
   ZReadonly,
   ZReadonlyDeep,
   ZRecord,
   ZSet,
   ZString,
   ZSymbol,
+  ZTemplate,
   ZTrue,
   ZTuple,
   ZUndefined,
@@ -62,12 +64,14 @@ const numberType = ZNumber.create
 const objectType = ZObject.create
 const optionalType = ZOptional.create
 const promiseType = ZPromise.create
+const propertyKeyType = ZPropertyKey.create
 const readonlyDeepType = ZReadonlyDeep.create
 const readonlyType = ZReadonly.create
 const recordType = ZRecord.create
 const setType = ZSet.create
 const stringType = ZString.create
 const symbolType = ZSymbol.create
+const templateType = ZTemplate.create
 const trueType = ZTrue.create
 const tupleType = ZTuple.create
 const undefinedType = ZUndefined.create
@@ -99,12 +103,14 @@ export {
   objectType as object,
   optionalType as optional,
   promiseType as promise,
+  propertyKeyType as propertykey,
   readonlyType as readonly,
   readonlyDeepType as readonlydeep,
   recordType as record,
   setType as set,
   stringType as string,
   symbolType as symbol,
+  templateType as template,
   trueType as true,
   tupleType as tuple,
   undefinedType as undefined,

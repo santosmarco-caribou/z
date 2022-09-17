@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { cloneDeep, isArray, mergeWith } from 'lodash'
+import { cloneDeep } from 'lodash'
 import type { O } from 'ts-toolbelt'
 import type { PartialDeep, SetReturnType, Simplify } from 'type-fest'
 
@@ -43,28 +43,7 @@ export type ZJoi = Omit<Joi.Root, Joi.Types> & {
   [T in Joi.Types]: SetReturnType<Joi.Root[T], ZJoiSchema<ReturnType<Joi.Root[T]>>>
 }
 
-export const ZJoi = Joi.defaults(_schema => {
-  let schema = _schema
-
-  const metas = schema.$_terms['metas'] as any[]
-
-  if (metas.length === 0) {
-    const initialMeta: AnyZMetaObject = {
-      _manifest: {},
-      _hooks: { beforeParse: [], afterParse: [] },
-      _props: {},
-
-      update(meta: PartialDeep<AnyZMetaObject>) {
-        mergeWith(this, meta, (objValue, srcValue) => (isArray(objValue) ? objValue.concat(srcValue) : undefined))
-        return this
-      },
-    }
-
-    schema = schema.meta(initialMeta)
-  }
-
-  return schema.required()
-}) as ZJoi
+export const ZJoi = Joi.defaults(schema => schema.required()) as ZJoi
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

@@ -1,8 +1,9 @@
 import Joi from 'joi'
+import { isArray, mergeWith } from 'lodash'
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, F } from 'ts-toolbelt'
-import type { CamelCasedProperties } from 'type-fest'
+import type { CamelCasedProperties, PartialDeep } from 'type-fest'
 
 import {
   AnyZMetaObject,
@@ -108,7 +109,26 @@ export abstract class Z<Def extends ZDef> {
   constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {
     const { schema, manifest, hooks } = deps
 
-    this.$_schema = schema
+    let _schema = schema
+
+    const metas = _schema.$_terms['metas'] as any[]
+
+    if (metas.length === 0) {
+      const meta: AnyZMetaObject = {
+        _manifest: {},
+        _hooks: { beforeParse: [], afterParse: [] },
+        _props: {},
+
+        update(meta: PartialDeep<AnyZMetaObject>) {
+          mergeWith(this, meta, (objValue, srcValue) => (isArray(objValue) ? objValue.concat(srcValue) : undefined))
+          return this
+        },
+      }
+
+      _schema = _schema.meta(meta) as _ZSchema<Def>
+    }
+
+    this.$_schema = _schema
 
     const meta = this.$_schema.$_terms.metas[0]
     meta.update({ _manifest: manifest, _hooks: hooks, _props: props })

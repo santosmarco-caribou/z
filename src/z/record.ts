@@ -1,47 +1,51 @@
 import Joi from 'joi'
 
-import { AnyZ, Z, ZDef, ZOutput, ZReadonly, ZReadonlyDeep, ZSchema, ZTuple, ZType, ZValidator } from '../_internals'
+import { _ZInput, _ZOutput, AnyZ, Z, ZJoi, ZTuple, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZRecord                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZRecord<
-  K extends Z<ZDef<{ Output: PropertyKey; Validator: ZSchema<Joi.Schema> }>>,
-  V extends AnyZ
-> extends Z<
-  ZDef<{ Output: Record<ZOutput<K>, ZOutput<V>>; Validator: ZSchema<Joi.AnySchema> }, { KeyType: K; ValueType: V }>
-> {
+export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
+  Output: Record<_ZOutput<K>, _ZOutput<V>>
+  Input: Record<_ZInput<K>, _ZInput<V>>
+  Schema: Joi.AnySchema
+  KeyType: K
+  ValueType: V
+}> {
   readonly name = ZType.Record
-  protected readonly _hint = `Record<${this._props.keyType.hint}, ${this._props.valueType.hint}>`
+  protected readonly _hint = `Record<${this._getProp('keyType').hint}, ${this._getProp('valueType').hint}>`
 
   get keyType(): K {
-    return this._props.keyType
+    return this._getProp('keyType')
   }
   get valueType(): V {
-    return this._props.valueType
+    return this._getProp('valueType')
   }
 
   entries(): ZTuple<[K, V]> {
-    return ZTuple.create([this._props.keyType, this._props.valueType])
+    return ZTuple.create([this._getProp('keyType'), this._getProp('valueType')])
   }
 
-  readonly(): ZReadonly<this> {
-    return ZReadonly.create(this)
-  }
-  readonlyDeep(): ZReadonlyDeep<this> {
-    return ZReadonlyDeep.create(this)
-  }
+  /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = <K extends Z<ZDef<{ Output: PropertyKey; Validator: ZSchema<Joi.Schema> }>>, V extends AnyZ>(
-    keyType: K,
-    valueType: V
-  ): ZRecord<K, V> => {
-    return new ZRecord<K, V>(
-      { validator: ZValidator.object().pattern(keyType._validator, valueType._validator), hooks: {} },
+  static create = <K extends AnyZ<PropertyKey>, V extends AnyZ>(keyType: K, valueType: V): ZRecord<K, V> =>
+    new ZRecord<K, V>(
+      {
+        schema: ZJoi.object().pattern(keyType.$_schema, valueType.$_schema),
+        manifest: {
+          keys: keyType.$_manifest,
+          values: valueType.$_manifest,
+        },
+        hooks: {
+          beforeParse: [...keyType.$_hooks.beforeParse, ...valueType.$_hooks.beforeParse],
+          afterParse: [...keyType.$_hooks.afterParse, ...valueType.$_hooks.afterParse],
+        },
+      },
       { keyType, valueType }
     )
-  }
 }
 
-export type AnyZRecord = ZRecord<Z<ZDef<{ Output: PropertyKey; Validator: ZSchema<Joi.Schema> }>>, AnyZ>
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type AnyZRecord = ZRecord<AnyZ<PropertyKey>, AnyZ>

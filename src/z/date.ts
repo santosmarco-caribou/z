@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import { type ZDef, Z, ZCheckOptions, ZSchema, ZType, ZValidator } from '../_internals'
+import { Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZDate                                                       */
@@ -12,16 +12,12 @@ type ZDateCheckInput = Date | typeof __NOW__
 
 export type ZDateOptions = { strict: boolean }
 
-export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<
-  ZDef<
-    {
-      Output: Date
-      Input: Opts['strict'] extends true ? Date : Date | number | string
-      Validator: ZSchema<Joi.DateSchema>
-    },
-    { options: Opts }
-  >
-> {
+export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<{
+  Output: Date
+  Input: Opts['strict'] extends true ? Date : Date | number | string
+  Schema: Joi.DateSchema
+  Options: Opts
+}> {
   readonly name = ZType.Date
   protected readonly _hint = 'Date'
 
@@ -59,7 +55,11 @@ export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<
   strict(): ZDate<{ strict: true }> {
     this._updateValidatorPreferences({ convert: false })
     return new ZDate<{ strict: true }>(
-      { validator: this._validator, hooks: this._hooks },
+      {
+        schema: this.$_schema,
+        manifest: this.$_manifest,
+        hooks: this.$_hooks,
+      },
       { options: { strict: true } }
     )
   }
@@ -74,7 +74,15 @@ export class ZDate<Opts extends ZDateOptions = { strict: false }> extends Z<
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = Object.assign(
-    (): ZDate => new ZDate({ validator: ZValidator.date(), hooks: {} }, { options: { strict: false } }),
+    (): ZDate =>
+      new ZDate(
+        {
+          schema: ZJoi.date(),
+          manifest: {},
+          hooks: {},
+        },
+        { options: { strict: false } }
+      ),
     { now: __NOW__ }
   )
 }

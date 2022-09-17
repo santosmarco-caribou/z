@@ -1,14 +1,26 @@
 import type Joi from 'joi'
 
-import { type ZDef, Z, ZSchema, ZType, ZValidator } from '../_internals'
+import { Z, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                     ZUndefined                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZUndefined extends Z<ZDef<{ Output: undefined; Validator: ZSchema<Joi.AnySchema> }>> {
+export class ZUndefined extends Z<{
+  Output: undefined
+  Input: undefined
+  Schema: Joi.AnySchema
+}> {
   readonly name = ZType.Undefined
   protected readonly _hint = 'undefined'
 
-  static create = (): ZUndefined => new ZUndefined({ validator: ZValidator.any().forbidden(), hooks: {} }, {})
+  static create = (): ZUndefined =>
+    new ZUndefined(
+      {
+        schema: ZJoi.any().forbidden(),
+        manifest: {},
+        hooks: {},
+      },
+      {}
+    )
 }

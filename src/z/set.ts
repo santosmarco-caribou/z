@@ -1,43 +1,22 @@
 import Joi from 'joi'
-import type { ReadonlyDeep } from 'type-fest'
 
-import {
-  AnyZ,
-  Z,
-  ZCheckOptions,
-  ZDef,
-  ZInput,
-  ZOutput,
-  ZReadonly,
-  ZReadonlyDeep,
-  ZSchema,
-  ZType,
-  ZValidator,
-} from '../_internals'
+import { _ZInput, _ZOutput, AnyZ, Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZSet                                                        */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZSetOptions = {
-  readonly: boolean
-}
-
-export class ZSet<T extends AnyZ, Opts extends ZSetOptions = { size: null; readonly: false }> extends Z<
-  ZDef<
-    {
-      Output: Opts['readonly'] extends true ? ReadonlyDeep<Set<ZOutput<T>>> : Set<ZOutput<T>>
-      Input: Set<ZInput<T>> | ZInput<T>[]
-      Validator: ZSchema<Joi.ArraySchema>
-    },
-    { element: T; options: Opts }
-  >
-> {
+export class ZSet<T extends AnyZ> extends Z<{
+  Output: Set<_ZOutput<T>>
+  Input: Set<_ZInput<T>> | _ZInput<T>[]
+  Schema: Joi.ArraySchema
+  Element: T
+}> {
   readonly name = ZType.Set
-  protected readonly _hint = `${this._props.options.readonly ? 'Readonly' : ''}Set<${this._props.element.hint}>`
+  protected readonly _hint = `Set<${this._getProp('element').hint}>`
 
   get element(): T {
-    return this._props.element
+    return this._getProp('element')
   }
 
   /**
@@ -72,21 +51,19 @@ export class ZSet<T extends AnyZ, Opts extends ZSetOptions = { size: null; reado
     return this.min(1, options)
   }
 
-  readonly(): ZReadonly<this> {
-    return ZReadonly.create(this)
-  }
-  readonlyDeep(): ZReadonlyDeep<this> {
-    return ZReadonlyDeep.create(this)
-  }
+  /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends AnyZ>(element: T): ZSet<T> =>
     new ZSet(
       {
-        validator: ZValidator.array(element['_validator']).unique().cast('set').messages({
+        schema: ZJoi.array().items(element.$_schema).unique().cast('set').messages({
           'array.base': '{{#label}} must be either an array or a Set',
         }),
+        manifest: {
+          element: element.$_manifest,
+        },
         hooks: {},
       },
-      { element, options: { size: null, readonly: false } }
+      { element }
     )
 }

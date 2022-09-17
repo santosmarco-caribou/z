@@ -1,4 +1,6 @@
 import {
+  type _ZInput,
+  type _ZOutput,
   type AnyZInstanceOf,
   type AnyZNullable,
   type AnyZOptional,
@@ -15,7 +17,6 @@ import {
   ZEnum,
   ZFalse,
   ZFunction,
-  ZInput,
   ZInstanceOf,
   ZIntersection,
   ZLiteral,
@@ -27,7 +28,6 @@ import {
   ZNumber,
   ZObject,
   ZOptional,
-  ZOutput,
   ZReadonly,
   ZReadonlyDeep,
   ZRecord,
@@ -116,6 +116,6 @@ export {
 }
 export type { AnyZInstanceOf, AnyZNullable, AnyZOptional, AnyZUniqueSymbol }
 
-export type input<T extends AnyZ> = ZInput<T>
-export type output<T extends AnyZ> = ZOutput<T>
+export type input<T extends AnyZ> = _ZInput<T>
+export type output<T extends AnyZ> = _ZOutput<T>
 export type infer<T extends AnyZ> = TypeOf<T>

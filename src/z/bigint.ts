@@ -1,24 +1,33 @@
 import type Joi from 'joi'
 
-import { type ZDef, Z, ZSchema, ZType, ZValidator } from '../_internals'
+import { Z, ZJoi, ZType, ZValidator } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZBigInt                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZBigInt extends Z<ZDef<{ Output: bigint; Validator: ZSchema<Joi.AnySchema> }>> {
+export class ZBigInt extends Z<{
+  Output: bigint
+  Input: bigint
+  Schema: Joi.AnySchema
+}> {
   readonly name = ZType.BigInt
   protected readonly _hint = 'bigint'
 
-  static create = (): ZBigInt => {
-    const validator = ZValidator.custom((value, { OK, FAIL }) =>
-      typeof value === 'bigint' ? OK(value) : FAIL('bigint.base')
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  static create = (): ZBigInt =>
+    new ZBigInt(
+      {
+        schema: ZValidator.custom(ZJoi.any(), (value, { OK, FAIL }) =>
+          typeof value === 'bigint' ? OK(value) : FAIL('bigint.base')
+        ),
+        manifest: {
+          type: 'number',
+          format: 'bigint',
+        },
+        hooks: {},
+      },
+      {}
     )
-
-    const z = new ZBigInt({ validator, hooks: {} }, {})
-
-    z._updateManifest('output', 'format', 'bigint')
-
-    return z
-  }
 }

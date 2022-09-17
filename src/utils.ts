@@ -1,8 +1,8 @@
 import { cloneDeep, merge } from 'lodash'
 import type { L, N, O } from 'ts-toolbelt'
-import type { ReadonlyDeep, ReadonlyTuple, Simplify } from 'type-fest'
+import type { ReadonlyDeep, ReadonlyTuple } from 'type-fest'
 
-import type { AnyZ, ZInput, ZOutput } from './_internals'
+import type { _ZInput, _ZOutput, AnyZ } from './_internals'
 import { ZType } from './types'
 
 /* ---------------------------------------------------- Constants --------------------------------------------------- */
@@ -26,8 +26,12 @@ export type MaxLengthArray<Element, Length extends number> = Partial<FixedLength
 export type MinMaxLengthArray<Element, Min extends number, Max extends number> = [...MinLengthArray<Element, Min>] &
   MaxLengthArray<Element, N.Sub<Max, Min>>
 
-export type MapToZOutput<T> = Simplify<{ [K in keyof T]: T[K] extends AnyZ ? ZOutput<T[K]> : never }>
-export type MapToZInput<T> = Simplify<{ [K in keyof T]: T[K] extends AnyZ ? ZInput<T[K]> : never }>
+export type MapToZOutput<T> = {
+  [K in keyof T]: T[K] extends AnyZ ? _ZOutput<T[K]> : never
+}
+export type MapToZInput<T> = {
+  [K in keyof T]: T[K] extends AnyZ ? _ZInput<T[K]> : never
+}
 
 export type OptionalKeys<T extends O.Object> = {
   [K in keyof T]: undefined extends T[K] ? K : never

@@ -1,28 +1,34 @@
-import { type AnyZ, type ZDef, type ZInput, type ZOutput, Z, ZType } from '../_internals'
+import Joi from 'joi'
+
+import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
 import { unionizeHints } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZOptional                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZOptional<T extends AnyZ> extends Z<
-  ZDef<{ Output: ZOutput<T> | undefined; Input: ZInput<T> | undefined; Validator: T['_validator'] }, { InnerType: T }>
-> {
+export class ZOptional<T extends AnyZ> extends Z<{
+  Output: _ZOutput<T> | undefined
+  Input: _ZInput<T> | undefined
+  Schema: Joi.AnySchema
+  InnerType: T
+}> {
   readonly name = ZType.Optional
-  protected readonly _hint = unionizeHints(this._props.innerType.hint, 'undefined')
+  protected readonly _hint = unionizeHints(this._getProp('innerType').hint, 'undefined')
 
   unwrap(): T {
-    return this._props.innerType
+    return this._getProp('innerType')
   }
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends AnyZ>(innerType: T): ZOptional<T> =>
     new ZOptional(
       {
-        validator:
-          innerType['_validator'].$_getFlag('presence') === 'forbidden'
-            ? innerType['_validator']
-            : innerType['_validator'].optional(),
-        hooks: innerType['_hooks'],
+        schema:
+          innerType.$_schema.$_getFlag('presence') === 'forbidden' ? innerType.$_schema : innerType.$_schema.optional(),
+        manifest: innerType.$_manifest,
+        hooks: innerType.$_hooks,
       },
       { innerType: innerType }
     )

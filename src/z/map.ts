@@ -1,55 +1,51 @@
 import Joi from 'joi'
 
-import {
-  AnyZ,
-  Z,
-  ZDef,
-  ZInput,
-  ZOutput,
-  ZReadonly,
-  ZReadonlyDeep,
-  ZSchema,
-  ZTuple,
-  ZType,
-  ZValidator,
-} from '../_internals'
+import { _ZInput, _ZOutput, AnyZ, Z, ZJoi, ZTuple, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZMap                                                        */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZMap<K extends AnyZ, V extends AnyZ> extends Z<
-  ZDef<
-    { Output: Map<ZOutput<K>, ZOutput<V>>; Input: Map<ZInput<K>, ZInput<V>>; Validator: ZSchema<Joi.AnySchema> },
-    { KeyType: K; ValueType: V }
-  >
-> {
+export class ZMap<K extends AnyZ, V extends AnyZ> extends Z<{
+  Output: Map<_ZOutput<K>, _ZOutput<V>>
+  Input: Map<_ZInput<K>, _ZInput<V>>
+  Schema: Joi.AnySchema
+  KeyType: K
+  ValueType: V
+}> {
   readonly name = ZType.Map
-  protected readonly _hint = `Map<${this._props.keyType.hint}, ${this._props.valueType.hint}>`
+  protected readonly _hint = `Map<${this._getProp('keyType').hint}, ${this._getProp('valueType').hint}>`
 
   get keyType(): K {
-    return this._props.keyType
+    return this._getProp('keyType')
   }
   get valueType(): V {
-    return this._props.valueType
+    return this._getProp('valueType')
   }
 
   entries(): ZTuple<[K, V]> {
-    return ZTuple.create([this._props.keyType, this._props.valueType])
+    return ZTuple.create([this._getProp('keyType'), this._getProp('valueType')])
   }
 
-  readonly(): ZReadonly<this> {
-    return ZReadonly.create(this)
-  }
-  readonlyDeep(): ZReadonlyDeep<this> {
-    return ZReadonlyDeep.create(this)
-  }
+  /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <K extends AnyZ, V extends AnyZ>(keyType: K, valueType: V): ZMap<K, V> =>
     new ZMap(
-      { validator: ZValidator.object().pattern(keyType._validator, valueType._validator).cast('map'), hooks: {} },
+      {
+        schema: ZJoi.object().pattern(keyType.$_schema, valueType.$_schema).cast('map'),
+        manifest: {
+          keys: keyType.$_manifest,
+          values: valueType.$_manifest,
+        },
+        hooks: {
+          beforeParse: [...keyType.$_hooks.beforeParse, ...valueType.$_hooks.beforeParse],
+          afterParse: [...keyType.$_hooks.afterParse, ...valueType.$_hooks.afterParse],
+        },
+      },
       { keyType, valueType }
     )
 }
 
-export type AnyZMap = ZMap<Z<ZDef<{ Output: PropertyKey; Validator: ZSchema<Joi.Schema> }>>, AnyZ>
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type AnyZMap = ZMap<AnyZ, AnyZ>

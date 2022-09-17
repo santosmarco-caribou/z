@@ -2,20 +2,8 @@ import type Joi from 'joi'
 import { keys, merge, omit, pick } from 'lodash'
 import type { F, L, U } from 'ts-toolbelt'
 
-import {
-  AnyZ,
-  Z,
-  ZAny,
-  ZDef,
-  ZEnum,
-  ZOptional,
-  ZReadonly,
-  ZReadonlyDeep,
-  ZSchema,
-  ZType,
-  ZValidator,
-} from '../_internals'
-import { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
+import { type AnyZ, Z, ZAny, ZEnum, ZJoi, ZOptional, ZType } from '../_internals'
+import type { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZObject                                                      */
@@ -25,39 +13,41 @@ export type AnyZObjectShape = Record<string, AnyZ>
 
 export type ZObjectOptions = { mode: 'passthrough' | 'strip' | 'strict' }
 
-export class ZObject<Shape extends AnyZObjectShape> extends Z<
-  ZDef<
-    {
-      Output: WithQuestionMarks<MapToZOutput<Shape>>
-      Input: WithQuestionMarks<MapToZInput<Shape>>
-      Validator: ZSchema<Joi.ObjectSchema>
-    },
-    { Shape: Shape; Options: ZObjectOptions; Catchall: AnyZ }
-  >
-> {
+export class ZObject<Shape extends AnyZObjectShape> extends Z<{
+  Output: WithQuestionMarks<MapToZOutput<Shape>>
+  Input: WithQuestionMarks<MapToZInput<Shape>>
+  Schema: Joi.ObjectSchema
+  Shape: Shape
+  Options: ZObjectOptions
+  Catchall: AnyZ
+}> {
   readonly name = ZType.Object
-  protected readonly _hint = _generateZObjectHint(this._props.shape)
+  protected readonly _hint = _generateZObjectHint(this._getProp('shape'))
 
   get shape(): Shape {
-    return this._props.shape
+    return this._getProp('shape')
   }
 
   keyof(): ZEnum<[U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>]> {
     return ZEnum.create(
-      keys(this._props.shape) as F.Narrow<[U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>]>
+      keys(this._getProp('shape')) as F.Narrow<[U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>]>
     )
   }
 
   pick<K extends keyof Shape>(keys: K[]): ZObject<Pick<Shape, K>> {
-    return ZObject.$_create(pick(this._props.shape, keys), this._props.options, this._props.catchall)
+    return ZObject.$_create(pick(this._getProp('shape'), keys), this._getProp('options'), this._getProp('catchall'))
   }
 
   omit<K extends keyof Shape>(keys: K[]): ZObject<Omit<Shape, K>> {
-    return ZObject.$_create(omit(this._props.shape, keys), this._props.options, this._props.catchall)
+    return ZObject.$_create(omit(this._getProp('shape'), keys), this._getProp('options'), this._getProp('catchall'))
   }
 
   extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Shape & S> {
-    return ZObject.$_create(merge({}, this._props.shape, incomingShape), this._props.options, this._props.catchall)
+    return ZObject.$_create(
+      merge({}, this._getProp('shape'), incomingShape),
+      this._getProp('options'),
+      this._getProp('catchall')
+    )
   }
 
   merge<S extends AnyZObjectShape>(incomingSchema: ZObject<S>): ZObject<Shape & S> {
@@ -67,33 +57,26 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
   partial<K extends keyof Shape>(keys?: K[]): ZObject<_ToPartialZObjectShape<Shape, K>> {
     return ZObject.$_create(
       Object.fromEntries(
-        Object.entries(this._props.shape).map(([key, z]) =>
+        Object.entries(this._getProp('shape')).map(([key, z]) =>
           keys && keys.includes(key as K) ? [key, z.optional()] : [key, z]
         )
       ) as _ToPartialZObjectShape<Shape, K>,
-      this._props.options,
-      this._props.catchall
+      this._getProp('options'),
+      this._getProp('catchall')
     )
   }
 
   partialDeep(): ZObject<_ToPartialZObjectShape<Shape, keyof Shape, 'deep'>> {
     return ZObject.$_create(
       Object.fromEntries(
-        Object.entries(this._props.shape).map(([key, z]) => [
+        Object.entries(this._getProp('shape')).map(([key, z]) => [
           key,
           z instanceof ZObject ? z.partialDeep().optional() : z.optional(),
         ])
       ) as _ToPartialZObjectShape<Shape, keyof Shape, 'deep'>,
-      this._props.options,
-      this._props.catchall
+      this._getProp('options'),
+      this._getProp('catchall')
     )
-  }
-
-  readonly(): ZReadonly<this> {
-    return ZReadonly.create(this)
-  }
-  readonlyDeep(): ZReadonlyDeep<this> {
-    return ZReadonlyDeep.create(this)
   }
 
   /* ------------------------------------------------- Configuration ------------------------------------------------ */
@@ -127,7 +110,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
   ): ZObject<Shape> => {
     if (catchall) options.mode = 'passthrough'
 
-    const baseValidator = ZValidator.object(_zShapeToJoiSchemaMap(shape)).preferences(
+    const baseValidator = ZJoi.object(_zShapeToJoiSchemaMap(shape)).preferences(
       {
         passthrough: { allowUnknown: true, stripUnknown: false },
         strict: { allowUnknown: false, stripUnknown: false },
@@ -136,7 +119,11 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<
     )
 
     const zObject = new ZObject(
-      { validator: catchall ? baseValidator.pattern(/./, catchall._validator) : baseValidator, hooks: {} },
+      {
+        schema: catchall ? baseValidator.pattern(/./, catchall.$_schema) : baseValidator,
+        manifest: {},
+        hooks: {},
+      },
       { shape: shape, options, catchall }
     )
 
@@ -178,7 +165,9 @@ const _generateZObjectHint = (shape: AnyZObjectShape, opts?: { readonly?: 'flat'
         ([key, z]) =>
           `${' '.repeat(indentation)}${_opts?.readonly ? 'readonly ' : ''}${key}${z.isOptional() ? '?' : ''}: ${
             z instanceof ZObject
-              ? _generateHint(z.shape as AnyZObjectShape, indentation + 2, { readonly: _opts?.readonly === 'deep' })
+              ? _generateHint(z.shape as AnyZObjectShape, indentation + 2, {
+                  readonly: _opts?.readonly === 'deep',
+                })
               : z.hint
           },`
       )
@@ -190,6 +179,6 @@ const _generateZObjectHint = (shape: AnyZObjectShape, opts?: { readonly?: 'flat'
 const _zShapeToJoiSchemaMap = <Shape extends AnyZObjectShape>(shape: Shape): Joi.SchemaMap =>
   Object.fromEntries(
     Object.entries(shape).map(([key, z]) => {
-      return [key, z['_validator']]
+      return [key, z.$_schema]
     })
   )

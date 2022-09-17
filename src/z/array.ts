@@ -1,17 +1,14 @@
 import type Joi from 'joi'
 
 import {
-  type ZDef,
-  AnyZ,
+  type _ZInput,
+  type _ZOutput,
+  type AnyZ,
+  type ZCheckOptions,
+  type ZManifestObject,
   Z,
-  ZCheckOptions,
-  ZInput,
-  ZOutput,
-  ZReadonly,
-  ZReadonlyDeep,
-  ZSchema,
+  ZJoi,
   ZType,
-  ZValidator,
 } from '../_internals'
 import { isComplexHint } from '../utils'
 
@@ -19,26 +16,23 @@ import { isComplexHint } from '../utils'
 /*                                                       ZArray                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' = 'many'> extends Z<
-  ZDef<
-    {
-      Output: Card extends 'atleastone' ? [ZOutput<T>, ...ZOutput<T>[]] : ZOutput<T>[]
-      Input: Card extends 'atleastone' ? [ZInput<T>, ...ZInput<T>[]] : ZInput<T>[]
-      Validator: ZSchema<Joi.ArraySchema>
-    },
-    { Element: T; Cardinality: Card }
-  >
-> {
+export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' = 'many'> extends Z<{
+  Output: Card extends 'atleastone' ? [_ZOutput<T>, ..._ZOutput<T>[]] : _ZOutput<T>[]
+  Input: Card extends 'atleastone' ? [_ZInput<T>, ..._ZInput<T>[]] : _ZInput<T>[]
+  Schema: Joi.ArraySchema
+  Element: T
+  Cardinality: Card
+}> {
   readonly name = ZType.Array
   protected readonly _hint =
-    this._props.cardinality === 'atleastone'
-      ? `[${this._props.element.hint}, ...${this._props.element.hint}[]]`
-      : isComplexHint(this._props.element.hint)
-      ? `Array<${this._props.element.hint}>`
-      : `${this._props.element.hint}[]`
+    this._getProp('cardinality') === 'atleastone'
+      ? `[${this._getProp('element').hint}, ...${this._getProp('element').hint}[]]`
+      : isComplexHint(this._getProp('element').hint)
+      ? `Array<${this._getProp('element').hint}>`
+      : `${this._getProp('element').hint}[]`
 
   get element(): T {
-    return this._props.element
+    return this._getProp('element')
   }
 
   /**
@@ -88,27 +82,30 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' = 'many'>
    * Requires the array to have at least one element.
    */
   nonempty(options?: ZCheckOptions<'array.min'>): ZArray<T, 'atleastone'> {
+    const updated = this.min(1, options)
     return new ZArray<T, 'atleastone'>(
-      { validator: this.min(1, options)._validator, hooks: this._hooks },
-      { element: this._props.element, cardinality: 'atleastone' }
+      {
+        schema: updated.$_schema,
+        manifest: updated.$_manifest as ZManifestObject<[_ZOutput<T>, ..._ZOutput<T>[]]>,
+        hooks: updated.$_hooks,
+      },
+      { element: updated._getProp('element'), cardinality: 'atleastone' }
     )
   }
 
-  /**
-   * Transforms the array into a readonly version after parsing.
-   */
-  readonly(): ZReadonly<this> {
-    return ZReadonly.create(this)
-  }
-  /**
-   * Transforms the array and its items into a readonly version after parsing.
-   */
-  readonlyDeep(): ZReadonlyDeep<this> {
-    return ZReadonlyDeep.create(this)
-  }
+  /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends AnyZ>(element: T): ZArray<T> =>
-    new ZArray({ validator: ZValidator.array(element._validator), hooks: {} }, { element, cardinality: 'many' })
+    new ZArray(
+      {
+        schema: ZJoi.array().items(element.$_schema),
+        manifest: {
+          element: element.$_manifest,
+        },
+        hooks: {},
+      },
+      { element, cardinality: 'many' }
+    )
 }
 
 export type AnyZArray = ZArray<AnyZ, 'many' | 'atleastone'>

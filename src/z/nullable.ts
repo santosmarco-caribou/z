@@ -1,22 +1,36 @@
-import { type AnyZ, type ZDef, type ZInput, type ZOutput, Z, ZType } from '../_internals'
+import Joi from 'joi'
+
+import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
 import { unionizeHints } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZNullable                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZNullable<T extends AnyZ> extends Z<
-  ZDef<{ Output: ZOutput<T> | null; Input: ZInput<T> | null; Validator: T['_validator'] }, { InnerType: T }>
-> {
+export class ZNullable<T extends AnyZ> extends Z<{
+  Output: _ZOutput<T> | null
+  Input: _ZInput<T> | null
+  Schema: Joi.AnySchema
+  InnerType: T
+}> {
   readonly name = ZType.Nullable
-  protected readonly _hint = unionizeHints(this._props.innerType.hint, 'null')
+  protected readonly _hint = unionizeHints(this._getProp('innerType').hint, 'null')
 
   unwrap(): T {
-    return this._props.innerType
+    return this._getProp('innerType')
   }
 
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
   static create = <T extends AnyZ>(innerType: T): ZNullable<T> =>
-    new ZNullable({ validator: innerType._validator.allow(null), hooks: innerType['_hooks'] }, { innerType: innerType })
+    new ZNullable(
+      {
+        schema: innerType.$_schema.allow(null),
+        manifest: innerType.$_manifest,
+        hooks: innerType.$_hooks,
+      },
+      { innerType: innerType }
+    )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

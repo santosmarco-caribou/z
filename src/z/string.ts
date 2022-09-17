@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import { type ZDef, Z, ZCheckOptions, ZSchema, ZType, ZValidator } from '../_internals'
+import { type ZCheckOptions, Z, ZJoi, ZType } from '../_internals'
 import type { MaybeArray } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -114,7 +114,11 @@ export type ZStringPatternOptions = ZCheckOptions<
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.StringSchema> }>> {
+export class ZString extends Z<{
+  Output: string
+  Input: string
+  Schema: Joi.StringSchema
+}> {
   readonly name = ZType.String
   protected readonly _hint = 'string'
 
@@ -122,8 +126,10 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * Requires the input to only contain `a-z`, `A-Z`, and `0-9`.
    */
   alphanumeric(options?: ZCheckOptions<'string.alphanum'>): this {
-    this._addCheck('string.alphanum', v => v.alphanum(), { message: options?.message })
-    this._updateManifest('output', 'format', 'alphanumeric')
+    this._addCheck('string.alphanum', v => v.alphanum(), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'alphanumeric')
     return this
   }
   /**
@@ -137,8 +143,10 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * Requires the input to be a valid `base64` string.
    */
   base64(options?: ZStringBase64Options): this {
-    this._addCheck('string.base64', v => v.base64(options), { message: options?.message })
-    this._updateManifest('output', 'format', 'base64')
+    this._addCheck('string.base64', v => v.base64(options), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'base64')
     return this
   }
 
@@ -146,8 +154,10 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * Requires the input to be a valid hexadecimal string.
    */
   hexadecimal(options?: ZStringHexadecimalOptions): this {
-    this._addCheck('string.hex', v => v.hex(options), { message: options?.message })
-    this._updateManifest('output', 'format', 'hexadecimal')
+    this._addCheck('string.hex', v => v.hex(options), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'hexadecimal')
     return this
   }
   /**
@@ -161,22 +171,28 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * Requires the input to be a valid domain string.
    */
   domain(options?: ZStringDomainOptions): this {
-    return this._addCheck('string.domain', v => v.domain(options), { message: options?.message })
+    return this._addCheck('string.domain', v => v.domain(options), {
+      message: options?.message,
+    })
   }
 
   /**
    * Requires the input to be a valid hostname string as per RFC1123.
    */
   hostname(options?: ZCheckOptions<'string.hostname'>): this {
-    return this._addCheck('string.hostname', v => v.hostname(), { message: options?.message })
+    return this._addCheck('string.hostname', v => v.hostname(), {
+      message: options?.message,
+    })
   }
 
   /**
    * Requires the input to be a valid IP address.
    */
   ip(options?: ZStringIpOptions): this {
-    this._addCheck('string.ip', v => v.ip(options), { message: options?.message })
-    this._updateManifest('output', 'format', 'ip')
+    this._addCheck('string.ip', v => v.ip(options), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'ip')
     return this
   }
 
@@ -184,8 +200,10 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * Requires the input to be a valid RFC 3986 URI string.
    */
   uri(options?: ZStringUriOptions): this {
-    this._addCheck('string.uri', v => v.uri(options), { message: options?.message })
-    this._updateManifest('output', 'format', 'uri')
+    this._addCheck('string.uri', v => v.uri(options), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'uri')
     return this
   }
 
@@ -193,8 +211,10 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * Requires the input to be a valid data URI string.
    */
   dataUri(options?: ZStringDataUriOptions): this {
-    this._addCheck('string.dataUri', v => v.dataUri(options), { message: options?.message })
-    this._updateManifest('output', 'format', 'data-uri')
+    this._addCheck('string.dataUri', v => v.dataUri(options), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'data-uri')
     return this
   }
 
@@ -202,8 +222,10 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * Requires the input to be a valid email address.
    */
   email(options?: ZStringEmailOptions): this {
-    this._addCheck('string.email', v => v.email(options), { message: options?.message })
-    this._updateManifest('output', 'format', 'email')
+    this._addCheck('string.email', v => v.email(options), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'email')
     return this
   }
 
@@ -213,8 +235,10 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    * @param options - Rule options
    */
   uuid(options?: ZStringUuidOptions): this {
-    this._addCheck('string.guid', v => v.uuid(options), { message: options?.message })
-    this._updateManifest('output', 'format', 'uuid')
+    this._addCheck('string.guid', v => v.uuid(options), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'uuid')
     return this
   }
   /**
@@ -225,29 +249,41 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   isoDate(options?: ZCheckOptions<'string.isoDate'>): this {
-    this._addCheck('string.isoDate', v => v.isoDate(), { message: options?.message })
-    this._updateManifest('output', 'format', 'date-time')
+    this._addCheck('string.isoDate', v => v.isoDate(), {
+      message: options?.message,
+    })
+    this._updateManifest('format', 'date-time')
     return this
   }
 
   isoDuration(options?: ZCheckOptions<'string.isoDuration'>): this {
-    return this._addCheck('string.isoDuration', v => v.isoDuration(), { message: options?.message })
+    return this._addCheck('string.isoDuration', v => v.isoDuration(), {
+      message: options?.message,
+    })
   }
 
   creditCard(options?: ZCheckOptions<'string.creditCard'>): this {
-    return this._addCheck('string.creditCard', v => v.creditCard(), { message: options?.message })
+    return this._addCheck('string.creditCard', v => v.creditCard(), {
+      message: options?.message,
+    })
   }
 
   min(min: number, options?: ZCheckOptions<'string.min'>): this {
-    return this._addCheck('string.min', v => v.min(min), { message: options?.message })
+    return this._addCheck('string.min', v => v.min(min), {
+      message: options?.message,
+    })
   }
 
   max(max: number, options?: ZCheckOptions<'string.max'>): this {
-    return this._addCheck('string.max', v => v.max(max), { message: options?.message })
+    return this._addCheck('string.max', v => v.max(max), {
+      message: options?.message,
+    })
   }
 
   length(length: number, options?: ZCheckOptions<'string.length'>): this {
-    return this._addCheck('string.length', v => v.length(length), { message: options?.message })
+    return this._addCheck('string.length', v => v.length(length), {
+      message: options?.message,
+    })
   }
 
   /**
@@ -258,13 +294,17 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
    */
   pattern(regex: RegExp, options?: ZStringPatternOptions): this {
     if (!options || (!options.invert && !options.name))
-      return this._addCheck('string.pattern.base', v => v.pattern(regex), { message: options?.message })
+      return this._addCheck('string.pattern.base', v => v.pattern(regex), {
+        message: options?.message,
+      })
     else if (options.name && options.invert)
       return this._addCheck('string.pattern.invert.name', v => v.pattern(regex, { invert: true }), {
         message: options?.message,
       })
     else if (options.name)
-      return this._addCheck('string.pattern.name', v => v.pattern(regex), { message: options?.message })
+      return this._addCheck('string.pattern.name', v => v.pattern(regex), {
+        message: options?.message,
+      })
     else
       return this._addCheck('string.pattern.invert.base', v => v.pattern(regex, { invert: true }), {
         message: options?.message,
@@ -280,11 +320,15 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   /* -------------------------------------------------- Transforms -------------------------------------------------- */
 
   lowercase(options?: ZCheckOptions<'string.lowercase'>): this {
-    return this._addCheck('string.lowercase', v => v.lowercase(), { message: options?.message })
+    return this._addCheck('string.lowercase', v => v.lowercase(), {
+      message: options?.message,
+    })
   }
 
   uppercase(options?: ZCheckOptions<'string.uppercase'>): this {
-    return this._addCheck('string.uppercase', v => v.uppercase(), { message: options?.message })
+    return this._addCheck('string.uppercase', v => v.uppercase(), {
+      message: options?.message,
+    })
   }
 
   insensitive(): this {
@@ -292,7 +336,9 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
   }
 
   trim(options?: ZCheckOptions<'string.trim'>): this {
-    return this._addCheck('string.trim', v => v.trim(), { message: options?.message })
+    return this._addCheck('string.trim', v => v.trim(), {
+      message: options?.message,
+    })
   }
 
   replace(pattern: string | RegExp, replacement: string): this {
@@ -301,5 +347,15 @@ export class ZString extends Z<ZDef<{ Output: string; Validator: ZSchema<Joi.Str
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = (): ZString => new ZString({ validator: ZValidator.string(), hooks: {} }, {})
+  static create = (): ZString =>
+    new ZString(
+      {
+        schema: ZJoi.string(),
+        manifest: {
+          type: 'string',
+        },
+        hooks: {},
+      },
+      {}
+    )
 }

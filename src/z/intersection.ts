@@ -1,42 +1,43 @@
 import type Joi from 'joi'
-import { U } from 'ts-toolbelt'
+import type { U } from 'ts-toolbelt'
 
-import { AnyZ, Z, ZDef, ZInput, ZOutput, ZSchema, ZType, ZValidator } from '../_internals'
+import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                    ZIntersection                                                   */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<
-  ZDef<
-    {
-      Output: U.IntersectOf<ZOutput<T[number]>>
-      Input: U.IntersectOf<ZInput<T[number]>>
-      Validator: ZSchema<Joi.AlternativesSchema>
-    },
-    { components: T }
-  >
-> {
+export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
+  Output: U.IntersectOf<_ZOutput<T[number]>>
+  Input: U.IntersectOf<_ZInput<T[number]>>
+  Schema: Joi.AlternativesSchema
+  Components: T
+}> {
   readonly name = ZType.Intersection
-  protected readonly _hint = this._props.components.map(z => z.hint).join(' & ')
+  protected readonly _hint = this._getProp('components')
+    .map(z => z.hint)
+    .join(' & ')
 
   get components(): T {
-    return this._props.components
+    return this._getProp('components')
   }
 
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
   static create = <T extends [AnyZ, ...AnyZ[]]>(components: T): ZIntersection<T> => {
-    const compAlreadyAlt = components.find(comp => comp._validator.type === 'alternatives')
+    const compAlreadyAlt = components.find(comp => comp.$_schema.type === 'alternatives')
 
     return new ZIntersection(
       {
-        validator: (compAlreadyAlt
-          ? (compAlreadyAlt._validator as ZSchema<Joi.AlternativesSchema>).concat(
-              ZValidator.alternatives(
-                ...components.filter(comp => comp._id !== compAlreadyAlt._id).map(comp => comp['_validator'])
+        schema: (compAlreadyAlt
+          ? (compAlreadyAlt.$_schema as Joi.AlternativesSchema).concat(
+              ZJoi.alternatives(
+                ...components.filter(comp => comp._id !== compAlreadyAlt._id).map(comp => comp.$_schema)
               )
             )
-          : ZValidator.alternatives(...components.map(comp => comp['_validator']))
+          : ZJoi.alternatives(...components.map(comp => comp.$_schema))
         ).match('all'),
+        manifest: {},
         hooks: {},
       },
       { components: components }

@@ -1,4 +1,4 @@
-import { type ZDef, AnyZ, Z, ZInput, ZOutput, ZType } from '../_internals'
+import { type _ZInput, type _ZOutput, type AnyZ, _ZSchema, Z, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZBrand                                                       */
@@ -10,15 +10,25 @@ export type ZBranded<T, Brand> = T & {
   readonly [ZBrandTag]: Brand
 }
 
-export class ZBrand<T extends AnyZ, B extends string | number | symbol> extends Z<
-  ZDef<
-    { Output: ZBranded<ZOutput<T>, B>; Input: ZBranded<ZInput<T>, B>; Validator: T['_validator'] },
-    { Type: T; Brand: B }
-  >
-> {
+export class ZBrand<T extends AnyZ, B extends string | number | symbol> extends Z<{
+  Output: ZBranded<_ZOutput<T>, B>
+  Input: ZBranded<_ZInput<T>, B>
+  Schema: _ZSchema<T>
+  Type: T
+  Brand: B
+}> {
   readonly name = ZType.Brand
-  protected readonly _hint = String(this._props.brand)
+  protected readonly _hint = String(this._getProp('brand'))
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends AnyZ, B extends string | number | symbol>(type: T, brand: B): ZBrand<T, B> =>
-    new ZBrand({ validator: type._validator, hooks: type['_hooks'] }, { type, brand })
+    new ZBrand(
+      {
+        schema: type.$_schema as _ZSchema<T>,
+        manifest: type.$_manifest,
+        hooks: type.$_hooks,
+      },
+      { type, brand }
+    )
 }

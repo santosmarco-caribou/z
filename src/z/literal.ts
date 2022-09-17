@@ -2,31 +2,39 @@ import type Joi from 'joi'
 import type { F } from 'ts-toolbelt'
 import type { Primitive } from 'type-fest'
 
-import { Z, ZDef, ZSchema, ZType, ZValidator } from '../_internals'
+import { Z, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                      ZLiteral                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZLiteral<T extends Primitive> extends Z<
-  ZDef<{ Output: T; Validator: ZSchema<Joi.AnySchema> }, { value: T }>
-> {
+export class ZLiteral<T extends Primitive> extends Z<{
+  Output: T
+  Input: T
+  Schema: Joi.AnySchema
+  Value: T
+}> {
   readonly name = ZType.Literal
-  protected readonly _hint = generateHint(this._props.value)
+  protected readonly _hint = generateHint(this._getProp('value'))
 
   get value(): T {
-    return this._props.value
+    return this._getProp('value')
   }
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends Primitive>(value: F.Narrow<T>): ZLiteral<T> =>
     new ZLiteral(
       {
-        validator: value === undefined ? ZValidator.any().forbidden().optional() : ZValidator.any().valid(value),
+        schema: value === undefined ? ZJoi.any().forbidden().optional() : ZJoi.any().valid(value),
+        manifest: {},
         hooks: {},
       },
       { value: value as T }
     )
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 const generateHint = (value: Primitive): string => {
   switch (typeof value) {

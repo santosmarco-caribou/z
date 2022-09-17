@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import { Z, ZCheckOptions, ZDef, ZSchema, ZType, ZValidator } from '../_internals'
+import { Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZNumber                                                      */
@@ -10,7 +10,11 @@ export type ZNumberPrecisionOptions = ZCheckOptions<'number.precision', { strict
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZNumber extends Z<ZDef<{ Output: number; Validator: ZSchema<Joi.NumberSchema> }>> {
+export class ZNumber extends Z<{
+  Output: number
+  Input: number
+  Schema: Joi.NumberSchema
+}> {
   readonly name = ZType.Number
   protected readonly _hint = 'number'
 
@@ -18,7 +22,9 @@ export class ZNumber extends Z<ZDef<{ Output: number; Validator: ZSchema<Joi.Num
    * Requires the number to be an integer (no floating point).
    */
   integer(options?: ZCheckOptions<'number.integer'>): this {
-    return this._addCheck('number.integer', v => v.integer(), { message: options?.message })
+    this._addCheck('number.integer', v => v.integer(), { message: options?.message })
+    this._updateManifest('format', 'integer')
+    return this
   }
   /**
    * {@inheritDoc ZNumber#integer}
@@ -90,7 +96,9 @@ export class ZNumber extends Z<ZDef<{ Output: number; Validator: ZSchema<Joi.Num
    * @param value - The minimum value allowed.
    */
   min(value: number, options?: ZCheckOptions<'number.min'>): this {
-    return this._addCheck('number.min', v => v.min(value), { message: options?.message })
+    this._addCheck('number.min', v => v.min(value), { message: options?.message })
+    this._updateManifest('minimum', value)
+    return this
   }
   /**
    * {@inheritDoc ZNumber#min}
@@ -120,7 +128,9 @@ export class ZNumber extends Z<ZDef<{ Output: number; Validator: ZSchema<Joi.Num
    * @param value - The maximum value allowed.
    */
   max(value: number, options?: ZCheckOptions<'number.max'>): this {
-    return this._addCheck('number.max', v => v.max(value), { message: options?.message })
+    this._addCheck('number.max', v => v.max(value), { message: options?.message })
+    this._updateManifest('maximum', value)
+    return this
   }
   /**
    * {@inheritDoc ZNumber#max}
@@ -158,7 +168,7 @@ export class ZNumber extends Z<ZDef<{ Output: number; Validator: ZSchema<Joi.Num
    */
   port(options?: ZCheckOptions<'number.port'>): this {
     this._addCheck('number.port', v => v.port(), { message: options?.message })
-    this._updateManifest('output', 'format', 'port')
+    this._updateManifest('format', 'port')
     return this
   }
 
@@ -181,5 +191,15 @@ export class ZNumber extends Z<ZDef<{ Output: number; Validator: ZSchema<Joi.Num
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static create = (): ZNumber => new ZNumber({ validator: ZValidator.number(), hooks: {} }, {})
+  static create = (): ZNumber =>
+    new ZNumber(
+      {
+        schema: ZJoi.number(),
+        manifest: {
+          type: 'number',
+        },
+        hooks: {},
+      },
+      {}
+    )
 }

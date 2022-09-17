@@ -1,18 +1,9 @@
 import { z } from '.'
 
-const PersonSchema = z.object({
-  firstName: z.string(),
-  middleName: z.string().optional(),
-  lastName: z.string(),
-  age: z.number().nonnegative(),
-})
+console.log(z.readonly(z.string().optional().summary('my inner title')).title('my title').$_manifest)
 
-console.log(PersonSchema)
+const a = z.record(z.string().uuid().summary('my inner title'), z.number().port().nullable()).title('my title')
 
-const val = PersonSchema.postprocess(val => val.firstName).parse({
-  firstName: 'Marco',
-  lastName: 'Santos',
-  age: 23,
-})
+type A = z.infer<typeof a>
 
-console.log(val)
+console.log(a.manifest)

@@ -1,12 +1,16 @@
 import type Joi from 'joi'
 
-import { type ZDef, Z, ZSchema, ZType, ZValidator } from '../_internals'
+import { Z, ZJoi, ZManifestObject, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZSymbol                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZSymbol extends Z<ZDef<{ Output: symbol; Validator: ZSchema<Joi.SymbolSchema> }>> {
+export class ZSymbol extends Z<{
+  Output: symbol
+  Input: symbol
+  Schema: Joi.SymbolSchema
+}> {
   readonly name = ZType.Symbol
   protected readonly _hint = 'symbol'
 
@@ -14,25 +18,46 @@ export class ZSymbol extends Z<ZDef<{ Output: symbol; Validator: ZSchema<Joi.Sym
     return ZUniqueSymbol.$_create(this, symbol)
   }
 
-  static create = (): ZSymbol => new ZSymbol({ validator: ZValidator.symbol(), hooks: {} }, {})
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  static create = (): ZSymbol =>
+    new ZSymbol(
+      {
+        schema: ZJoi.symbol(),
+        manifest: {},
+        hooks: {},
+      },
+      {}
+    )
 }
 
 /* -------------------------------------------------- ZUniqueSymbol ------------------------------------------------- */
 
-export class ZUniqueSymbol<S extends symbol> extends Z<
-  ZDef<{ Output: S; Validator: ZSchema<Joi.SymbolSchema> }, { symbol: S }>
-> {
+export class ZUniqueSymbol<S extends symbol> extends Z<{
+  Output: S
+  Input: S
+  Schema: Joi.SymbolSchema
+  Symbol: S
+}> {
   readonly name = ZType.UniqueSymbol
-  protected readonly _hint = this._props.symbol.toString()
+  protected readonly _hint = this.$_props.symbol.toString()
 
   get symbol(): S {
-    return this._props.symbol
+    return this.$_props.symbol
   }
 
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
   static $_create = <S extends symbol>(parent: ZSymbol, symbol: S): ZUniqueSymbol<S> => {
-    if (!symbol.description) throw new Error('The provided symbol must have a description')
+    if (!symbol.description) {
+      throw new Error('The provided symbol must have a description')
+    }
     return new ZUniqueSymbol<S>(
-      { validator: parent._validator.map({ [symbol.description]: symbol }), hooks: parent['_hooks'] },
+      {
+        schema: parent.$_schema.map({ [symbol.description]: symbol }),
+        manifest: parent.$_manifest as ZManifestObject<S>,
+        hooks: parent.$_hooks,
+      },
       { symbol }
     )
   }

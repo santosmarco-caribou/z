@@ -1,14 +1,26 @@
 import type Joi from 'joi'
 
-import { type ZDef, Z, ZSchema, ZType, ZValidator } from '../_internals'
+import { Z, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZVoid                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZVoid extends Z<ZDef<{ Output: void; Validator: ZSchema<Joi.AnySchema> }>> {
+export class ZVoid extends Z<{
+  Output: void
+  Input: void
+  Schema: Joi.AnySchema
+}> {
   readonly name = ZType.Void
   protected readonly _hint = 'void'
 
-  static create = (): ZVoid => new ZVoid({ validator: ZValidator.any(), hooks: {} }, {})
+  static create = (): ZVoid =>
+    new ZVoid(
+      {
+        schema: ZJoi.any(),
+        manifest: {},
+        hooks: {},
+      },
+      {}
+    )
 }

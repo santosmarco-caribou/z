@@ -1,7 +1,7 @@
 import { merge } from 'lodash'
 import type { O } from 'ts-toolbelt'
 
-import type { AnyZDef, BaseZ, ZInput, ZOutput, ZValidator } from '../_internals'
+import type { _ZOutput, BaseZ, ZDef, ZValidator } from '../_internals'
 import { hasProp, isArray } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -18,6 +18,8 @@ export type ManifestBasicInfoWithValue<T> = ManifestBasicInfo & {
   value: T
 }
 
+export type ManifestType = 'string' | 'number' | 'boolean'
+
 export type ManifestFormat =
   | 'alphanumeric'
   | 'base64'
@@ -26,6 +28,7 @@ export type ManifestFormat =
   | 'date-time'
   | 'email'
   | 'hexadecimal'
+  | 'integer'
   | 'ip'
   | 'port'
   | 'uri'
@@ -34,41 +37,44 @@ export type ManifestFormat =
 /* ------------------------------------------------- ZManifestObject ------------------------------------------------ */
 
 export type ZManifestObject<T> = ManifestBasicInfo & {
-  label?: string
+  type?: ManifestType
   format?: ManifestFormat
+  label?: string
   default?: ManifestBasicInfoWithValue<T>
   examples?: ManifestBasicInfoWithValue<T>[]
   tags?: ManifestBasicInfoWithValue<string>[]
   notes?: ManifestBasicInfoWithValue<string>[]
   unit?: string
   deprecated?: boolean
+  // ZNumber
+  minimum?: number
+  maximum?: number
+  multipleOf?: number
+  // ZArray, ZSet
+  element?: AnyZManifestObject
+  // ZTuple
+  elements?: AnyZManifestObject[]
+  rest?: AnyZManifestObject
+  // ZRecord
+  keys?: AnyZManifestObject
+  values?: AnyZManifestObject
 }
 
 export type AnyZManifestObject = ZManifestObject<any>
 
-export type ZManifestsObject<Def extends AnyZDef> = {
-  output: ZManifestObject<ZOutput<Def>>
-  input: ZManifestObject<ZInput<Def>>
-}
-
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface ZManifest<Def extends AnyZDef> extends BaseZ<Def>, ZValidator<Def> {}
+export interface ZManifest<Def extends ZDef> extends BaseZ<Def>, ZValidator<Def> {}
 
-export class ZManifest<Def extends AnyZDef> {
-  private _manifests: ZManifestsObject<Def> = {
-    output: {},
-    input: {},
-  }
-
+export class ZManifest<Def extends ZDef> {
   protected _init(): void {
-    this._prepareManifests()
+    this._prepareManifest()
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  get manifest(): O.Readonly<ZManifestsObject<Def>['output'], 'deep'> {
-    return this._manifests.output
+  get manifest(): O.Readonly<ZManifestObject<_ZOutput<Def>>, 'deep'> {
+    return this.$_manifest
   }
 
   /**
@@ -78,7 +84,7 @@ export class ZManifest<Def extends AnyZDef> {
    */
   label(label: string): this {
     this._updateValidator(v => v.label(label))
-    this._updateManifest('output', 'label', label)
+    this._updateManifest('label', label)
     return this
   }
 
@@ -88,7 +94,7 @@ export class ZManifest<Def extends AnyZDef> {
    * @param title - The schema's title.
    */
   title(title: string): this {
-    this._updateManifest('output', 'title', title)
+    this._updateManifest('title', title)
     return this
   }
 
@@ -106,7 +112,7 @@ export class ZManifest<Def extends AnyZDef> {
    * ```
    */
   summary(summary: string): this {
-    this._updateManifest('output', 'summary', summary)
+    this._updateManifest('summary', summary)
     return this
   }
 
@@ -126,33 +132,33 @@ export class ZManifest<Def extends AnyZDef> {
    */
   description(description: string): this {
     this._updateValidator(v => v.description(description))
-    this._updateManifest('output', 'description', description)
+    this._updateManifest('description', description)
     return this
   }
 
   /**
    * Annotates the schema with a default value.
    */
-  default(value: ZOutput<Def> | ManifestBasicInfoWithValue<ZOutput<Def>>): this {
-    this._updateManifest('output', 'default', hasProp(value, 'value') ? value : { value: value })
+  default(value: _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>): this {
+    this._updateManifest('default', hasProp(value, 'value') ? value : { value: value })
     return this
   }
 
   /**
    * Adds one or more examples to the schema's manifest.
    */
-  examples(...examples: Array<ZOutput<Def> | ManifestBasicInfoWithValue<ZOutput<Def>>>): this {
+  examples(...examples: Array<_ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>>): this {
     const exampleObjects = examples.map((example): { value: any } =>
       hasProp(example, 'value') ? example : { value: example }
     )
     this._updateValidator(v => v.example(exampleObjects.map(example => example.value)))
-    this._updateManifest('output', 'examples', exampleObjects)
+    this._updateManifest('examples', exampleObjects)
     return this
   }
   /**
    * Adds an example to the schema's manifest.
    */
-  example(example: ZOutput<Def> | ManifestBasicInfoWithValue<ZOutput<Def>>): this {
+  example(example: _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>): this {
     return this.examples(example)
   }
 
@@ -162,7 +168,7 @@ export class ZManifest<Def extends AnyZDef> {
   tags(...tags: (string | ManifestBasicInfoWithValue<string>)[]): this {
     const tagObjects = tags.map(tag => (typeof tag === 'string' ? { value: tag } : tag))
     this._updateValidator(v => v.tag(...tagObjects.map(tag => tag.value)))
-    this._updateManifest('output', 'tags', tagObjects)
+    this._updateManifest('tags', tagObjects)
     return this
   }
   /**
@@ -178,7 +184,7 @@ export class ZManifest<Def extends AnyZDef> {
   notes(...notes: (string | ManifestBasicInfoWithValue<string>)[]): this {
     const noteObjects = notes.map(note => (typeof note === 'string' ? { value: note } : note))
     this._updateValidator(v => v.note(...noteObjects.map(note => note.value)))
-    this._updateManifest('output', 'notes', noteObjects)
+    this._updateManifest('notes', noteObjects)
     return this
   }
   /**
@@ -193,7 +199,7 @@ export class ZManifest<Def extends AnyZDef> {
    */
   unit(unit: string): this {
     this._updateValidator(v => v.unit(unit))
-    this._updateManifest('output', 'unit', unit)
+    this._updateManifest('unit', unit)
     return this
   }
 
@@ -201,28 +207,28 @@ export class ZManifest<Def extends AnyZDef> {
    * Marks the schema as deprecated.
    */
   deprecated(deprecated: boolean): this {
-    this._updateManifest('output', 'deprecated', deprecated)
+    this._updateManifest('deprecated', deprecated)
     return this
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  protected _updateManifest<T extends 'output' | 'input', K extends keyof AnyZManifestObject>(
-    type: T,
+  protected _updateManifest<K extends keyof AnyZManifestObject>(
     key: K,
-    value: NonNullable<ZManifestObject<T extends 'output' ? ZOutput<Def> : ZInput<Def>>[K]>
+    value: NonNullable<ZManifestObject<_ZOutput<Def>>[K]>
   ): this {
-    const prevValue = this._manifests[type][key]
-    merge(this._manifests[type], {
+    const prevValue = this.$_manifest[key]
+    merge(this.$_manifest, {
       [key]: isArray(value) ? [...(isArray(prevValue) ? prevValue : []), ...value] : value,
     })
     return this
   }
 
-  private _prepareManifests(): void {
-    const metaObjs = this._validator.$_terms['metas'] as Array<{ swagger: ZManifestObject<ZOutput<Def>> }>
-    if (!metaObjs[0]) metaObjs[0] = { swagger: {} } // Output manifest
-    if (!metaObjs[1]) metaObjs[1] = { swagger: {} } // Input manifest
-    this._manifests = { output: metaObjs[0].swagger, input: metaObjs[1].swagger }
+  private _prepareManifest(): void {
+    const metaObjs = this.$_schema.$_terms['metas'] as Array<{
+      swagger: ZManifestObject<_ZOutput<Def>>
+    }>
+    if (!metaObjs[0]) metaObjs[0] = { swagger: this.$_manifest ?? {} }
+    this.$_manifest = metaObjs[0].swagger
   }
 }

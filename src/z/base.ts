@@ -1,20 +1,23 @@
+import Joi from 'joi'
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
-import type { A, F, O } from 'ts-toolbelt'
+import type { A, F } from 'ts-toolbelt'
 import type { CamelCasedProperties } from 'type-fest'
 
 import {
-  AnyZSchema,
   ZArray,
   ZBrand,
   ZHooks,
   ZHooksObject,
   ZIntersection,
   ZManifest,
+  ZManifestObject,
   ZNullable,
   ZOptional,
   ZParser,
   ZPropsManager,
+  ZReadonly,
+  ZReadonlyDeep,
   ZType,
   ZUnion,
   ZValidator,
@@ -28,45 +31,48 @@ settings.initFunction = '_init'
 /*                                              ZDef/ZDependencies/ZProps                                             */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type BaseZDef = {
+export interface ZDef {
   Output: any
-  Input?: any
-  Validator: AnyZSchema
+  Input: any
+  Schema: Joi.Schema
 }
-
-export type ZDef<Base extends BaseZDef, Extras extends O.Object | A.x = A.x> = Extras extends A.x ? Base : Extras & Base
-
-export type AnyZDef = ZDef<BaseZDef>
 
 /* -------------------------------------------------- ZDependencies ------------------------------------------------- */
 
-export type ZDependencies<Def extends AnyZDef> = {
-  validator: Def['Validator']
-  hooks: ZHooksObject<Def>
+export type ZDependencies<Def extends ZDef> = {
+  schema: _ZSchema<Def>
+  manifest: ZManifestObject<Def['Output']>
+  hooks: Partial<ZHooksObject<Def>>
 }
 
-export type AnyZDependencies = ZDependencies<AnyZDef>
+export type AnyZDependencies = ZDependencies<ZDef>
 
 /* ----------------------------------------------------- ZProps ----------------------------------------------------- */
 
-export type ZProps<Def extends AnyZDef> = CamelCasedProperties<Omit<Def, keyof BaseZDef>>
+export type ZProps<Def extends ZDef> = CamelCasedProperties<Omit<Def, keyof ZDef>>
+
+export type AnyZProps = ZProps<ZDef>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        BaseZ                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface BaseZ<Def extends AnyZDef> {
-  readonly $_output: ZOutput<Def>
-  readonly $_input: ZInput<Def>
+export interface BaseZ<Def extends ZDef> {
+  readonly $_output: Def['Output']
+  readonly $_input: Def['Input']
+  $_schema: _ZSchema<Def>
+  $_manifest: ZManifestObject<Def['Output']>
+  $_hooks: ZHooksObject<Def>
+  $_props: ZProps<Def>
 }
 
-export type AnyBaseZ = BaseZ<AnyZDef>
+export type AnyBaseZ = BaseZ<ZDef>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                          Z                                                         */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface Z<Def extends AnyZDef>
+export interface Z<Def extends ZDef>
   extends BaseZ<Def>,
     ZValidator<Def>,
     ZPropsManager<Def>,
@@ -76,16 +82,32 @@ export interface Z<Def extends AnyZDef>
     ZOpenApi<Def> {}
 
 @mix(ZValidator, ZPropsManager, ZHooks, ZParser, ZManifest, ZOpenApi)
-export abstract class Z<Def extends AnyZDef> {
-  readonly $_output!: ZOutput<Def>
-  readonly $_input!: ZInput<Def>
+export abstract class Z<Def extends ZDef> {
+  readonly $_output!: Def['Output']
+  readonly $_input!: Def['Input']
+
+  readonly $_schema: _ZSchema<Def>
+  readonly $_manifest: ZManifestObject<Def['Output']>
+  readonly $_hooks: ZHooksObject<Def>
+
+  readonly $_props: ZProps<Def>
 
   readonly _id: string
 
   abstract readonly name: ZType
   protected abstract readonly _hint: string
 
-  constructor(private readonly $__deps: ZDependencies<Def>, private readonly $__props: ZProps<Def>) {
+  constructor(dependencies: ZDependencies<Def>, properties: ZProps<Def>) {
+    const { schema, manifest, hooks } = dependencies
+    this.$_schema = schema
+    this.$_manifest = manifest
+    this.$_hooks = {
+      beforeParse: hooks.beforeParse ?? [],
+      afterParse: hooks.afterParse ?? [],
+    }
+
+    this.$_props = properties
+
     this._id = nanoid()
   }
 
@@ -123,6 +145,14 @@ export abstract class Z<Def extends AnyZDef> {
     return ZBrand.create(this, brand as B)
   }
 
+  readonly(): ZReadonly<this> {
+    return ZReadonly.create(this)
+  }
+
+  readonlyDeep(): ZReadonlyDeep<this> {
+    return ZReadonlyDeep.create(this)
+  }
+
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   isOptional(): boolean {
@@ -132,38 +162,30 @@ export abstract class Z<Def extends AnyZDef> {
   isNullable(): boolean {
     return this.safeParse(null).ok
   }
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  preprocess(fn: (value: unknown) => unknown): this {
-    this._addHook('beforeParse', { name: `preprocess-${nanoid()}`, handler: fn })
-    return this
-  }
-
-  postprocess<T>(fn: (value: ZOutput<Def>) => T): Z<{ Output: T; Validator: Def['Validator'] }> {
-    this._addHook('afterParse', { name: `postprocess-${nanoid()}`, handler: fn })
-    return this as any
-  }
 }
 
-export type AnyZ = Z<AnyZDef>
+export type AnyZ<Output = any> = Z<{ Output: Output; Input: any; Schema: Joi.Schema }>
 
 /* ------------------------------------------------- Type inference ------------------------------------------------- */
 
-export type ZOutput<T extends AnyBaseZ | AnyZDef> = T extends AnyBaseZ
-  ? T['$_output']
-  : T extends AnyZDef
+export type _ZOutput<T extends ZDef | AnyBaseZ> = T extends ZDef
   ? T['Output']
+  : T extends AnyBaseZ
+  ? T['$_output']
   : never
 
-export type ZInput<T extends AnyBaseZ | AnyZDef> = T extends AnyBaseZ
-  ? T['$_input']
-  : T extends AnyZDef
-  ? 'Input' extends keyof T
-    ? T['Input']
-    : ZOutput<T>
+export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef ? T['Input'] : T extends AnyBaseZ ? T['$_input'] : never
+
+export type _ZSchema<T extends ZDef | AnyBaseZ> = T extends ZDef
+  ? T['Schema']
+  : T extends AnyBaseZ
+  ? T['$_schema']
   : never
 
-export type TypeOf<T extends AnyBaseZ> = ZOutput<T> extends Map<any, any> | Set<any>
-  ? ZOutput<T>
-  : A.Compute<ZOutput<T>, 'deep'>
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type TypeOf<T extends AnyZ> = T extends Z<infer Def>
+  ? _ZOutput<Def> extends Map<any, any> | Set<any>
+    ? _ZOutput<Def>
+    : A.Compute<_ZOutput<Def>, 'deep'>
+  : never

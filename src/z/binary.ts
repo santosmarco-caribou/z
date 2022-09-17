@@ -1,12 +1,16 @@
 import type Joi from 'joi'
 
-import { Z, ZCheckOptions, ZDef, ZSchema, ZType, ZValidator } from '../_internals'
+import { Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZBinary                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZBinary extends Z<ZDef<{ Output: Buffer; Validator: ZSchema<Joi.BinarySchema> }>> {
+export class ZBinary extends Z<{
+  Output: Buffer
+  Input: Buffer
+  Schema: Joi.BinarySchema
+}> {
   readonly name = ZType.Binary
   protected readonly _hint = 'Buffer'
 
@@ -44,5 +48,15 @@ export class ZBinary extends Z<ZDef<{ Output: Buffer; Validator: ZSchema<Joi.Bin
     return this._addCheck('binary.length', v => v.length(length), options)
   }
 
-  static create = () => new ZBinary({ validator: ZValidator.binary(), hooks: {} }, {})
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
+  static create = () =>
+    new ZBinary(
+      {
+        schema: ZJoi.binary(),
+        manifest: {},
+        hooks: {},
+      },
+      {}
+    )
 }

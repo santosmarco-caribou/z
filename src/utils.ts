@@ -45,6 +45,10 @@ export type MergeDeep<A extends O.Object, B extends O.Object> = O.Merge<A, B, 'd
 
 export type WithQuestionMarks<T extends O.Object> = Pick<T, RequiredKeys<T>> & Partial<Pick<T, OptionalKeys<T>>>
 
+/* ----------------------------------------------------- Strings ---------------------------------------------------- */
+
+export const toUpperCase = <T extends string>(str: T): Uppercase<T> => str.toUpperCase() as Uppercase<T>
+
 /* ----------------------------------------------------- Arrays ----------------------------------------------------- */
 
 export const isArray = (maybeArr: unknown): maybeArr is any[] => Array.isArray(maybeArr)

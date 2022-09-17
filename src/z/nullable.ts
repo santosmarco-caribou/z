@@ -27,7 +27,7 @@ export class ZNullable<T extends AnyZ> extends Z<{
       {
         schema: innerType.$_schema.allow(null),
         manifest: innerType.$_manifest,
-        hooks: innerType.$_hooks,
+        hooks: innerType['_getHooks'](),
       },
       { innerType: innerType }
     )

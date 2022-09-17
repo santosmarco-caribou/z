@@ -7,7 +7,6 @@ import {
   _ZOutput,
   _ZSchema,
   AnyZIssueCode,
-  AnyZManifestObject,
   BaseZ,
   ParseOptions,
   Z_ISSUE_MAP,
@@ -15,24 +14,26 @@ import {
   ZHooks,
   ZHooksObject,
   ZIssueLocalContext,
+  ZManifestObject,
   ZProps,
 } from '../_internals'
 import { EmptyObject, mergeSafe } from '../utils'
 
 /* ------------------------------------------------------ ZMeta ----------------------------------------------------- */
 
-export interface ZMeta {
-  _manifest: AnyZManifestObject
-  _hooks: ZHooksObject<ZDef>
-  _props: ZProps<ZDef>
-  get(): this
-  update(meta: PartialDeep<ZMeta>): this
+export interface ZMetaObject<Def extends ZDef> {
+  _manifest: ZManifestObject<Def>
+  _hooks: ZHooksObject<Def>
+  _props: ZProps<Def>
+  update(meta: PartialDeep<ZMetaObject<Def>>): this
 }
+
+export type AnyZMetaObject = ZMetaObject<ZDef>
 
 /* ------------------------------------------------------ ZJoi ------------------------------------------------------ */
 
 export type ZJoiSchema<Original extends Joi.Schema> = Original & {
-  $_terms: { metas: [ZMeta] }
+  $_terms: { metas: [AnyZMetaObject] }
   _valids?: { _values?: Set<any> }
 }
 
@@ -48,15 +49,12 @@ export const ZJoi = Joi.defaults(_schema => {
   const metas = schema.$_terms['metas'] as any[]
 
   if (metas.length === 0) {
-    const initialMeta: ZMeta = {
+    const initialMeta: AnyZMetaObject = {
       _manifest: {},
       _hooks: { beforeParse: [], afterParse: [] },
       _props: {},
 
-      get() {
-        return this
-      },
-      update(meta: PartialDeep<ZMeta>) {
+      update(meta: PartialDeep<AnyZMetaObject>) {
         mergeWith(this, meta, (objValue, srcValue) => (isArray(objValue) ? objValue.concat(srcValue) : undefined))
         return this
       },
@@ -113,9 +111,9 @@ export interface ZValidator<Def extends ZDef> extends BaseZ<Def>, ZHooks<Def> {}
 export class ZValidator<Def extends ZDef> {
   protected _validate(input: unknown, options: ParseOptions | undefined): Joi.ValidationResult<_ZOutput<Def>> {
     const _opts = mergeSafe(DEFAULT_VALIDATION_OPTIONS, options ?? {})
-    const _input = this.$_hooks.beforeParse.reduce((acc, hook) => hook.handler(acc), cloneDeep(input))
+    const _input = this._getHooks().beforeParse.reduce((acc, hook) => hook.handler(acc), cloneDeep(input))
     const result = this.$_schema.validate(_input, _opts) as Joi.ValidationResult<_ZOutput<Def>>
-    return this.$_hooks.afterParse.reduce(
+    return this._getHooks().afterParse.reduce(
       (acc, hook) => ({
         ...acc,
         value: acc.value ? hook.handler(acc.value) : undefined,

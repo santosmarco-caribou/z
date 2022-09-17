@@ -40,10 +40,10 @@ export class ZUniqueSymbol<S extends symbol> extends Z<{
   Symbol: S
 }> {
   readonly name = ZType.UniqueSymbol
-  protected readonly _hint = this.$_props.symbol.toString()
+  protected readonly _hint = this._getProp('symbol').toString()
 
   get symbol(): S {
-    return this.$_props.symbol
+    return this._getProp('symbol')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -56,7 +56,7 @@ export class ZUniqueSymbol<S extends symbol> extends Z<{
       {
         schema: parent.$_schema.map({ [symbol.description]: symbol }),
         manifest: parent.$_manifest as ZManifestObject<S>,
-        hooks: parent.$_hooks,
+        hooks: parent['_getHooks'](),
       },
       { symbol }
     )

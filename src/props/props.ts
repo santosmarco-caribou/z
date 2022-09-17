@@ -8,12 +8,16 @@ import type { BaseZ, ZDef, ZProps } from '../_internals'
 export interface ZPropsManager<Def extends ZDef> extends BaseZ<Def> {}
 
 export class ZPropsManager<Def extends ZDef> {
+  protected _getProps(): ZProps<Def> {
+    return this._meta._props as ZProps<Def>
+  }
+
   protected _getProp<P extends keyof ZProps<Def>>(prop: P): ZProps<Def>[P] {
-    return this.$_props[prop]
+    return this._getProps()[prop]
   }
 
   protected _updateProps(fn: (props: Readonly<ZProps<Def>>) => ZProps<Def>): this {
-    this.$_schema.$_terms.metas[0].update({ _props: fn(this.$_props) })
+    this._meta.update({ _props: fn(this._getProps()) })
     return this
   }
 }

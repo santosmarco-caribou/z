@@ -56,7 +56,7 @@ export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends
       {
         schema: this.$_schema,
         manifest: this.$_manifest,
-        hooks: this.$_hooks,
+        hooks: this._getHooks(),
       },
       { options: { strict: true } }
     )

@@ -28,7 +28,7 @@ export class ZOptional<T extends AnyZ> extends Z<{
         schema:
           innerType.$_schema.$_getFlag('presence') === 'forbidden' ? innerType.$_schema : innerType.$_schema.optional(),
         manifest: innerType.$_manifest,
-        hooks: innerType.$_hooks,
+        hooks: innerType['_getHooks'](),
       },
       { innerType: innerType }
     )

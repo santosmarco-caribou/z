@@ -20,17 +20,19 @@ export type ZHooksObject<Def extends ZDef> = {
 export interface ZHooks<Def extends ZDef> extends BaseZ<Def> {}
 
 export class ZHooks<Def extends ZDef> {
+  protected _getHooks() {
+    return this._meta._hooks
+  }
+
   protected _addHook<T extends keyof ZHooksObject<Def>>(trigger: T, hook: ZHook<Def, T>): this {
-    this.$_schema.$_terms.metas[0].update({
-      _hooks: { [trigger]: this.$_hooks[trigger].some(h => h.name === hook.name) ? [] : [hook] },
+    this._meta.update({
+      _hooks: { [trigger]: this._getHooks()[trigger].some(h => h.name === hook.name) ? [] : [hook] },
     })
     return this
   }
 
   protected _removeHook<T extends keyof ZHooksObject<Def>>(trigger: T, name: string): this {
-    this.$_schema.$_terms.metas[0]._hooks[trigger] = this.$_schema.$_terms.metas[0]._hooks[trigger].filter(
-      h => h.name !== name
-    )
+    this._meta._hooks[trigger] = this._meta._hooks[trigger].filter(h => h.name !== name)
     return this
   }
 }

@@ -38,8 +38,8 @@ export class ZMap<K extends AnyZ, V extends AnyZ> extends Z<{
           values: valueType.$_manifest,
         },
         hooks: {
-          beforeParse: [...keyType.$_hooks.beforeParse, ...valueType.$_hooks.beforeParse],
-          afterParse: [...keyType.$_hooks.afterParse, ...valueType.$_hooks.afterParse],
+          beforeParse: [...keyType['_getHooks']().beforeParse, ...valueType['_getHooks']().beforeParse],
+          afterParse: [...keyType['_getHooks']().afterParse, ...valueType['_getHooks']().afterParse],
         },
       },
       { keyType, valueType }

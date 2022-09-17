@@ -5,14 +5,15 @@ import type { A, F } from 'ts-toolbelt'
 import type { CamelCasedProperties } from 'type-fest'
 
 import {
+  AnyZMetaObject,
   ZArray,
   ZBrand,
   ZHooks,
   ZHooksObject,
   ZIntersection,
+  ZJoiSchema,
   ZManifest,
   ZManifestObject,
-  ZMeta,
   ZNullable,
   ZOpenApi,
   ZOptional,
@@ -61,10 +62,9 @@ export type AnyZProps = ZProps<ZDef>
 export interface BaseZ<Def extends ZDef> {
   readonly $_output: Def['Output']
   readonly $_input: Def['Input']
+  readonly _meta: AnyZMetaObject
   $_schema: _ZSchema<Def>
   $_manifest: ZManifestObject<Def['Output']>
-  $_hooks: ZHooksObject<Def>
-  $_props: ZProps<Def>
 }
 
 export type AnyBaseZ = BaseZ<ZDef>
@@ -89,9 +89,6 @@ export abstract class Z<Def extends ZDef> {
 
   readonly $_schema: _ZSchema<Def>
   readonly $_manifest: ZManifestObject<Def['Output']>
-  readonly $_hooks: ZHooksObject<Def>
-
-  readonly $_props: ZProps<Def>
 
   readonly _id: string
 
@@ -107,14 +104,16 @@ export abstract class Z<Def extends ZDef> {
     meta.update({ _manifest: manifest, _hooks: hooks, _props: props })
 
     this.$_manifest = meta._manifest
-    this.$_hooks = meta._hooks
-    this.$_props = meta._props as ZProps<Def>
 
     this._id = nanoid()
   }
 
   get hint(): string {
     return formatHint(this)
+  }
+
+  get _meta(): AnyZMetaObject {
+    return this.$_schema.$_terms.metas[0]
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -178,15 +177,9 @@ export type _ZOutput<T extends ZDef | AnyBaseZ> = T extends ZDef
 
 export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef ? T['Input'] : T extends AnyBaseZ ? T['$_input'] : never
 
-export type _ZSchema<T extends ZDef | AnyBaseZ> = (T extends ZDef
-  ? T['Schema']
-  : T extends AnyBaseZ
-  ? T['$_schema']
-  : never) & {
-  $_terms: {
-    metas: [ZMeta]
-  }
-}
+export type _ZSchema<T extends ZDef | AnyBaseZ> = ZJoiSchema<
+  T extends ZDef ? T['Schema'] : T extends AnyBaseZ ? T['$_schema'] : never
+>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

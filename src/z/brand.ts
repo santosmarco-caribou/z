@@ -27,7 +27,7 @@ export class ZBrand<T extends AnyZ, B extends string | number | symbol> extends 
       {
         schema: type.$_schema as _ZSchema<T>,
         manifest: type.$_manifest,
-        hooks: type.$_hooks,
+        hooks: type['_getHooks'](),
       },
       { type, brand }
     )

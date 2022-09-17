@@ -62,7 +62,7 @@ export class ZError<Def extends ZDef> extends Error {
       typeManifest: this.typeManifest,
       annotate: () => this.annotate(),
       toString: () =>
-        util.inspect(omit(this.toPlainObject(), 'toString'), {
+        util.inspect(omit(this.toPlainObject(), 'annotate', 'toString'), {
           colors: true,
           depth: Infinity,
         }),

@@ -93,7 +93,7 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
       {
         schema: this.$_schema,
         manifest: this.$_manifest as ZManifestObject<_ZOutput<ZArrayDef<T, L>>>,
-        hooks: this.$_hooks as ZHooksObject<ZArrayDef<T, L>>,
+        hooks: this._getHooks() as ZHooksObject<ZArrayDef<T, L>>,
       },
       { element: this._getProp('element'), cardinality: length }
     )
@@ -108,7 +108,7 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
       {
         schema: updated.$_schema,
         manifest: updated.$_manifest as ZManifestObject<_ZOutput<ZArrayDef<T, 'atleastone'>>>,
-        hooks: updated.$_hooks as ZHooksObject<ZArrayDef<T, 'atleastone'>>,
+        hooks: updated._getHooks() as ZHooksObject<ZArrayDef<T, 'atleastone'>>,
       },
       { element: updated._getProp('element'), cardinality: 'atleastone' }
     )

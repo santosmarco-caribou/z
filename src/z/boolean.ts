@@ -59,7 +59,7 @@ export class ZTrue extends Z<{
       {
         schema: parent.$_schema.valid(true),
         manifest: parent.$_manifest as ZManifestObject<true>,
-        hooks: parent.$_hooks,
+        hooks: parent['_getHooks'](),
       },
       {}
     )
@@ -84,7 +84,7 @@ export class ZFalse extends Z<{
       {
         schema: parent.$_schema.valid(false),
         manifest: parent.$_manifest as ZManifestObject<false>,
-        hooks: parent.$_hooks,
+        hooks: parent['_getHooks'](),
       },
       {}
     )

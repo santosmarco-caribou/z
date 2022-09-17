@@ -31,7 +31,7 @@ export class ZDefault<T extends AnyZ, D extends _ZOutput<T> | (() => _ZOutput<T>
       {
         schema: withDefault.$_schema.default(defaultValue) as _ZSchema<T>,
         manifest: withDefault.$_manifest,
-        hooks: withDefault.$_hooks,
+        hooks: withDefault['_getHooks'](),
       },
       { withDefault, defaultValue }
     )

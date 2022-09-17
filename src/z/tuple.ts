@@ -35,7 +35,7 @@ export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = 
           ...this.$_manifest,
           rest: restType.$_manifest,
         },
-        hooks: this.$_hooks,
+        hooks: this._getHooks(),
       },
       { elements: this._getProp('elements'), restType }
     )

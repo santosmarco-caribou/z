@@ -1,24 +1,19 @@
+import { isArray, merge, mergeWith } from 'lodash'
+
 import type { _ZOutput, BaseZ, ZDef } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZHooks                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZHookTrigger = 'beforeParse' | 'afterParse'
-
-export type ZHookHandler<Def extends ZDef, Trigger extends ZHookTrigger> = {
-  beforeParse: (input: unknown) => any
-  afterParse: (input: _ZOutput<Def>) => any
-}[Trigger]
-
-export type ZHook<Def extends ZDef, Trigger extends ZHookTrigger> = {
+export type ZHook<I = any, O = any> = {
   name: string
-  handler: ZHookHandler<Def, Trigger>
+  handler: (input: I) => O
 }
 
 export type ZHooksObject<Def extends ZDef> = {
-  beforeParse: ZHook<Def, 'beforeParse'>[]
-  afterParse: ZHook<Def, 'afterParse'>[]
+  beforeParse: ZHook[]
+  afterParse: ZHook<_ZOutput<Def>>[]
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -27,16 +22,17 @@ export type ZHooksObject<Def extends ZDef> = {
 export interface ZHooks<Def extends ZDef> extends BaseZ<Def> {}
 
 export class ZHooks<Def extends ZDef> {
-  protected _addHook<T extends ZHookTrigger>(trigger: T, hook: ZHook<Def, T>): this {
-    const hooks = this.$_hooks[trigger]
-    hooks.push(hook as any)
+  protected _addHook<T extends keyof ZHooksObject<Def>>(trigger: T, hook: ZHook<Def, T>): this {
+    mergeWith(
+      this.$_hooks,
+      { [trigger]: this.$_hooks[trigger].some(h => h.name === hook.name) ? [] : [hook] },
+      (objValue, srcValue) => (isArray(objValue) ? objValue.concat(srcValue) : undefined)
+    )
     return this
   }
 
-  protected _removeHook<T extends ZHookTrigger>(trigger: T, name: string): this {
-    if (trigger === 'beforeParse')
-      this.$_hooks.beforeParse = this.$_hooks.beforeParse?.filter(hook => hook.name !== name)
-    else this.$_hooks.afterParse = this.$_hooks.afterParse?.filter(hook => hook.name !== name)
+  protected _removeHook<T extends keyof ZHooksObject<Def>>(trigger: T, name: string): this {
+    merge(this.$_hooks, { [trigger]: this.$_hooks[trigger].filter(h => h.name !== name) })
     return this
   }
 }

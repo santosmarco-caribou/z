@@ -32,7 +32,7 @@ settings.initFunction = '_init'
 /*                                              ZDef/ZDependencies/ZProps                                             */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface ZDef {
+export type ZDef = {
   Output: any
   Input: any
   Schema: Joi.Schema
@@ -53,6 +53,16 @@ export type AnyZDependencies = ZDependencies<ZDef>
 export type ZProps<Def extends ZDef> = CamelCasedProperties<Omit<Def, keyof ZDef>>
 
 export type AnyZProps = ZProps<ZDef>
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*                                                        ZMeta                                                       */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+export type ZMeta<Def extends ZDef> = {
+  _manifest: ZManifestObject<Def['Output']>
+  _hooks: ZHooksObject<Def>
+  _props: ZProps<Def>
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        BaseZ                                                       */
@@ -104,16 +114,16 @@ export abstract class Z<Def extends ZDef> {
     this.$_schema = schema
 
     const metas = this.$_schema.$_terms['metas']
-    const [meta] = (isArray(metas) ? (metas.length > 0 ? metas : [{}]) : [metas]) as Array<{
-      _manifest: ZManifestObject<Def['Output']>
-      _hooks: ZHooksObject<Def>
-      _props: CamelCasedProperties<Omit<Def, keyof ZDef>>
-    }>
-    mergeWith(
-      meta,
-      { _manifest: {}, _hooks: { beforeParse: [], afterParse: [] }, _props: {} },
-      { _manifest: manifest, _hooks: hooks, _props: props },
-      (objValue, srcValue) => (isArray(objValue) ? objValue.concat(srcValue) : undefined)
+    const [meta] = (isArray(metas) ? (metas.length > 0 ? metas : [{}]) : [metas]) as ZMeta<Def>[]
+
+    const initialMeta: ZMeta<Def> = {
+      _manifest: {},
+      _hooks: { beforeParse: [], afterParse: [] },
+      _props: {} as ZProps<Def>,
+    }
+
+    mergeWith(meta, initialMeta, { _manifest: manifest, _hooks: hooks, _props: props }, (objValue, srcValue) =>
+      isArray(objValue) ? objValue.concat(srcValue) : undefined
     )
 
     this.$_manifest = meta._manifest

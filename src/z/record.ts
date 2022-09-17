@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-import { _ZInput, _ZOutput, AnyZ, Z, ZJoi, ZTuple, ZType } from '../_internals'
+import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZTuple, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZRecord                                                      */
@@ -37,10 +37,7 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
           keys: keyType.$_manifest,
           values: valueType.$_manifest,
         },
-        hooks: {
-          beforeParse: [...keyType.$_hooks.beforeParse, ...valueType.$_hooks.beforeParse],
-          afterParse: [...keyType.$_hooks.afterParse, ...valueType.$_hooks.afterParse],
-        },
+        hooks: {},
       },
       { keyType, valueType }
     )

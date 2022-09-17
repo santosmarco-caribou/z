@@ -1,5 +1,6 @@
 import type Joi from 'joi'
 import { omit } from 'lodash'
+import type { O } from 'ts-toolbelt'
 import type { Simplify } from 'type-fest'
 import util from 'util'
 
@@ -27,7 +28,7 @@ export class ZError<Def extends ZDef> extends Error {
 
   readonly typeName: ZType
   readonly typeHint: string
-  readonly typeManifest: ZManifestObject<_ZOutput<Def>>
+  readonly typeManifest: O.Readonly<ZManifestObject<_ZOutput<Def>>, PropertyKey, 'deep'>
 
   private constructor(_z: Z<Def>, private readonly _original: Joi.ValidationError) {
     super()

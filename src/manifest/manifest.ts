@@ -1,4 +1,5 @@
 import { mergeWith } from 'lodash'
+import { O } from 'ts-toolbelt'
 
 import type { _ZOutput, BaseZ, ZDef, ZValidator } from '../_internals'
 import { hasProp, isArray } from '../utils'
@@ -66,6 +67,10 @@ export type AnyZManifestObject = ZManifestObject<any>
 export interface ZManifest<Def extends ZDef> extends BaseZ<Def>, ZValidator<Def> {}
 
 export class ZManifest<Def extends ZDef> {
+  get manifest(): O.Readonly<ZManifestObject<_ZOutput<Def>>, PropertyKey, 'deep'> {
+    return this.$_manifest
+  }
+
   /**
    * Overrides the key name in error messages.
    *

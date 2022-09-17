@@ -1,12 +1,12 @@
-import j2s, { SwaggerSchema } from 'joi-to-swagger'
-import { Merge } from 'type-fest'
+import j2s, { type SwaggerSchema } from 'joi-to-swagger'
+import type { Merge } from 'type-fest'
 
-import { _ZOutput, ZDef, ZManifest, ZManifestObject, ZValidator } from '../_internals'
+import type { _ZOutput, BaseZ, ZDef, ZManifestObject } from '../_internals'
 
-export interface ZOpenApi<Def extends ZDef> extends ZManifest<Def>, ZValidator<Def> {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ZOpenApi<Def extends ZDef> extends BaseZ<Def> {}
 export class ZOpenApi<Def extends ZDef> {
   toOpenApi(): Merge<SwaggerSchema, ZManifestObject<_ZOutput<Def>>> {
-    console.log(this.manifest)
-    return Object.assign(j2s(this.$_schema).swagger, this.manifest)
+    return Object.assign(j2s(this.$_schema).swagger, this.$_manifest)
   }
 }

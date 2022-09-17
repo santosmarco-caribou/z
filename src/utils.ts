@@ -52,7 +52,7 @@ export const isArray = (maybeArr: unknown): maybeArr is any[] => Array.isArray(m
 /* ----------------------------------------------------- Objects ---------------------------------------------------- */
 
 export const hasProp = <T extends O.Object, P extends PropertyKey>(obj: T, prop: P): obj is T & Record<P, any> => {
-  return prop in obj
+  return typeof obj === 'object' && !!obj && prop in obj
 }
 
 export const mergeSafe = <T extends [O.Object, ...O.Object[]]>(...objs: T): O.MergeAll<T[0], L.Tail<T>> =>

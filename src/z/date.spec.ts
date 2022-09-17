@@ -1,6 +1,10 @@
 import { ZDate } from '../_internals'
 import { generateBaseSpec } from '../test-utils'
 
+const NOW = new Date()
+const YESTERDAY = new Date(Date.now() - 86_400_000)
+const TOMORROW = new Date(Date.now() + 86_400_000)
+
 generateBaseSpec('ZDate', ZDate, {
   expectedTypeName: 'ZDate',
   expectedHints: {
@@ -36,4 +40,12 @@ generateBaseSpec('ZDate', ZDate, {
     B: { parse: false, expectedIssue: { code: 'date.base', message: `"value" must be a valid date` } },
     C: { parse: false, expectedIssue: { code: 'date.base', message: `"value" must be a valid date` } },
   },
+  additionalSpecs: [
+    { title: 'should parse .before() correctly', spec: z => expect(z.before(TOMORROW).parse(NOW)).toStrictEqual(NOW) },
+    { title: 'should parse .after() correctly', spec: z => expect(z.after(YESTERDAY).parse(NOW)).toStrictEqual(NOW) },
+    {
+      title: 'should parse .between() correctly',
+      spec: z => expect(z.between(YESTERDAY, TOMORROW).parse(NOW)).toStrictEqual(NOW),
+    },
+  ],
 })

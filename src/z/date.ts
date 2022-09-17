@@ -24,8 +24,8 @@ export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends
    *
    * @param date - The date to compare to.
    */
-  before(date: ZDateCheckInput, options?: ZCheckOptions<'date.greater'>): this {
-    this._addCheck('date.greater', v => v.greater(this._parseCheckInput(date)), options)
+  before(date: ZDateCheckInput, options?: ZCheckOptions<'date.less'>): this {
+    this._addCheck('date.less', v => v.less(this._parseCheckInput(date)), options)
     return this
   }
   /**
@@ -33,8 +33,8 @@ export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends
    *
    * @param date - The date to compare to.
    */
-  after(date: ZDateCheckInput, options?: ZCheckOptions<'date.less'>): this {
-    this._addCheck('date.less', v => v.less(this._parseCheckInput(date)), options)
+  after(date: ZDateCheckInput, options?: ZCheckOptions<'date.greater'>): this {
+    this._addCheck('date.greater', v => v.greater(this._parseCheckInput(date)), options)
     return this
   }
   /**

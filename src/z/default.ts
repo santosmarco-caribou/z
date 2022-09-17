@@ -26,7 +26,7 @@ export class ZDefault<T extends AnyZ, D extends _ZOutput<T> | (() => _ZOutput<T>
       : this._getProp('defaultValue')
   }
 
-  static create = <T extends AnyZ, D extends _ZOutput<T>>(withDefault: T, defaultValue: D): ZDefault<T, D> =>
+  static create = <T extends AnyZ, D extends _ZOutput<T>>(withDefault: T, defaultValue: F.Narrow<D>): ZDefault<T, D> =>
     new ZDefault(
       {
         schema: withDefault.$_schema.default(defaultValue) as _ZSchema<T>,

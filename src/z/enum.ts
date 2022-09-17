@@ -1,8 +1,8 @@
 import type Joi from 'joi'
 import type { F } from 'ts-toolbelt'
 
-import { Z, ZJoi, ZType } from '../_internals'
-import { unionizeHints } from '../utils'
+import { Z, ZJoi, ZManifestObject, ZType } from '../_internals'
+import { toUpperCase, unionizeHints } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZEnum                                                       */
@@ -33,6 +33,17 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
       {} as {
         [K in keyof T]: T[K]
       }
+    )
+  }
+
+  uppercase(): ZEnum<{ [K in keyof T]: Uppercase<T[K]> }> {
+    return new ZEnum<{ [K in keyof T]: Uppercase<T[K]> }>(
+      {
+        schema: ZJoi.any().valid(ZJoi.override, ...this._getProp('values').map(toUpperCase)),
+        manifest: this.$_manifest as ZManifestObject<{ [K in keyof T]: Uppercase<T[K]> }[number]>,
+        hooks: this._getHooks(),
+      },
+      { values: this._getProp('values').map(toUpperCase) as { [K in keyof T]: Uppercase<T[K]> } }
     )
   }
 

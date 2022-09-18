@@ -11,7 +11,7 @@ import { toLowerCase, toUpperCase, unionizeHints } from '../utils'
 export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
   Output: T[number]
   Input: T[number]
-  Schema: Joi.AnySchema
+  Schema: Joi.StringSchema
   Values: T
 }> {
   readonly name = ZType.Enum
@@ -53,7 +53,7 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
     const transformedValues = fn(this._props.getOne('values'))
     return new ZEnum<_T>(
       {
-        schema: ZJoi.any().valid(...transformedValues),
+        schema: ZJoi.string().valid(...transformedValues),
         manifest: this._manifest.get(),
         hooks: this._hooks.get(),
       },
@@ -66,7 +66,7 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
   static create = <T extends readonly [string, ...string[]]>(values: F.Narrow<T>): ZEnum<T> =>
     new ZEnum(
       {
-        schema: ZJoi.any().valid(...values),
+        schema: ZJoi.string().valid(...values),
         manifest: {},
         hooks: {},
       },

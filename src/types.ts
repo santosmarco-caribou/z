@@ -12,6 +12,7 @@ export enum ZType {
   Custom = 'ZCustom',
   Date = 'ZDate',
   Default = 'ZDefault',
+  DiscriminatedUnion = 'ZDiscriminatedUnion',
   Enum = 'ZEnum',
   False = 'ZFalse',
   Falsy = 'ZFalsy',

@@ -17,6 +17,7 @@
     "dev": "ts-node-dev --transpile-only --respawn '/Users/marcosantos/Desktop/code/best-server/src/playground.ts'"
   },
   "dependencies": {
+    "chalk": "4.1.2",
     "deepdash": "^5.3.9",
     "eslint-plugin-jsdoc": "^39.3.6",
     "joi": "^17.6.0",

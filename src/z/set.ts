@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { Integer } from 'type-fest'
 
 import { _ZInput, _ZOutput, AnyZ, Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
@@ -24,7 +25,7 @@ export class ZSet<T extends AnyZ> extends Z<{
    *
    * @param min - The minimum number of elements in the Set.
    */
-  min(min: number, options?: ZCheckOptions<'array.min'>): this {
+  min<T extends number>(min: Integer<T>, options?: ZCheckOptions<'array.min'>): this {
     return this._addCheck('array.min', v => v.min(min), options)
   }
   /**
@@ -32,7 +33,7 @@ export class ZSet<T extends AnyZ> extends Z<{
    *
    * @param max - The maximum number of elements in the Set.
    */
-  max(max: number, options?: ZCheckOptions<'array.max'>): this {
+  max<T extends number>(max: Integer<T>, options?: ZCheckOptions<'array.max'>): this {
     return this._addCheck('array.max', v => v.max(max), options)
   }
   /**
@@ -40,7 +41,7 @@ export class ZSet<T extends AnyZ> extends Z<{
    *
    * @param size - The exact number of elements in the Set.
    */
-  size<S extends number>(size: S, options?: ZCheckOptions<'array.length'>): this {
+  size<S extends number>(size: Integer<S>, options?: ZCheckOptions<'array.length'>): this {
     return this._addCheck('array.length', v => v.length(size), options)
   }
 

@@ -1,5 +1,3 @@
-import type { O } from 'ts-toolbelt'
-
 import type { _ZOutput, BaseZ, ZDef, ZValidator } from '../_internals'
 import { hasProp } from '../utils'
 
@@ -67,8 +65,8 @@ export type AnyZManifestObject = ZManifestObject<any>
 export interface ZManifest<Def extends ZDef> extends BaseZ<Def>, ZValidator<Def> {}
 
 export class ZManifest<Def extends ZDef> {
-  get manifest(): O.Readonly<ZManifestObject<_ZOutput<Def>>, PropertyKey, 'deep'> {
-    return this.$_manifest
+  get manifest(): ZManifestObject<_ZOutput<Def>> {
+    return this._manifest.get()
   }
 
   /**
@@ -77,8 +75,8 @@ export class ZManifest<Def extends ZDef> {
    * @param label - The name of the key.
    */
   label(label: string): this {
-    this._updateValidator(v => v.label(label))
-    this._updateManifest('label', label)
+    this._schema.update(v => v.label(label))
+    this._manifest.update('label', label)
     return this
   }
 
@@ -88,7 +86,7 @@ export class ZManifest<Def extends ZDef> {
    * @param title - The schema's title.
    */
   title(title: string): this {
-    this._updateManifest('title', title)
+    this._manifest.update('title', title)
     return this
   }
 
@@ -106,7 +104,7 @@ export class ZManifest<Def extends ZDef> {
    * ```
    */
   summary(summary: string): this {
-    this._updateManifest('summary', summary)
+    this._manifest.update('summary', summary)
     return this
   }
 
@@ -125,8 +123,8 @@ export class ZManifest<Def extends ZDef> {
    * ```
    */
   description(description: string): this {
-    this._updateValidator(v => v.description(description))
-    this._updateManifest('description', description)
+    this._schema.update(v => v.description(description))
+    this._manifest.update('description', description)
     return this
   }
 
@@ -134,7 +132,7 @@ export class ZManifest<Def extends ZDef> {
    * Annotates the schema with a default value.
    */
   default(value: _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>): this {
-    this._updateManifest('default', hasProp(value, 'value') ? value : { value: value })
+    this._manifest.update('default', hasProp(value, 'value') ? value : { value: value })
     return this
   }
 
@@ -145,8 +143,8 @@ export class ZManifest<Def extends ZDef> {
     const exampleObjects = examples.map((example): { value: any } =>
       hasProp(example, 'value') ? example : { value: example }
     )
-    this._updateValidator(v => v.example(exampleObjects.map(example => example.value)))
-    this._updateManifest('examples', exampleObjects)
+    this._schema.update(v => v.example(exampleObjects.map(example => example.value)))
+    this._manifest.update('examples', exampleObjects)
     return this
   }
   /**
@@ -161,8 +159,8 @@ export class ZManifest<Def extends ZDef> {
    */
   tags(...tags: (string | ManifestBasicInfoWithValue<string>)[]): this {
     const tagObjects = tags.map(tag => (typeof tag === 'string' ? { value: tag } : tag))
-    this._updateValidator(v => v.tag(...tagObjects.map(tag => tag.value)))
-    this._updateManifest('tags', tagObjects)
+    this._schema.update(v => v.tag(...tagObjects.map(tag => tag.value)))
+    this._manifest.update('tags', tagObjects)
     return this
   }
   /**
@@ -177,8 +175,8 @@ export class ZManifest<Def extends ZDef> {
    */
   notes(...notes: (string | ManifestBasicInfoWithValue<string>)[]): this {
     const noteObjects = notes.map(note => (typeof note === 'string' ? { value: note } : note))
-    this._updateValidator(v => v.note(...noteObjects.map(note => note.value)))
-    this._updateManifest('notes', noteObjects)
+    this._schema.update(v => v.note(...noteObjects.map(note => note.value)))
+    this._manifest.update('notes', noteObjects)
     return this
   }
   /**
@@ -192,8 +190,8 @@ export class ZManifest<Def extends ZDef> {
    * Annotates the schema with a unit.
    */
   unit(unit: string): this {
-    this._updateValidator(v => v.unit(unit))
-    this._updateManifest('unit', unit)
+    this._schema.update(v => v.unit(unit))
+    this._manifest.update('unit', unit)
     return this
   }
 
@@ -201,17 +199,7 @@ export class ZManifest<Def extends ZDef> {
    * Marks the schema as deprecated.
    */
   deprecated(deprecated: boolean): this {
-    this._updateManifest('deprecated', deprecated)
-    return this
-  }
-
-  /* ---------------------------------------------------------------------------------------------------------------- */
-
-  protected _updateManifest<K extends keyof AnyZManifestObject>(
-    key: K,
-    value: NonNullable<ZManifestObject<_ZOutput<Def>>[K]>
-  ): this {
-    this.$_schema.$_terms.metas[0].update({ _manifest: { [key]: value } })
+    this._manifest.update('deprecated', deprecated)
     return this
   }
 }

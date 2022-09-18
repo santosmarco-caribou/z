@@ -39,14 +39,14 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
 > {
   readonly name = ZType.Array
   protected readonly _hint =
-    this._getProp('cardinality') === 'atleastone'
-      ? `[${this._getProp('element').hint}, ...${this._getProp('element').hint}[]]`
-      : isComplexHint(this._getProp('element').hint)
-      ? `Array<${this._getProp('element').hint}>`
-      : `${this._getProp('element').hint}[]`
+    this._props.getOne('cardinality') === 'atleastone'
+      ? `[${this._props.getOne('element').hint}, ...${this._props.getOne('element').hint}[]]`
+      : isComplexHint(this._props.getOne('element').hint)
+      ? `Array<${this._props.getOne('element').hint}>`
+      : `${this._props.getOne('element').hint}[]`
 
   get element(): T {
-    return this._getProp('element')
+    return this._props.getOne('element')
   }
 
   /**
@@ -91,11 +91,11 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
     this._addCheck('array.length', v => v.length(length), options)
     return new ZArray<T, L>(
       {
-        schema: this.$_schema,
-        manifest: this.$_manifest as ZManifestObject<_ZOutput<ZArrayDef<T, L>>>,
-        hooks: this._getHooks() as ZHooksObject<ZArrayDef<T, L>>,
+        schema: this._schema.get(),
+        manifest: this._manifest.get() as ZManifestObject<_ZOutput<ZArrayDef<T, L>>>,
+        hooks: this._hooks.get() as ZHooksObject<ZArrayDef<T, L>>,
       },
-      { element: this._getProp('element'), cardinality: length }
+      { element: this._props.getOne('element'), cardinality: length }
     )
   }
 
@@ -106,11 +106,11 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
     const updated = this.min(1, options)
     return new ZArray<T, 'atleastone'>(
       {
-        schema: updated.$_schema,
-        manifest: updated.$_manifest as ZManifestObject<_ZOutput<ZArrayDef<T, 'atleastone'>>>,
-        hooks: updated._getHooks() as ZHooksObject<ZArrayDef<T, 'atleastone'>>,
+        schema: updated._schema.get(),
+        manifest: updated._manifest.get() as ZManifestObject<_ZOutput<ZArrayDef<T, 'atleastone'>>>,
+        hooks: updated._hooks.get() as ZHooksObject<ZArrayDef<T, 'atleastone'>>,
       },
-      { element: updated._getProp('element'), cardinality: 'atleastone' }
+      { element: updated._props.getOne('element'), cardinality: 'atleastone' }
     )
   }
 
@@ -119,9 +119,9 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
   static create = <T extends AnyZ>(element: T): ZArray<T> =>
     new ZArray(
       {
-        schema: ZJoi.array().items(element.$_schema),
+        schema: ZJoi.array().items(element._schema.get()),
         manifest: {
-          element: element.$_manifest,
+          element: element._manifest.get(),
         },
         hooks: {},
       },

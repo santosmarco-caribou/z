@@ -14,10 +14,10 @@ export class ZNullable<T extends AnyZ> extends Z<{
   InnerType: T
 }> {
   readonly name = ZType.Nullable
-  protected readonly _hint = unionizeHints(this._getProp('innerType').hint, 'null')
+  protected readonly _hint = unionizeHints(this._props.getOne('innerType').hint, 'null')
 
   unwrap(): T {
-    return this._getProp('innerType')
+    return this._props.getOne('innerType')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -25,9 +25,9 @@ export class ZNullable<T extends AnyZ> extends Z<{
   static create = <T extends AnyZ>(innerType: T): ZNullable<T> =>
     new ZNullable(
       {
-        schema: innerType.$_schema.allow(null),
-        manifest: innerType.$_manifest,
-        hooks: innerType['_getHooks'](),
+        schema: innerType._schema.get().allow(null),
+        manifest: innerType._manifest.get(),
+        hooks: innerType._hooks.get(),
       },
       { innerType: innerType }
     )

@@ -1,16 +1,15 @@
 import type Joi from 'joi'
 import { omit } from 'lodash'
-import type { O } from 'ts-toolbelt'
 import type { Simplify } from 'type-fest'
 import util from 'util'
 
-import type { _ZOutput, _ZSchema, Z, ZDef, ZIssueCode, ZManifestObject, ZType } from '../_internals'
+import type { _ZOutput, Z, ZDef, ZIssueCode, ZManifestObject, ZType } from '../_internals'
 import type { OmitInternals } from '../utils'
 
 /* ----------------------------------------------------- ZIssue ----------------------------------------------------- */
 
 export type ZIssue<Def extends ZDef> = {
-  code: Simplify<ZIssueCode<_ZSchema<Def>>>
+  code: Simplify<ZIssueCode<Def['Schema']>>
   message: string
   path: Array<string | number>
   received: any
@@ -28,7 +27,7 @@ export class ZError<Def extends ZDef> extends Error {
 
   readonly typeName: ZType
   readonly typeHint: string
-  readonly typeManifest: O.Readonly<ZManifestObject<_ZOutput<Def>>, PropertyKey, 'deep'>
+  readonly typeManifest: ZManifestObject<_ZOutput<Def>>
 
   private constructor(_z: Z<Def>, private readonly _original: Joi.ValidationError) {
     super()
@@ -37,7 +36,7 @@ export class ZError<Def extends ZDef> extends Error {
     this.message = _original.message
 
     this.issues = _original.details.map(({ type, message, path, context }) => ({
-      code: type as ZIssueCode<_ZSchema<Def>>,
+      code: type as ZIssueCode<Def['Schema']>,
       message: message,
       path: path,
       received: context?.value,

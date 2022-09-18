@@ -1,38 +1,50 @@
-import type { _ZOutput, BaseZ, ZDef } from '../_internals'
+import type { _ZOutput, ZDef } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZHooks                                                       */
+/*                                                  ZHooksController                                                  */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export type ZHook<I = any, O = any> = {
-  name: string
-  handler: (input: I) => O
+  readonly name: string
+  handler(input: I): O
 }
 
 export type ZHooksObject<Def extends ZDef> = {
-  beforeParse: ZHook[]
-  afterParse: ZHook<_ZOutput<Def>>[]
+  readonly beforeParse: ZHook[]
+  readonly afterParse: ZHook<_ZOutput<Def>>[]
 }
+
+export type AnyZHooksObject = ZHooksObject<ZDef>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ZHooks<Def extends ZDef> extends BaseZ<Def> {}
+export interface ZHooksController<Def extends ZDef> {
+  get(): ZHooksObject<Def>
+  getByTrigger<T extends keyof ZHooksObject<Def>>(trigger: T): ZHooksObject<Def>[T]
+  add<T extends keyof ZHooksObject<Def>>(trigger: T, hook: ZHooksObject<Def>[T][number]): this
+  remove<T extends keyof ZHooksObject<Def>>(trigger: T, hookName: string): this
+}
 
-export class ZHooks<Def extends ZDef> {
-  protected _getHooks() {
-    return this._meta._hooks
-  }
+export const ZHooksController = <Def extends ZDef>(hooks: ZHooksObject<Def>): ZHooksController<Def> => {
+  const $_hooks = hooks
 
-  protected _addHook<T extends keyof ZHooksObject<Def>>(trigger: T, hook: ZHook<Def, T>): this {
-    this._meta.update({
-      _hooks: { [trigger]: this._getHooks()[trigger].some(h => h.name === hook.name) ? [] : [hook] },
-    })
-    return this
-  }
-
-  protected _removeHook<T extends keyof ZHooksObject<Def>>(trigger: T, name: string): this {
-    this._meta._hooks[trigger] = this._meta._hooks[trigger].filter(h => h.name !== name)
-    return this
+  return {
+    get(): ZHooksObject<Def> {
+      return $_hooks
+    },
+    getByTrigger<T extends keyof ZHooksObject<Def>>(trigger: T): ZHooksObject<Def>[T] {
+      return $_hooks[trigger]
+    },
+    add<T extends keyof ZHooksObject<Def>>(trigger: T, hook: ZHooksObject<Def>[T][number]) {
+      const triggerHooks = this.getByTrigger(trigger)
+      if (triggerHooks.some(t => t.name === hook.name)) return this
+      $_hooks[trigger] = [...triggerHooks, hook]
+      return this
+    },
+    remove<T extends keyof ZHooksObject<Def>>(trigger: T, hookName: string) {
+      const triggerHooks = this.getByTrigger(trigger)
+      $_hooks[trigger] = triggerHooks.filter(t => t.name !== hookName)
+      return this
+    },
   }
 }

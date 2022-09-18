@@ -23,7 +23,7 @@ export class ZNumber extends Z<{
    */
   integer(options?: ZCheckOptions<'number.integer'>): this {
     this._addCheck('number.integer', v => v.integer(), { message: options?.message })
-    this._updateManifest('format', 'integer')
+    this._manifest.update('format', 'integer')
     return this
   }
   /**
@@ -97,7 +97,7 @@ export class ZNumber extends Z<{
    */
   min(value: number, options?: ZCheckOptions<'number.min'>): this {
     this._addCheck('number.min', v => v.min(value), { message: options?.message })
-    this._updateManifest('minimum', value)
+    this._manifest.update('minimum', value)
     return this
   }
   /**
@@ -129,7 +129,7 @@ export class ZNumber extends Z<{
    */
   max(value: number, options?: ZCheckOptions<'number.max'>): this {
     this._addCheck('number.max', v => v.max(value), { message: options?.message })
-    this._updateManifest('maximum', value)
+    this._manifest.update('maximum', value)
     return this
   }
   /**
@@ -168,7 +168,7 @@ export class ZNumber extends Z<{
    */
   port(options?: ZCheckOptions<'number.port'>): this {
     this._addCheck('number.port', v => v.port(), { message: options?.message })
-    this._updateManifest('format', 'port')
+    this._manifest.update('format', 'port')
     return this
   }
 

@@ -15,10 +15,10 @@ export class ZLiteral<T extends NonNullable<Primitive>> extends Z<{
   Value: T
 }> {
   readonly name = ZType.Literal
-  protected readonly _hint = generateHint(this._getProp('value'))
+  protected readonly _hint = generateHint(this._props.getOne('value'))
 
   get value(): T {
-    return this._getProp('value')
+    return this._props.getOne('value')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */

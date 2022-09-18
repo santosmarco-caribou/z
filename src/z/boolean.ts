@@ -57,9 +57,9 @@ export class ZTrue extends Z<{
   static $_create = (parent: ZBoolean): ZTrue =>
     new ZTrue(
       {
-        schema: parent.$_schema.valid(true),
-        manifest: parent.$_manifest as ZManifestObject<true>,
-        hooks: parent['_getHooks'](),
+        schema: parent._schema.get().valid(true),
+        manifest: parent._manifest.get() as ZManifestObject<true>,
+        hooks: parent._hooks.get(),
       },
       {}
     )
@@ -82,9 +82,9 @@ export class ZFalse extends Z<{
   static $_create = (parent: ZBoolean): ZFalse =>
     new ZFalse(
       {
-        schema: parent.$_schema.valid(false),
-        manifest: parent.$_manifest as ZManifestObject<false>,
-        hooks: parent['_getHooks'](),
+        schema: parent._schema.get().valid(false),
+        manifest: parent._manifest.get() as ZManifestObject<false>,
+        hooks: parent._hooks.get(),
       },
       {}
     )

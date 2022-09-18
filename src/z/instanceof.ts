@@ -13,7 +13,7 @@ export class ZInstanceOf<T extends new (...args: any[]) => any> extends Z<{
   Type: T
 }> {
   readonly name = ZType.InstanceOf
-  protected readonly _hint = `instanceof ${this._getProp('type').name}`
+  protected readonly _hint = `instanceof ${this._props.getOne('type').name}`
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 

@@ -14,10 +14,10 @@ export class ZOptional<T extends AnyZ> extends Z<{
   InnerType: T
 }> {
   readonly name = ZType.Optional
-  protected readonly _hint = unionizeHints(this._getProp('innerType').hint, 'undefined')
+  protected readonly _hint = unionizeHints(this._props.getOne('innerType').hint, 'undefined')
 
   unwrap(): T {
-    return this._getProp('innerType')
+    return this._props.getOne('innerType')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -26,9 +26,9 @@ export class ZOptional<T extends AnyZ> extends Z<{
     new ZOptional(
       {
         schema:
-          innerType.$_schema.$_getFlag('presence') === 'forbidden' ? innerType.$_schema : innerType.$_schema.optional(),
-        manifest: innerType.$_manifest,
-        hooks: innerType['_getHooks'](),
+          innerType._schema.get().$_getFlag('presence') === 'forbidden' ? innerType._schema.get() : innerType._schema.get().optional(),
+        manifest: {},
+        hooks: innerType._hooks.get(),
       },
       { innerType: innerType }
     )

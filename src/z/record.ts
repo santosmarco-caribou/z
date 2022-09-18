@@ -14,17 +14,17 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
   ValueType: V
 }> {
   readonly name = ZType.Record
-  protected readonly _hint = `Record<${this._getProp('keyType').hint}, ${this._getProp('valueType').hint}>`
+  protected readonly _hint = `Record<${this._props.getOne('keyType').hint}, ${this._props.getOne('valueType').hint}>`
 
   get keyType(): K {
-    return this._getProp('keyType')
+    return this._props.getOne('keyType')
   }
   get valueType(): V {
-    return this._getProp('valueType')
+    return this._props.getOne('valueType')
   }
 
   entries(): ZTuple<[K, V]> {
-    return ZTuple.create([this._getProp('keyType'), this._getProp('valueType')])
+    return ZTuple.create([this._props.getOne('keyType'), this._props.getOne('valueType')])
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -39,10 +39,10 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
     if (valueType) {
       return new ZRecord(
         {
-          schema: ZJoi.object().pattern(keyOrValueType.$_schema, valueType.$_schema),
+          schema: ZJoi.object().pattern(keyOrValueType._schema.get(), valueType._schema.get()),
           manifest: {
-            keys: keyOrValueType.$_manifest,
-            values: valueType.$_manifest,
+            keys: keyOrValueType._manifest.get(),
+            values: valueType._manifest.get(),
           },
           hooks: {},
         },
@@ -51,10 +51,10 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
     } else {
       return new ZRecord(
         {
-          schema: ZJoi.object().pattern(/./, keyOrValueType.$_schema),
+          schema: ZJoi.object().pattern(/./, keyOrValueType._schema.get()),
           manifest: {
             keys: {},
-            values: keyOrValueType.$_manifest,
+            values: keyOrValueType._manifest.get(),
           },
           hooks: {},
         },

@@ -127,7 +127,7 @@ export class ZString extends Z<{
    */
   alphanumeric(options?: ZCheckOptions<'string.alphanum'>): this {
     this._addCheck('string.alphanum', v => v.alphanum(), { message: options?.message })
-    this._updateManifest('format', 'alphanumeric')
+    this._manifest.update('format', 'alphanumeric')
     return this
   }
   /**
@@ -142,7 +142,7 @@ export class ZString extends Z<{
    */
   base64(options?: ZStringBase64Options): this {
     this._addCheck('string.base64', v => v.base64(options), { message: options?.message })
-    this._updateManifest('format', 'base64')
+    this._manifest.update('format', 'base64')
     return this
   }
 
@@ -151,7 +151,7 @@ export class ZString extends Z<{
    */
   hexadecimal(options?: ZStringHexadecimalOptions): this {
     this._addCheck('string.hex', v => v.hex(options), { message: options?.message })
-    this._updateManifest('format', 'hexadecimal')
+    this._manifest.update('format', 'hexadecimal')
     return this
   }
   /**
@@ -180,7 +180,7 @@ export class ZString extends Z<{
    */
   ip(options?: ZStringIpOptions): this {
     this._addCheck('string.ip', v => v.ip(options), { message: options?.message })
-    this._updateManifest('format', 'ip')
+    this._manifest.update('format', 'ip')
     return this
   }
 
@@ -189,7 +189,7 @@ export class ZString extends Z<{
    */
   uri(options?: ZStringUriOptions): this {
     this._addCheck('string.uri', v => v.uri(options), { message: options?.message })
-    this._updateManifest('format', 'uri')
+    this._manifest.update('format', 'uri')
     return this
   }
 
@@ -198,7 +198,7 @@ export class ZString extends Z<{
    */
   dataUri(options?: ZStringDataUriOptions): this {
     this._addCheck('string.dataUri', v => v.dataUri(options), { message: options?.message })
-    this._updateManifest('format', 'data-uri')
+    this._manifest.update('format', 'data-uri')
     return this
   }
 
@@ -207,7 +207,7 @@ export class ZString extends Z<{
    */
   email(options?: ZStringEmailOptions): this {
     this._addCheck('string.email', v => v.email(options), { message: options?.message })
-    this._updateManifest('format', 'email')
+    this._manifest.update('format', 'email')
     return this
   }
 
@@ -218,7 +218,7 @@ export class ZString extends Z<{
    */
   uuid(options?: ZStringUuidOptions): this {
     this._addCheck('string.guid', v => v.uuid(options), { message: options?.message })
-    this._updateManifest('format', 'uuid')
+    this._manifest.update('format', 'uuid')
     return this
   }
   /**
@@ -230,7 +230,7 @@ export class ZString extends Z<{
 
   isoDate(options?: ZCheckOptions<'string.isoDate'>): this {
     this._addCheck('string.isoDate', v => v.isoDate(), { message: options?.message })
-    this._updateManifest('format', 'date-time')
+    this._manifest.update('format', 'date-time')
     return this
   }
 

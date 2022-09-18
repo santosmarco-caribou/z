@@ -25,15 +25,16 @@ export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ
   ReturnType: R
 }> {
   readonly name = ZType.Function
-  protected readonly _hint = `(${this._getProp('parameters')
+  protected readonly _hint = `(${this._props
+    .getOne('parameters')
     .elements.map((z, idx) => `args_${idx}: ${z.hint}`)
-    .join(', ')}) => ${this._getProp('returnType').hint}`
+    .join(', ')}) => ${this._props.getOne('returnType').hint}`
 
   get parameters(): ZTuple<P> {
-    return this._getProp('parameters')
+    return this._props.getOne('parameters')
   }
   get returnType(): R {
-    return this._getProp('returnType')
+    return this._props.getOne('returnType')
   }
 
   /**
@@ -44,11 +45,11 @@ export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ
   arguments<T extends readonly [AnyZ, ...AnyZ[]] | []>(parameters: T): ZFunction<T, R> {
     return new ZFunction<T, R>(
       {
-        schema: this.$_schema,
-        manifest: this.$_manifest as ZManifestObject<(...args: MapToZOutput<T>) => _ZOutput<R>>,
-        hooks: this._getHooks() as any,
+        schema: this._schema.get(),
+        manifest: this._manifest.get() as ZManifestObject<(...args: MapToZOutput<T>) => _ZOutput<R>>,
+        hooks: this._hooks.get() as any,
       },
-      { ...this._getProps(), parameters: ZTuple.create(parameters) }
+      { ...this._props.getAll(), parameters: ZTuple.create(parameters) }
     )
   }
   /**
@@ -66,18 +67,18 @@ export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ
   returns<T extends AnyZ>(returnType: T): ZFunction<P, T> {
     return new ZFunction<P, T>(
       {
-        schema: this.$_schema,
-        manifest: this.$_manifest,
-        hooks: this._getHooks(),
+        schema: this._schema.get(),
+        manifest: this._manifest.get(),
+        hooks: this._hooks.get(),
       },
-      { ...this._getProps(), returnType }
+      { ...this._props.getAll(), returnType }
     )
   }
 
   implement(fn: (...args: _ZOutput<ZTuple<P>>) => _ZOutput<R>): (...args: _ZOutput<ZTuple<P>>) => _ZOutput<R> {
     const validatedFn = (...args: _ZOutput<ZTuple<P>>): _ZOutput<R> => {
-      const validatedArgs = this._getProp('parameters').parse(args)
-      return this._getProp('returnType').parse(fn(...validatedArgs))
+      const validatedArgs = this._props.getOne('parameters').parse(args)
+      return this._props.getOne('returnType').parse(fn(...validatedArgs))
     }
     return validatedFn
   }

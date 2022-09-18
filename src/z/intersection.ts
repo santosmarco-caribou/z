@@ -14,28 +14,28 @@ export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   Components: T
 }> {
   readonly name = ZType.Intersection
-  protected readonly _hint: string = this._getProp('components')
+  protected readonly _hint: string = this._props.getOne('components')
     .map(z => z.hint)
     .join(' & ')
 
   get components(): T {
-    return this._getProp('components')
+    return this._props.getOne('components')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends [AnyZ, ...AnyZ[]]>(components: T): ZIntersection<T> => {
-    const compAlreadyAlt = components.find(comp => comp.$_schema.type === 'alternatives')
+    const compAlreadyAlt = components.find(comp => comp._schema.get().type === 'alternatives')
 
     return new ZIntersection(
       {
         schema: (compAlreadyAlt
-          ? (compAlreadyAlt.$_schema as ReturnType<typeof ZJoi['alternatives']>).concat(
+          ? (compAlreadyAlt._schema.get() as ReturnType<typeof ZJoi['alternatives']>).concat(
               ZJoi.alternatives(
-                ...components.filter(comp => comp._id !== compAlreadyAlt._id).map(comp => comp.$_schema)
+                ...components.filter(comp => comp._id !== compAlreadyAlt._id).map(comp => comp._schema.get())
               )
             )
-          : ZJoi.alternatives(...components.map(comp => comp.$_schema))
+          : ZJoi.alternatives(...components.map(comp => comp._schema.get()))
         ).match('all'),
         manifest: {},
         hooks: {},

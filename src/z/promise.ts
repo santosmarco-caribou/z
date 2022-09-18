@@ -9,7 +9,7 @@ export class ZPromise<T extends AnyZ> extends Z<{
   Awaited: T
 }> {
   readonly name = ZType.Promise
-  protected readonly _hint = `Promise<${this._getProp('awaited').hint}>`
+  protected readonly _hint = `Promise<${this._props.getOne('awaited').hint}>`
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
@@ -20,8 +20,8 @@ export class ZPromise<T extends AnyZ> extends Z<{
           if (!(value instanceof Promise)) return FAIL('promise.base')
           return OK(value)
         }),
-        manifest: awaited.$_manifest,
-        hooks: awaited['_getHooks'](),
+        manifest: awaited._manifest.get(),
+        hooks: awaited._hooks.get(),
       },
       { awaited }
     )

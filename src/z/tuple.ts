@@ -16,28 +16,29 @@ export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = 
   RestType?: R
 }> {
   readonly name = ZType.Tuple
-  protected readonly _hint = `[${this._getProp('elements')
+  protected readonly _hint = `[${this._props
+    .getOne('elements')
     .map(element => element.hint)
-    .join(', ')}${this._getProp('restType') ? `, ...${this._getProp('restType')?.hint ?? ''}[]` : ''}]`
+    .join(', ')}${this._props.getOne('restType') ? `, ...${this._props.getOne('restType')?.hint ?? ''}[]` : ''}]`
 
   /**
    * Retrieves the schemas of the tuple's elements.
    */
   get elements(): T {
-    return this._getProp('elements')
+    return this._props.getOne('elements')
   }
 
   rest<_R extends AnyZ>(restType: _R): ZTuple<T, _R> {
     return new ZTuple<T, _R>(
       {
-        schema: this.$_schema.items(restType.$_schema),
+        schema: this._schema.get().items(restType._schema.get()),
         manifest: {
-          ...this.$_manifest,
-          rest: restType.$_manifest,
+          ...this._manifest.get(),
+          rest: restType._manifest.get(),
         },
-        hooks: this._getHooks(),
+        hooks: this._hooks.get(),
       },
-      { elements: this._getProp('elements'), restType }
+      { elements: this._props.getOne('elements'), restType }
     )
   }
 
@@ -51,12 +52,12 @@ export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = 
       {
         schema: restType
           ? ZJoi.array()
-              .ordered(...elements.map(v => v.$_schema))
-              .items(restType.$_schema)
-          : ZJoi.array().ordered(...elements.map(v => v.$_schema)),
+              .ordered(...elements.map(v => v._schema.get()))
+              .items(restType._schema.get())
+          : ZJoi.array().ordered(...elements.map(v => v._schema.get())),
         manifest: {
-          elements: elements.map(el => el.$_manifest),
-          rest: restType?.$_manifest,
+          elements: elements.map(el => el._manifest.get()),
+          rest: restType?._manifest.get(),
         },
         hooks: {},
       },

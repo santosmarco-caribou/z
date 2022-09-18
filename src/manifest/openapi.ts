@@ -29,9 +29,11 @@ export class ZOpenApi<Def extends ZDef> {
   toOpenApi(): Merge<ZManifestObject<_ZOutput<Def>>, SchemaObject> {
     return mergeSafe(
       Object.fromEntries(
-        Object.entries(this.$_manifest).map(([k, v]) => (includes(OPEN_API_PROPERTIES, k) ? [k, v] : [`x-${k}`, v]))
+        Object.entries(this._manifest.get()).map(([k, v]) =>
+          includes(OPEN_API_PROPERTIES, k) ? [k, v] : [`x-${k}`, v]
+        )
       ),
-      j2s(this.$_schema).swagger
+      j2s(this._schema.get()).swagger
     )
   }
 }

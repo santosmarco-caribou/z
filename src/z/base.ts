@@ -1,18 +1,15 @@
 import Joi from 'joi'
-import { isArray, mergeWith } from 'lodash'
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, F } from 'ts-toolbelt'
-import type { CamelCasedProperties, PartialDeep } from 'type-fest'
+import type { CamelCasedProperties } from 'type-fest'
 
 import {
-  AnyZMetaObject,
   ZArray,
   ZBrand,
-  ZHooks,
+  ZHooksController,
   ZHooksObject,
   ZIntersection,
-  ZJoiSchema,
   ZManifest,
   ZManifestObject,
   ZNullable,
@@ -20,14 +17,16 @@ import {
   ZOptional,
   ZParser,
   ZPromise,
-  ZPropsManager,
+  ZPropsController,
   ZReadonly,
   ZReadonlyDeep,
   ZType,
   ZUnion,
   ZValidator,
 } from '../_internals'
+import { ZManifestController } from '../manifest/manifest-controller'
 import { formatHint } from '../utils'
+import { ZSchemaController } from '../validation/schema'
 
 settings.initFunction = '_init'
 
@@ -44,7 +43,7 @@ export type ZDef = {
 /* -------------------------------------------------- ZDependencies ------------------------------------------------- */
 
 export type ZDependencies<Def extends ZDef> = {
-  schema: _ZSchema<Def>
+  schema: Def['Schema']
   manifest: ZManifestObject<Def['Output']>
   hooks: Partial<ZHooksObject<Def>>
 }
@@ -64,9 +63,10 @@ export type AnyZProps = ZProps<ZDef>
 export interface BaseZ<Def extends ZDef> {
   readonly $_output: Def['Output']
   readonly $_input: Def['Input']
-  readonly _meta: AnyZMetaObject
-  $_schema: _ZSchema<Def>
-  $_manifest: ZManifestObject<Def['Output']>
+  readonly _schema: ZSchemaController<Def>
+  readonly _manifest: ZManifestController<Def>
+  readonly _hooks: ZHooksController<Def>
+  readonly _props: ZPropsController<Def>
 }
 
 export type AnyBaseZ = BaseZ<ZDef>
@@ -75,16 +75,9 @@ export type AnyBaseZ = BaseZ<ZDef>
 /*                                                          Z                                                         */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface Z<Def extends ZDef>
-  extends BaseZ<Def>,
-    ZValidator<Def>,
-    ZPropsManager<Def>,
-    ZHooks<Def>,
-    ZParser<Def>,
-    ZManifest<Def>,
-    ZOpenApi<Def> {}
+export interface Z<Def extends ZDef> extends BaseZ<Def>, ZValidator<Def>, ZParser<Def>, ZManifest<Def>, ZOpenApi<Def> {}
 
-@mix(ZValidator, ZPropsManager, ZHooks, ZParser, ZManifest, ZOpenApi)
+@mix(ZValidator, ZParser, ZManifest, ZOpenApi)
 export abstract class Z<Def extends ZDef> {
   /** @internal */
   readonly $_output!: Def['Output']
@@ -92,12 +85,16 @@ export abstract class Z<Def extends ZDef> {
   readonly $_input!: Def['Input']
 
   /** @internal */
-  readonly $_schema: _ZSchema<Def>
+  readonly _schema: ZSchemaController<Def>
   /** @internal */
-  readonly $_manifest: ZManifestObject<Def['Output']>
+  readonly _manifest: ZManifestController<Def>
+  /** @internal */
+  readonly _hooks: ZHooksController<Def>
+  /** @internal */
+  readonly _props: ZPropsController<Def>
 
   /** @internal */
-  readonly _id: string
+  readonly _id: string = nanoid()
 
   /**
    * The unique name of the `ZType`.
@@ -110,41 +107,14 @@ export abstract class Z<Def extends ZDef> {
   constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {
     const { schema, manifest, hooks } = deps
 
-    let _schema = schema
-
-    const metas = _schema.$_terms['metas'] as any[]
-
-    if (metas.length === 0) {
-      const meta: AnyZMetaObject = {
-        _manifest: {},
-        _hooks: { beforeParse: [], afterParse: [] },
-        _props: {},
-
-        update(meta: PartialDeep<AnyZMetaObject>) {
-          mergeWith(this, meta, (objValue, srcValue) => (isArray(objValue) ? objValue.concat(srcValue) : undefined))
-          return this
-        },
-      }
-
-      _schema = _schema.meta(meta) as _ZSchema<Def>
-    }
-
-    this.$_schema = _schema
-
-    const meta = this.$_schema.$_terms.metas[0]
-    meta.update({ _manifest: manifest, _hooks: hooks, _props: props })
-
-    this.$_manifest = meta._manifest
-
-    this._id = nanoid()
+    this._schema = ZSchemaController(schema)
+    this._manifest = ZManifestController(manifest)
+    this._hooks = ZHooksController({ beforeParse: hooks.beforeParse ?? [], afterParse: hooks.afterParse ?? [] })
+    this._props = ZPropsController(props)
   }
 
   get hint(): string {
     return formatHint(this)
-  }
-
-  get _meta(): AnyZMetaObject {
-    return this.$_schema.$_terms.metas[0]
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -245,10 +215,6 @@ export type _ZOutput<T extends ZDef | AnyBaseZ> = T extends ZDef
   : never
 
 export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef ? T['Input'] : T extends AnyBaseZ ? T['$_input'] : never
-
-export type _ZSchema<T extends ZDef | AnyBaseZ> = ZJoiSchema<
-  T extends ZDef ? T['Schema'] : T extends AnyBaseZ ? T['$_schema'] : never
->
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

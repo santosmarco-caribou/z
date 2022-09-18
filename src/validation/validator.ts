@@ -5,14 +5,11 @@ import type { PartialDeep, SetReturnType, Simplify } from 'type-fest'
 
 import {
   _ZOutput,
-  _ZSchema,
   AnyZIssueCode,
   BaseZ,
   ParseOptions,
   Z_ISSUE_MAP,
   ZDef,
-  ZHooks,
-  ZHooksObject,
   ZIssueLocalContext,
   ZManifestObject,
   ZProps,
@@ -23,7 +20,6 @@ import { EmptyObject, mergeSafe } from '../utils'
 
 export interface ZMetaObject<Def extends ZDef> {
   _manifest: ZManifestObject<Def>
-  _hooks: ZHooksObject<Def>
   _props: ZProps<Def>
   update(meta: PartialDeep<ZMetaObject<Def>>): this
 }
@@ -85,14 +81,14 @@ export type CustomValidationResult =
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface ZValidator<Def extends ZDef> extends BaseZ<Def>, ZHooks<Def> {}
+export interface ZValidator<Def extends ZDef> extends BaseZ<Def> {}
 
 export class ZValidator<Def extends ZDef> {
   protected _validate(input: unknown, options: ParseOptions | undefined): Joi.ValidationResult<_ZOutput<Def>> {
     const _opts = mergeSafe(DEFAULT_VALIDATION_OPTIONS, options ?? {})
-    const _input = this._getHooks().beforeParse.reduce((acc, hook) => hook.handler(acc), cloneDeep(input))
-    const result = this.$_schema.validate(_input, _opts) as Joi.ValidationResult<_ZOutput<Def>>
-    return this._getHooks().afterParse.reduce(
+    const _input = this._hooks.get().beforeParse.reduce((acc, hook) => hook.handler(acc), cloneDeep(input))
+    const result = this._schema.get().validate(_input, _opts) as Joi.ValidationResult<_ZOutput<Def>>
+    return this._hooks.get().afterParse.reduce(
       (acc, hook) => ({
         ...acc,
         value: acc.value ? hook.handler(acc.value) : undefined,
@@ -101,23 +97,23 @@ export class ZValidator<Def extends ZDef> {
     )
   }
 
-  protected _addCheck(fn: (validator: _ZSchema<Def>) => _ZSchema<Def>): this
+  protected _addCheck(fn: (validator: Def['Schema']) => Def['Schema']): this
   protected _addCheck<IssueCode extends AnyZIssueCode>(
     issue: IssueCode,
-    fn: (validator: _ZSchema<Def>) => _ZSchema<Def>,
+    fn: (validator: Def['Schema']) => Def['Schema'],
     options: ZCheckOptions<IssueCode> | undefined
   ): this
   protected _addCheck<IssueCode extends AnyZIssueCode>(
-    fnOrIssue: ((validator: _ZSchema<Def>) => _ZSchema<Def>) | IssueCode,
-    fn?: (validator: _ZSchema<Def>) => _ZSchema<Def>,
+    fnOrIssue: ((validator: Def['Schema']) => Def['Schema']) | IssueCode,
+    fn?: (validator: Def['Schema']) => Def['Schema'],
     options?: ZCheckOptions<IssueCode> | undefined
   ): this {
     if (typeof fnOrIssue === 'function') {
-      this._updateValidator(fnOrIssue)
+      this._schema.update(fnOrIssue)
       return this
     }
 
-    fn && this._updateValidator(fn)
+    fn && this._schema.update(fn)
 
     if (options?.message) {
       const ctxTags = [
@@ -136,18 +132,8 @@ export class ZValidator<Def extends ZDef> {
               >
             )
 
-      this._updateValidator(v => v.message(msgStr))
+      this._schema.update(v => v.message(msgStr))
     }
-    return this
-  }
-
-  protected _updateValidatorPreferences(prefs: Joi.ValidationOptions): this {
-    this.$_schema = this.$_schema.preferences(prefs) as _ZSchema<Def>
-    return this
-  }
-
-  protected _updateValidator(fn: (v: _ZSchema<Def>) => Joi.Schema): this {
-    this.$_schema = fn(this.$_schema) as _ZSchema<Def>
     return this
   }
 

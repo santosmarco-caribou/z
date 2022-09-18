@@ -19,12 +19,13 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'unicorn', 'simple-import-sort', 'jsdoc'],
   rules: {
+    '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-return': 'off',
     '@typescript-eslint/prefer-as-const': 'off',
-    'simple-import-sort/imports': 'warn',
     'simple-import-sort/exports': 'warn',
+    'simple-import-sort/imports': 'warn',
   },
 }

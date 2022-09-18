@@ -14,24 +14,24 @@ export class ZUnion<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   Options: T
 }> {
   readonly name = ZType.Union
-  protected readonly _hint = unionizeHints(...this._getProp('options').map(option => option.hint))
+  protected readonly _hint = unionizeHints(...this._props.getOne('options').map(option => option.hint))
 
   get options(): T {
-    return this._getProp('options')
+    return this._props.getOne('options')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <T extends [AnyZ, ...AnyZ[]]>(options: T): ZUnion<T> => {
-    const optAlreadyAlt = options.find(opt => opt.$_schema.type === 'alternatives')
+    const optAlreadyAlt = options.find(opt => opt._schema.get().type === 'alternatives')
 
     return new ZUnion(
       {
         schema: optAlreadyAlt
-          ? (optAlreadyAlt.$_schema as ReturnType<typeof ZJoi['alternatives']>).concat(
-              ZJoi.alternatives(...options.filter(opt => opt._id !== optAlreadyAlt._id).map(option => option.$_schema))
+          ? (optAlreadyAlt._schema.get() as ReturnType<typeof ZJoi['alternatives']>).concat(
+              ZJoi.alternatives(...options.filter(opt => opt._id !== optAlreadyAlt._id).map(option => option._schema.get()))
             )
-          : ZJoi.alternatives(...options.map(option => option.$_schema)),
+          : ZJoi.alternatives(...options.map(option => option._schema.get())),
         manifest: {},
         hooks: {},
       },

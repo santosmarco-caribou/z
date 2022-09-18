@@ -17,11 +17,11 @@ export class ZReadonly<T extends AnyZ> extends Z<{
   HookName: string
 }> {
   readonly name = ZType.Readonly
-  protected readonly _hint = `Readonly<${this._getProp('innerType').hint}>`
+  protected readonly _hint = `Readonly<${this._props.getOne('innerType').hint}>`
 
   writable(): T {
-    this._removeHook('afterParse', this._getProp('hookName'))
-    return this._getProp('innerType')
+    this._hooks.remove('afterParse', this._props.getOne('hookName'))
+    return this._props.getOne('innerType')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -30,11 +30,11 @@ export class ZReadonly<T extends AnyZ> extends Z<{
     const hookName = `readonly-${nanoid()}`
     return new ZReadonly(
       {
-        schema: innerType.$_schema,
-        manifest: innerType.$_manifest,
+        schema: innerType._schema.get(),
+        manifest: innerType._manifest.get(),
         hooks: {
-          beforeParse: innerType['_getHooks']().beforeParse,
-          afterParse: [...innerType['_getHooks']().afterParse, { name: hookName, handler: Object.freeze }],
+          beforeParse: innerType._hooks.get().beforeParse,
+          afterParse: [...innerType._hooks.get().afterParse, { name: hookName, handler: Object.freeze }],
         },
       },
       { innerType, hookName }
@@ -52,11 +52,11 @@ export class ZReadonlyDeep<T extends AnyZ> extends Z<{
   HookName: string
 }> {
   readonly name = ZType.ReadonlyDeep
-  protected readonly _hint = `ReadonlyDeep<${this._getProp('innerType').hint}>`
+  protected readonly _hint = `ReadonlyDeep<${this._props.getOne('innerType').hint}>`
 
   writableDeep(): T {
-    this._removeHook('afterParse', this._getProp('hookName'))
-    return this._getProp('innerType')
+    this._hooks.remove('afterParse', this._props.getOne('hookName'))
+    return this._props.getOne('innerType')
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
@@ -65,11 +65,11 @@ export class ZReadonlyDeep<T extends AnyZ> extends Z<{
     const hookName = `readonly-deep-${nanoid()}`
     return new ZReadonlyDeep(
       {
-        schema: innerType.$_schema,
-        manifest: innerType.$_manifest,
+        schema: innerType._schema.get(),
+        manifest: innerType._manifest.get(),
         hooks: {
-          beforeParse: innerType['_getHooks']().beforeParse,
-          afterParse: [...innerType['_getHooks']().afterParse, { name: hookName, handler: input => freezeDeep(input) }],
+          beforeParse: innerType._hooks.get().beforeParse,
+          afterParse: [...innerType._hooks.get().afterParse, { name: hookName, handler: input => freezeDeep(input) }],
         },
       },
       { innerType, hookName }

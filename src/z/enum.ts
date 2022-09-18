@@ -16,19 +16,19 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
 }> {
   readonly name = ZType.Enum
   protected readonly _hint = unionizeHints(
-    ...this._getProp('values')
+    ...this._props.getOne('values')
       .map(value => `'${value}'`)
       .sort()
   )
 
   get values(): T {
-    return this._getProp('values')
+    return this._props.getOne('values')
   }
 
   get enum(): {
     [K in keyof T]: T[K]
   } {
-    return this._getProp('values').reduce(
+    return this._props.getOne('values').reduce(
       (acc, value) => ({ ...acc, [value]: value }),
       {} as {
         [K in keyof T]: T[K]
@@ -49,12 +49,12 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   private _transform<_T extends readonly [string, ...string[]]>(fn: (values: T) => _T): ZEnum<_T> {
-    const transformedValues = fn(this._getProp('values'))
+    const transformedValues = fn(this._props.getOne('values'))
     return new ZEnum<_T>(
       {
         schema: ZJoi.any().valid(...transformedValues),
-        manifest: this.$_manifest,
-        hooks: this._getHooks(),
+        manifest: this._manifest.get(),
+        hooks: this._hooks.get(),
       },
       { values: transformedValues }
     )

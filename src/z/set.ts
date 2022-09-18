@@ -13,10 +13,10 @@ export class ZSet<T extends AnyZ> extends Z<{
   Element: T
 }> {
   readonly name = ZType.Set
-  protected readonly _hint = `Set<${this._getProp('element').hint}>`
+  protected readonly _hint = `Set<${this._props.getOne('element').hint}>`
 
   get element(): T {
-    return this._getProp('element')
+    return this._props.getOne('element')
   }
 
   /**
@@ -56,11 +56,11 @@ export class ZSet<T extends AnyZ> extends Z<{
   static create = <T extends AnyZ>(element: T): ZSet<T> =>
     new ZSet(
       {
-        schema: ZJoi.array().items(element.$_schema).unique().cast('set').messages({
+        schema: ZJoi.array().items(element._schema.get()).unique().cast('set').messages({
           'array.base': '{{#label}} must be either an array or a Set',
         }),
         manifest: {
-          element: element.$_manifest,
+          element: element._manifest.get(),
         },
         hooks: {},
       },

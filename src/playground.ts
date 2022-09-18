@@ -1,9 +1,9 @@
 import { z } from '.'
 
-console.log(z.readonly(z.string().optional().summary('my inner title')).title('my title').$_manifest)
+const arr = z.string().title('a').summary('b').tags('c', 'd').optional().description('a')
 
-const a = z.record(z.string().uuid().summary('my inner title'), z.number().port().nullable()).title('my title')
+// console.log(JSON.stringify(arr.toOpenApi(), null, 2))
 
-type A = z.infer<typeof a>
+// console.log(JSON.stringify(arr._schema.get().describe(),  null, 2),)
 
-console.log(a.manifest)
+// console.log(z.string().title('marco').optional().description('s'))

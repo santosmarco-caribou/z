@@ -51,12 +51,12 @@ export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends
    * Requires the input to be strictly a `Date` object.
    */
   strict(): ZDate<{ strict: true }> {
-    this._updateValidatorPreferences({ convert: false })
+    this._schema.updatePreferences({ convert: false })
     return new ZDate<{ strict: true }>(
       {
-        schema: this.$_schema,
-        manifest: this.$_manifest,
-        hooks: this._getHooks(),
+        schema: this._schema.get(),
+        manifest: this._manifest.get(),
+        hooks: this._hooks.get(),
       },
       { options: { strict: true } }
     )

@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import type { S } from 'ts-toolbelt'
 
-import { type _ZInput, type _ZOutput,type AnyZ, Z, ZJoi, ZTuple, ZType } from '../_internals'
+import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZTuple, ZType } from '../_internals'
 
 type Literal = string | number | bigint | boolean
 

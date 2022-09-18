@@ -5,6 +5,7 @@ import type { A, F } from 'ts-toolbelt'
 import type { CamelCasedProperties } from 'type-fest'
 
 import {
+  colorizeZHint,
   ZArray,
   ZBrand,
   ZBrandTag,
@@ -105,7 +106,7 @@ export abstract class Z<Def extends ZDef> {
    */
   abstract readonly name: ZType
   /** @internal */
-  protected abstract readonly _hint: string
+  protected abstract _hint: string
 
   /** @internal */
   constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {
@@ -118,7 +119,12 @@ export abstract class Z<Def extends ZDef> {
   }
 
   get hint(): string {
-    return formatHint(this)
+    return colorizeZHint(this._hint)
+  }
+
+  protected _setHint(hint: string): this {
+    this._hint = hint
+    return this
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */

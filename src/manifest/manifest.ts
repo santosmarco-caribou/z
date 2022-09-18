@@ -70,6 +70,13 @@ export class ZManifest<Def extends ZDef> {
   }
 
   /**
+   * @todo
+   */
+  describe() {
+    return this._schema.get().describe()
+  }
+
+  /**
    * Overrides the key name in error messages.
    *
    * @param label - The name of the key.

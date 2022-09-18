@@ -1,8 +1,20 @@
 import type Joi from 'joi'
 import { keys, merge, omit, pick } from 'lodash'
 import { A, F, L, U } from 'ts-toolbelt'
+import { LiteralUnion } from 'type-fest'
 
-import { type AnyZ, Z, ZAny, ZEnum, ZJoi, ZOptional, ZType } from '../_internals'
+import {
+  type AnyZ,
+  AnyZHooksObject,
+  AnyZManifestObject,
+  Z,
+  ZDependencies,
+  ZEnum,
+  ZJoi,
+  ZOptional,
+  ZRequired,
+  ZType,
+} from '../_internals'
 import type { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -16,16 +28,28 @@ export type SomeZObjectShape = {
   [K in string]: AnyZ
 }
 
-export type ZObjectOptions = { mode: 'passthrough' | 'strip' | 'strict' }
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZObject<Shape extends AnyZObjectShape> extends Z<{
+export type ZObjectOptions = {
+  mode: 'passthrough' | 'strip' | 'strict'
+  catchall: AnyZ | undefined
+}
+
+export type ZObjectDef<Shape extends AnyZObjectShape, Opts extends ZObjectOptions> = {
   Output: A.Compute<WithQuestionMarks<MapToZOutput<Shape>>, 'deep'>
   Input: A.Compute<WithQuestionMarks<MapToZInput<Shape>>, 'deep'>
   Schema: Joi.ObjectSchema
   Shape: Shape
-  Options: ZObjectOptions
-  Catchall: AnyZ
-}> {
+  Options: Opts
+}
+
+export class ZObject<
+  Shape extends AnyZObjectShape,
+  Opts extends ZObjectOptions = {
+    mode: 'strip'
+    catchall: undefined
+  }
+> extends Z<ZObjectDef<Shape, Opts>> {
   readonly name = ZType.Object
   protected readonly _hint = _generateZObjectHint(this._props.getOne('shape'))
 
@@ -39,35 +63,37 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<{
     )
   }
 
-  pick<K extends keyof Shape>(keys: K[]): ZObject<Pick<Shape, K>> {
-    return ZObject.$_create(
-      pick(this._props.getOne('shape'), keys),
-      this._props.getOne('options'),
-      this._props.getOne('catchall')
-    )
+  pick<K extends keyof Shape>(keys: K[]): ZObject<Pick<Shape, K>, Opts> {
+    return ZObject.$_create(pick(this._props.getOne('shape'), keys), this._props.getOne('options'), {
+      manifest: this._manifest.get() as AnyZManifestObject,
+      hooks: this._hooks.get() as AnyZHooksObject,
+    })
+  }
+  omit<K extends keyof Shape>(keys: K[]): ZObject<Omit<Shape, K>, Opts> {
+    return ZObject.$_create(omit(this._props.getOne('shape'), keys), this._props.getOne('options'), {
+      manifest: this._manifest.get() as AnyZManifestObject,
+      hooks: this._hooks.get() as AnyZHooksObject,
+    })
   }
 
-  omit<K extends keyof Shape>(keys: K[]): ZObject<Omit<Shape, K>> {
-    return ZObject.$_create(
-      omit(this._props.getOne('shape'), keys),
-      this._props.getOne('options'),
-      this._props.getOne('catchall')
-    )
+  extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Shape & S, Opts> {
+    return ZObject.$_create(merge({}, this._props.getOne('shape'), incomingShape), this._props.getOne('options'), {
+      manifest: this._manifest.get() as AnyZManifestObject,
+      hooks: this._hooks.get() as AnyZHooksObject,
+    })
   }
-
-  extend<S extends AnyZObjectShape>(incomingShape: S): ZObject<Shape & S> {
-    return ZObject.$_create(
-      merge({}, this._props.getOne('shape'), incomingShape),
-      this._props.getOne('options'),
-      this._props.getOne('catchall')
-    )
-  }
-
-  merge<S extends AnyZObjectShape>(incomingSchema: ZObject<S>): ZObject<Shape & S> {
+  merge<S extends AnyZObjectShape>(incomingSchema: ZObject<S>): ZObject<Shape & S, Opts> {
     return this.extend(incomingSchema.shape)
   }
 
-  partial<K extends keyof Shape>(keys?: K[]): ZObject<_ToPartialZObjectShape<Shape, K>> {
+  setKey<K extends LiteralUnion<keyof Shape, string>, Z extends AnyZ>(
+    key: K,
+    type: Z
+  ): ZObject<Shape & { [_K in K]: Z }, Opts> {
+    return this.extend({ [key]: type })
+  }
+
+  partial<K extends keyof Shape>(keys?: K[]): ZObject<_ToPartialZObjectShape<Shape, K>, Opts> {
     return ZObject.$_create(
       Object.fromEntries(
         Object.entries(this._props.getOne('shape')).map(([key, z]) =>
@@ -75,11 +101,10 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<{
         )
       ) as _ToPartialZObjectShape<Shape, K>,
       this._props.getOne('options'),
-      this._props.getOne('catchall')
+      { manifest: this._manifest.get() as AnyZManifestObject, hooks: this._hooks.get() as AnyZHooksObject }
     )
   }
-
-  partialDeep(): ZObject<_ToPartialZObjectShape<Shape, keyof Shape, 'deep'>> {
+  partialDeep(): ZObject<_ToPartialZObjectShape<Shape, keyof Shape, 'deep'>, Opts> {
     return ZObject.$_create(
       Object.fromEntries(
         Object.entries(this._props.getOne('shape')).map(([key, z]) => [
@@ -88,40 +113,76 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<{
         ])
       ) as _ToPartialZObjectShape<Shape, keyof Shape, 'deep'>,
       this._props.getOne('options'),
-      this._props.getOne('catchall')
+      { manifest: this._manifest.get() as AnyZManifestObject, hooks: this._hooks.get() as AnyZHooksObject }
+    )
+  }
+
+  requiredKeys<K extends keyof Shape>(keys?: K[]): ZObject<_ToRequiredZObjectShape<Shape, K>, Opts> {
+    return ZObject.$_create(
+      Object.fromEntries(
+        Object.entries(this._props.getOne('shape')).map(([key, z]) =>
+          keys && keys.includes(key as K) ? [key, z?.required()] : [key, z?.required()]
+        )
+      ) as _ToRequiredZObjectShape<Shape, K>,
+      this._props.getOne('options'),
+      { manifest: this._manifest.get() as AnyZManifestObject, hooks: this._hooks.get() as AnyZHooksObject }
+    )
+  }
+  requiredKeysDeep(): ZObject<_ToRequiredZObjectShape<Shape, keyof Shape, 'deep'>, Opts> {
+    return ZObject.$_create(
+      Object.fromEntries(
+        Object.entries(this._props.getOne('shape')).map(([key, z]) => [
+          key,
+          z instanceof ZObject ? z.requiredKeysDeep().required() : z?.required(),
+        ])
+      ) as _ToRequiredZObjectShape<Shape, keyof Shape, 'deep'>,
+      this._props.getOne('options'),
+      { manifest: this._manifest.get() as AnyZManifestObject, hooks: this._hooks.get() as AnyZHooksObject }
     )
   }
 
   /* ------------------------------------------------- Configuration ------------------------------------------------ */
 
-  passthrough(): this {
-    this._props.update(p => ({ ...p, options: { mode: 'passthrough' } }))
-    return this
+  passthrough(): ZObject<Shape, Opts & { mode: 'passthrough' }> {
+    return ZObject.$_create(
+      this._props.getOne('shape'),
+      { ...this._props.getOne('options'), mode: 'passthrough' },
+      { manifest: this._manifest.get(), hooks: this._hooks.get() }
+    )
   }
 
-  strict(): this {
-    this._props.update(p => ({ ...p, options: { mode: 'strict' } }))
-    return this
+  strict(): ZObject<Shape, Opts & { mode: 'strict' }> {
+    return ZObject.$_create(
+      this._props.getOne('shape'),
+      { ...this._props.getOne('options'), mode: 'strict' },
+      { manifest: this._manifest.get(), hooks: this._hooks.get() }
+    )
   }
 
-  strip(): this {
-    this._props.update(p => ({ ...p, options: { mode: 'strip' } }))
-    return this
+  strip(): ZObject<Shape, Opts & { mode: 'strip' }> {
+    return ZObject.$_create(
+      this._props.getOne('shape'),
+      { ...this._props.getOne('options'), mode: 'strip' },
+      { manifest: this._manifest.get(), hooks: this._hooks.get() }
+    )
   }
 
-  catchall<Z extends AnyZ>(z: Z): this {
-    this._props.update(p => ({ ...p, catchall: z }))
-    return this
+  catchall<Z extends AnyZ>(type: Z): ZObject<Shape, Opts & { catchall: Z }> {
+    return ZObject.$_create(
+      this._props.getOne('shape'),
+      { ...this._props.getOne('options'), catchall: type },
+      { manifest: this._manifest.get(), hooks: this._hooks.get() }
+    )
   }
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  static $_create = <Shape extends AnyZObjectShape, Options extends ZObjectOptions, Catchall extends AnyZ>(
+  static $_create = <Shape extends AnyZObjectShape, Options extends ZObjectOptions>(
     shape: Shape,
     options: Options,
-    catchall: Catchall
-  ): ZObject<Shape> => {
-    if (catchall) options.mode = 'passthrough'
+    dependencies: Omit<ZDependencies<ZObjectDef<Shape, Options>>, 'schema'>
+  ): ZObject<Shape, Options> => {
+    if (options.catchall) options.mode = 'passthrough'
 
     const baseValidator = ZJoi.object(_zShapeToJoiSchemaMap(shape)).preferences(
       {
@@ -133,18 +194,17 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<{
 
     const zObject = new ZObject(
       {
-        schema: catchall ? baseValidator.pattern(/./, catchall._schema.get()) : baseValidator,
-        manifest: {},
-        hooks: {},
+        ...dependencies,
+        schema: options.catchall ? baseValidator.pattern(/./, options.catchall._schema.get()) : baseValidator,
       },
-      { shape: shape, options, catchall }
+      { shape: shape, options }
     )
 
     return zObject
   }
 
   static create = <Shape extends AnyZObjectShape>(shape: Shape): ZObject<Shape> =>
-    this.$_create(shape, { mode: 'strip' }, ZAny.create())
+    this.$_create(shape, { mode: 'strip', catchall: undefined }, { manifest: {}, hooks: {} })
 }
 
 export type AnyZObject = ZObject<AnyZObjectShape>
@@ -158,13 +218,38 @@ type _ToPartialZObjectShape<
   Depth extends 'flat' | 'deep' = 'flat'
 > = {
   flat: Omit<Shape, PickKey> & {
-    [K in Extract<keyof Shape, PickKey>]: Shape[K] extends AnyZ ? ZOptional<Shape[K]> : never
+    [K in Extract<keyof Shape, PickKey>]: Shape[K] extends AnyZ
+      ? Shape[K] extends ZOptional<any>
+        ? Shape[K]
+        : ZOptional<Shape[K]>
+      : never
   }
-  deep: Omit<Shape, PickKey> & {
-    [K in Extract<keyof Shape, PickKey>]: Shape[K] extends ZObject<infer S>
-      ? ZOptional<ZObject<_ToPartialZObjectShape<S, 'deep'>>>
+  deep: {
+    [K in keyof Shape]: Shape[K] extends ZObject<infer S> | ZRequired<ZObject<infer S>>
+      ? ZOptional<ZObject<_ToPartialZObjectShape<S, keyof S, 'deep'>>>
       : Shape[K] extends AnyZ
       ? ZOptional<Shape[K]>
+      : never
+  }
+}[Depth]
+
+type _ToRequiredZObjectShape<
+  Shape extends AnyZObjectShape,
+  PickKey extends keyof Shape = keyof Shape,
+  Depth extends 'flat' | 'deep' = 'flat'
+> = {
+  flat: Omit<Shape, PickKey> & {
+    [K in Extract<keyof Shape, PickKey>]: Shape[K] extends AnyZ
+      ? Shape[K] extends ZRequired<any>
+        ? Shape[K]
+        : ZRequired<Shape[K]>
+      : never
+  }
+  deep: {
+    [K in keyof Shape]: Shape[K] extends ZObject<infer S> | ZOptional<ZObject<infer S>>
+      ? ZRequired<ZObject<_ToRequiredZObjectShape<S, keyof S, 'deep'>>>
+      : Shape[K] extends AnyZ
+      ? ZRequired<Shape[K]>
       : never
   }
 }[Depth]

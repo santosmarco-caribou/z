@@ -1,14 +1,14 @@
 import type Joi from 'joi'
 
-import { Z, ZJoi, ZType, ZValidator } from '../_internals'
+import { Z, ZBranded, ZJoi, ZType, ZValidator } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZNaN                                                        */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export class ZNaN extends Z<{
-  Output: number
-  Input: number
+  Output: ZBranded<number, 'NaN'>
+  Input: ZBranded<number, 'NaN'>
   Schema: Joi.AnySchema
 }> {
   readonly name = ZType.NaN

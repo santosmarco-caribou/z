@@ -1,4 +1,4 @@
-import { ZNumber, ZString, ZSymbol, ZUnion } from '../_internals'
+import { ZNumber, ZString, ZSymbol, ZUnion } from '../../_internals'
 
 export type ZPropertyKey = ZUnion<[ZString, ZNumber, ZSymbol]>
 

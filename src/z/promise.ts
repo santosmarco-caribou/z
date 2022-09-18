@@ -17,8 +17,9 @@ export class ZPromise<T extends AnyZ> extends Z<{
     new ZPromise(
       {
         schema: ZValidator.custom(ZJoi.any(), (value, { OK, FAIL }) => {
+          console.log(value)
           if (!(value instanceof Promise)) return FAIL('promise.base')
-          return OK(value)
+          return OK(value.then(v => awaited.parse(v)))
         }),
         manifest: awaited._manifest.get(),
         hooks: awaited._hooks.get(),

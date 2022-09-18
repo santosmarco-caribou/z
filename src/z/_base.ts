@@ -7,12 +7,14 @@ import type { CamelCasedProperties } from 'type-fest'
 import {
   ZArray,
   ZBrand,
+  ZBrandTag,
   ZHooksController,
   ZHooksObject,
   ZIntersection,
   ZManifest,
   ZManifestController,
   ZManifestObject,
+  ZNonNullable,
   ZNullable,
   ZOpenApi,
   ZOptional,
@@ -21,6 +23,7 @@ import {
   ZPropsController,
   ZReadonly,
   ZReadonlyDeep,
+  ZRequired,
   ZSchemaController,
   ZTransform,
   ZType,
@@ -166,6 +169,14 @@ export abstract class Z<Def extends ZDef> {
     return this.nullable().optional()
   }
 
+  required(): ZRequired<this> {
+    return ZRequired.create(this)
+  }
+
+  nonnullable(): ZNonNullable<this> {
+    return ZNonNullable.create(this)
+  }
+
   array(): ZArray<this> {
     return ZArray.create(this)
   }
@@ -226,7 +237,9 @@ export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef ? T['Input'] : T
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 export type TypeOf<T extends AnyZ> = T extends Z<infer Def>
-  ? _ZOutput<Def> extends Map<any, any> | Set<any>
+  ? keyof _ZOutput<Def> extends typeof ZBrandTag
+    ? _ZOutput<Def>
+    : _ZOutput<Def> extends Map<any, any> | Set<any>
     ? _ZOutput<Def>
     : A.Compute<_ZOutput<Def>, 'deep'>
   : never

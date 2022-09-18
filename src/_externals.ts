@@ -14,6 +14,7 @@ import {
   ZDiscriminatedUnion,
   ZEnum,
   ZFalse,
+  ZFalsy,
   ZFunction,
   ZInstanceOf,
   ZIntersection,
@@ -21,12 +22,14 @@ import {
   ZMap,
   ZNaN,
   ZNever,
+  ZNonNullable,
   ZNull,
   ZNullable,
   ZNumber,
   ZObject,
   ZOptional,
   ZPreprocess,
+  ZPrimitive,
   ZPromise,
   ZPropertyKey,
   ZReadonly,
@@ -53,9 +56,10 @@ const booleanType = ZBoolean.create
 const brandType = ZBrand.create
 const customType = ZCustom.create
 const dateType = ZDate.create
-const enumType = ZEnum.create
 const discriminatedUnionType = ZDiscriminatedUnion.create
+const enumType = ZEnum.create
 const falseType = ZFalse.create
+const falsyType = ZFalsy.create
 const functionType = ZFunction.create
 const instanceofType = ZInstanceOf.create
 const intersectionType = ZIntersection.create
@@ -63,12 +67,14 @@ const literalType = ZLiteral.create
 const mapType = ZMap.create
 const nanType = ZNaN.create
 const neverType = ZNever.create
+const nonnullableType = ZNonNullable.create
 const nullableType = ZNullable.create
 const nullType = ZNull.create
 const numberType = ZNumber.create
 const objectType = ZObject.create
 const optionalType = ZOptional.create
 const preprocessType = ZPreprocess.create
+const primitiveType = ZPrimitive.create
 const promiseType = ZPromise.create
 const propertyKeyType = ZPropertyKey.create
 const readonlyDeepType = ZReadonlyDeep.create
@@ -98,6 +104,7 @@ export {
   discriminatedUnionType as discriminatedUnion,
   enumType as enum,
   falseType as false,
+  falsyType as falsy,
   functionType as function,
   instanceofType as instanceof,
   intersectionType as intersection,
@@ -105,12 +112,14 @@ export {
   mapType as map,
   nanType as nan,
   neverType as never,
+  nonnullableType as nonnullable,
   nullType as null,
   nullableType as nullable,
   numberType as number,
   objectType as object,
   optionalType as optional,
   preprocessType as preprocess,
+  primitiveType as primitive,
   promiseType as promise,
   propertyKeyType as propertykey,
   readonlyType as readonly,

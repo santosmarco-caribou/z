@@ -6,7 +6,7 @@ import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
 /*                                                       ZBrand                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-const ZBrandTag = Symbol('ZBrandTag')
+export const ZBrandTag = Symbol('ZBrandTag')
 
 export type ZBranded<T, Brand> = T & {
   readonly [ZBrandTag]: Brand

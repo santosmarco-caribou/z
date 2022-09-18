@@ -1,15 +1,20 @@
 import type Joi from 'joi'
 import { keys, merge, omit, pick } from 'lodash'
-import type { A, F, L, U } from 'ts-toolbelt'
+import { A } from 'ts-toolbelt'
 
 import { type AnyZ, Z, ZAny, ZEnum, ZJoi, ZOptional, ZType } from '../_internals'
-import type { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
+import type { MapToZInput, MapToZOutput, UnionToTupleString, WithQuestionMarks } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZObject                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type AnyZObjectShape = Record<string, AnyZ>
+export type AnyZObjectShape = {
+  [K in string]?: AnyZ
+}
+export type SomeZObjectShape = {
+  [K in string]: AnyZ
+}
 
 export type ZObjectOptions = { mode: 'passthrough' | 'strip' | 'strict' }
 
@@ -66,7 +71,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<{
     return ZObject.$_create(
       Object.fromEntries(
         Object.entries(this._props.getOne('shape')).map(([key, z]) =>
-          keys && keys.includes(key as K) ? [key, z.optional()] : [key, z]
+          keys && keys.includes(key as K) ? [key, z?.optional()] : [key, z]
         )
       ) as _ToPartialZObjectShape<Shape, K>,
       this._props.getOne('options'),
@@ -79,7 +84,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<{
       Object.fromEntries(
         Object.entries(this._props.getOne('shape')).map(([key, z]) => [
           key,
-          z instanceof ZObject ? z.partialDeep().optional() : z.optional(),
+          z instanceof ZObject ? z.partialDeep().optional() : z?.optional(),
         ])
       ) as _ToPartialZObjectShape<Shape, keyof Shape, 'deep'>,
       this._props.getOne('options'),
@@ -143,6 +148,7 @@ export class ZObject<Shape extends AnyZObjectShape> extends Z<{
 }
 
 export type AnyZObject = ZObject<AnyZObjectShape>
+export type SomeZObject = ZObject<SomeZObjectShape>
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -152,12 +158,14 @@ type _ToPartialZObjectShape<
   Depth extends 'flat' | 'deep' = 'flat'
 > = {
   flat: Omit<Shape, PickKey> & {
-    [K in Extract<keyof Shape, PickKey>]: ZOptional<Shape[K]>
+    [K in Extract<keyof Shape, PickKey>]: Shape[K] extends AnyZ ? ZOptional<Shape[K]> : never
   }
   deep: Omit<Shape, PickKey> & {
     [K in Extract<keyof Shape, PickKey>]: Shape[K] extends ZObject<infer S>
       ? ZOptional<ZObject<_ToPartialZObjectShape<S, 'deep'>>>
-      : ZOptional<Shape[K]>
+      : Shape[K] extends AnyZ
+      ? ZOptional<Shape[K]>
+      : never
   }
 }[Depth]
 
@@ -171,12 +179,12 @@ const _generateZObjectHint = (shape: AnyZObjectShape, opts?: { readonly?: 'flat'
     Object.entries(_shape)
       .map(
         ([key, z]) =>
-          `${' '.repeat(indentation)}${_opts?.readonly ? 'readonly ' : ''}${key}${z.isOptional() ? '?' : ''}: ${
-            z instanceof ZObject
+          `${' '.repeat(indentation)}${_opts?.readonly ? 'readonly ' : ''}${key}${z?.isOptional() ? '?' : ''}: ${
+            (z instanceof ZObject
               ? _generateHint(z.shape as AnyZObjectShape, indentation + 2, {
                   readonly: _opts?.readonly === 'deep',
                 })
-              : z.hint
+              : z?.hint) ?? ''
           },`
       )
       .join('\n') +
@@ -184,9 +192,9 @@ const _generateZObjectHint = (shape: AnyZObjectShape, opts?: { readonly?: 'flat'
   return _generateHint(shape, 2, opts)
 }
 
-const _zShapeToJoiSchemaMap = <Shape extends AnyZObjectShape>(shape: Shape): Joi.SchemaMap =>
+export const _zShapeToJoiSchemaMap = <Shape extends AnyZObjectShape>(shape: Shape): Joi.SchemaMap =>
   Object.fromEntries(
     Object.entries(shape).map(([key, z]) => {
-      return [key, z._schema.get()]
+      return [key, z?._schema.get()]
     })
   )

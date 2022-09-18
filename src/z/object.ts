@@ -1,9 +1,9 @@
 import type Joi from 'joi'
 import { keys, merge, omit, pick } from 'lodash'
-import { A } from 'ts-toolbelt'
+import { A, F, L, U } from 'ts-toolbelt'
 
 import { type AnyZ, Z, ZAny, ZEnum, ZJoi, ZOptional, ZType } from '../_internals'
-import type { MapToZInput, MapToZOutput, UnionToTupleString, WithQuestionMarks } from '../utils'
+import type { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZObject                                                      */

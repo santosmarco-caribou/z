@@ -7,8 +7,6 @@ import {
   _ZOutput,
   _zShapeToJoiSchemaMap,
   AnyZObjectShape,
-  SomeZObject,
-  SomeZObjectShape,
   Z,
   ZJoi,
   ZLiteral,
@@ -27,7 +25,7 @@ export type ZDiscriminatedUnionOption<
 > = ZObject<
   {
     [K in Discriminator]: ZLiteral<DiscriminatorValue>
-  } & SomeZObjectShape
+  } & Omit<AnyZObjectShape, Discriminator>
 >
 
 export class ZDiscriminatedUnion<

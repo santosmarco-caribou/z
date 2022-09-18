@@ -22,9 +22,10 @@ import {
   ZReadonly,
   ZReadonlyDeep,
   ZSchemaController,
+  ZTransform,
   ZType,
   ZUnion,
-  ZValidator
+  ZValidator,
 } from '../_internals'
 import { formatHint } from '../utils'
 
@@ -205,6 +206,9 @@ export abstract class Z<Def extends ZDef> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
+  transform<NewOut>(transform: (arg: Def['Output']) => NewOut): ZTransform<this, NewOut> {
+    return ZTransform.create(this, transform)
+  }
 }
 
 export type AnyZ<Output = any> = Z<{ Output: Output; Input: any; Schema: Joi.Schema }>

@@ -15,6 +15,7 @@ import {
   ZRequired,
   ZType,
 } from '../_internals'
+import { generateZHint } from '../hints/hints'
 import type { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -51,7 +52,20 @@ export class ZObject<
   }
 > extends Z<ZObjectDef<Shape, Opts>> {
   readonly name = ZType.Object
-  protected readonly _hint = _generateZObjectHint(this._props.getOne('shape'))
+  protected readonly _hint = generateZHint(() => {
+    const _generateHint = (_shape: AnyZObjectShape, indentation = 2): string =>
+      '{\n' +
+      Object.entries(_shape)
+        .map(
+          ([key, z]) =>
+            `${' '.repeat(indentation)}${key}${z?.isOptional() ? '?' : ''}: ${
+              (z instanceof ZObject ? _generateHint(z.shape as AnyZObjectShape, indentation + 2) : z?.hint) ?? ''
+            };`
+        )
+        .join('\n') +
+      `\n${' '.repeat(indentation - 2)}}`
+    return _generateHint(this._props.getOne('shape'), 2)
+  })
 
   get shape(): Shape {
     return this._props.getOne('shape')
@@ -253,29 +267,6 @@ type _ToRequiredZObjectShape<
       : never
   }
 }[Depth]
-
-const _generateZObjectHint = (shape: AnyZObjectShape, opts?: { readonly?: 'flat' | 'deep' | boolean }): string => {
-  const _generateHint = (
-    _shape: AnyZObjectShape,
-    indentation = 2,
-    _opts?: { readonly?: 'flat' | 'deep' | boolean }
-  ): string =>
-    '{\n' +
-    Object.entries(_shape)
-      .map(
-        ([key, z]) =>
-          `${' '.repeat(indentation)}${_opts?.readonly ? 'readonly ' : ''}${key}${z?.isOptional() ? '?' : ''}: ${
-            (z instanceof ZObject
-              ? _generateHint(z.shape as AnyZObjectShape, indentation + 2, {
-                  readonly: _opts?.readonly === 'deep',
-                })
-              : z?.hint) ?? ''
-          },`
-      )
-      .join('\n') +
-    `\n${' '.repeat(indentation - 2)}}`
-  return _generateHint(shape, 2, opts)
-}
 
 export const _zShapeToJoiSchemaMap = <Shape extends AnyZObjectShape>(shape: Shape): Joi.SchemaMap =>
   Object.fromEntries(

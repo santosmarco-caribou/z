@@ -2,17 +2,8 @@ import Joi from 'joi'
 import type { O } from 'ts-toolbelt'
 import type { PartialDeep, SetReturnType, Simplify } from 'type-fest'
 
-import {
-  AnyZIssueCode,
-  BaseZ,
-  ParseOptions,
-  Z_ISSUE_MAP,
-  ZDef,
-  ZIssueLocalContext,
-  ZManifestObject,
-  ZProps,
-} from '../_internals'
-import { EmptyObject } from '../utils'
+import { AnyZIssueCode, BaseZ, Z_ISSUE_MAP, ZDef, ZIssueLocalContext, ZManifestObject, ZProps } from '../_internals'
+import { EmptyObject, IsEmptyObject } from '../utils'
 
 /* ------------------------------------------------------ ZMeta ----------------------------------------------------- */
 
@@ -48,11 +39,6 @@ const VALIDATION_FAIL = Symbol('VALIDATION_FAIL')
 /*                                                     ZValidator                                                     */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions & Required<ParseOptions> = {
-  abortEarly: false,
-  messages: Z_ISSUE_MAP,
-}
-
 /* ----------------------------------------------------- Checks ----------------------------------------------------- */
 
 export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = EmptyObject> = Simplify<
@@ -62,20 +48,18 @@ export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Obje
 
 /* ------------------------------------------------ Custom validation ----------------------------------------------- */
 
-export type CustomValidationHelpers<Output, Schema extends AnyZJoiSchema> = {
+type CustomValidationHelpers<Output, Schema extends AnyZJoiSchema> = {
   schema: Schema
   OK<V extends Output = Output>(value: V): [typeof VALIDATION_OK, V]
   FAIL<IssueCode extends AnyZIssueCode>(
     issue: IssueCode,
-    ...args: Omit<ZIssueLocalContext<IssueCode>, 'label'> extends EmptyObject
+    ...args: IsEmptyObject<Omit<ZIssueLocalContext<IssueCode>, 'label'>> extends true
       ? never[]
       : [Omit<ZIssueLocalContext<IssueCode>, 'label'>]
   ): [typeof VALIDATION_FAIL, IssueCode, Omit<ZIssueLocalContext<IssueCode>, 'label'>]
 }
 
-export type CustomValidationResult =
-  | [typeof VALIDATION_OK, any]
-  | [typeof VALIDATION_FAIL, AnyZIssueCode, Record<string, any>]
+type CustomValidationResult = [typeof VALIDATION_OK, any] | [typeof VALIDATION_FAIL, AnyZIssueCode, Record<string, any>]
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

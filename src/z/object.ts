@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 import { keys, merge, omit, pick } from 'lodash'
-import type { F, L, U } from 'ts-toolbelt'
+import type { A, F, L, U } from 'ts-toolbelt'
 
 import { type AnyZ, Z, ZAny, ZEnum, ZJoi, ZOptional, ZType } from '../_internals'
 import type { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
@@ -14,8 +14,8 @@ export type AnyZObjectShape = Record<string, AnyZ>
 export type ZObjectOptions = { mode: 'passthrough' | 'strip' | 'strict' }
 
 export class ZObject<Shape extends AnyZObjectShape> extends Z<{
-  Output: WithQuestionMarks<MapToZOutput<Shape>>
-  Input: WithQuestionMarks<MapToZInput<Shape>>
+  Output: A.Compute<WithQuestionMarks<MapToZOutput<Shape>>, 'deep'>
+  Input: A.Compute<WithQuestionMarks<MapToZInput<Shape>>, 'deep'>
   Schema: Joi.ObjectSchema
   Shape: Shape
   Options: ZObjectOptions

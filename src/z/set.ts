@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import { NonNegativeInteger } from 'type-fest'
 
-import { _ZInput, _ZOutput,AnyZ, Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
+import { _ZInput, _ZOutput, AnyZ, Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                        ZSet                                                        */

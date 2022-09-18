@@ -1,7 +1,8 @@
 import type Joi from 'joi'
+import { F } from 'ts-toolbelt'
 
-import { type ZCheckOptions, Z, ZJoi, ZType } from '../_internals'
-import type { MaybeArray } from '../utils'
+import { type ZCheckOptions, type ZHooksObject, type ZManifestObject, Z, ZJoi, ZType } from '../_internals'
+import { type MaybeArray, capitalize, uncapitalize } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZString                                                      */
@@ -112,13 +113,45 @@ export type ZStringPatternOptions = ZCheckOptions<
   }
 >
 
+export type ZStringCasingBaseOptions = {
+  convert?: boolean
+}
+
+export type ZStringLowercaseOptions = ZCheckOptions<'string.lowercase', ZStringCasingBaseOptions>
+export type ZStringUppercaseOptions = ZCheckOptions<'string.uppercase', ZStringCasingBaseOptions>
+export type ZStringCapitalizeOptions = ZCheckOptions<'string.capitalize', ZStringCasingBaseOptions>
+export type ZStringUncapitalizeOptions = ZCheckOptions<'string.uncapitalize', ZStringCasingBaseOptions>
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZString extends Z<{
-  Output: string
+export type ZStringOptions = {
+  transform: 'lowercase' | 'uppercase' | 'capitalize' | 'uncapitalize' | undefined
+  convert: boolean
+}
+
+type ZStringDef<Opts extends ZStringOptions> = {
+  Output: Opts['transform'] extends string
+    ? Opts['convert'] extends true
+      ? {
+          lowercase: `${Lowercase<string>}`
+          uppercase: `${Uppercase<string>}`
+          capitalize: `${Capitalize<string>}`
+          uncapitalize: `${Uncapitalize<string>}`
+        }[Opts['transform']]
+      : string
+    : string
+} & {
   Input: string
   Schema: Joi.StringSchema
-}> {
+  Options: Opts
+}
+
+export class ZString<
+  Opts extends ZStringOptions = {
+    transform: undefined
+    convert: true
+  }
+> extends Z<ZStringDef<Opts>> {
   readonly name = ZType.String
   protected readonly _hint = 'string'
 
@@ -283,12 +316,124 @@ export class ZString extends Z<{
 
   /* -------------------------------------------------- Transforms -------------------------------------------------- */
 
-  lowercase(options?: ZCheckOptions<'string.lowercase'>): this {
-    return this._addCheck('string.lowercase', v => v.lowercase(), { message: options?.message })
+  lowercase<_Opts extends ZStringLowercaseOptions>(
+    options?: F.Narrow<_Opts>
+  ): ZString<{
+    transform: 'lowercase'
+    convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+  }> {
+    const convert = (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    this._addCheck('string.lowercase', v => v.lowercase().prefs({ convert }), { message: (options as _Opts)?.message })
+    return new ZString(
+      {
+        schema: this._schema.get(),
+        manifest: this._manifest.get() as ZManifestObject<`${Lowercase<string>}`>,
+        hooks: this._hooks.get() as ZHooksObject<
+          ZStringDef<{
+            transform: 'lowercase'
+            convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+          }>
+        >,
+      },
+      { options: { transform: 'lowercase', convert } }
+    )
   }
 
-  uppercase(options?: ZCheckOptions<'string.uppercase'>): this {
-    return this._addCheck('string.uppercase', v => v.uppercase(), { message: options?.message })
+  uppercase<_Opts extends ZStringUppercaseOptions>(
+    options?: F.Narrow<_Opts>
+  ): ZString<{
+    transform: 'uppercase'
+    convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+  }> {
+    const convert = (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    this._addCheck('string.uppercase', v => v.uppercase().prefs({ convert }), { message: (options as _Opts)?.message })
+    return new ZString(
+      {
+        schema: this._schema.get(),
+        manifest: this._manifest.get() as ZManifestObject<`${Uppercase<string>}`>,
+        hooks: this._hooks.get() as ZHooksObject<
+          ZStringDef<{
+            transform: 'uppercase'
+            convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+          }>
+        >,
+      },
+      { options: { transform: 'uppercase', convert } }
+    )
+  }
+
+  capitalize<_Opts extends ZStringCapitalizeOptions>(
+    options?: F.Narrow<_Opts>
+  ): ZString<{
+    transform: 'capitalize'
+    convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+  }> {
+    const convert = (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    this._addCheck(
+      'string.capitalize',
+      v =>
+        v
+          .custom((value, helpers) => {
+            if (typeof value !== 'string') return helpers.error('string.base')
+            if (!value.charAt(0).match(/[A-Z]/)) {
+              if ((options as _Opts)?.convert === false) return helpers.error('string.capitalize')
+              else return capitalize(value)
+            }
+            return value
+          })
+          .prefs({ convert }),
+      { message: (options as _Opts)?.message }
+    )
+    return new ZString(
+      {
+        schema: this._schema.get(),
+        manifest: this._manifest.get() as ZManifestObject<`${Capitalize<string>}`>,
+        hooks: this._hooks.get() as ZHooksObject<
+          ZStringDef<{
+            transform: 'capitalize'
+            convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+          }>
+        >,
+      },
+      { options: { transform: 'capitalize', convert } }
+    )
+  }
+
+  uncapitalize<_Opts extends ZStringUncapitalizeOptions>(
+    options?: F.Narrow<_Opts>
+  ): ZString<{
+    transform: 'uncapitalize'
+    convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+  }> {
+    const convert = (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    this._addCheck(
+      'string.uncapitalize',
+      v =>
+        v
+          .custom((value, helpers) => {
+            if (typeof value !== 'string') return helpers.error('string.base')
+            if (!value.charAt(0).match(/[A-Z]/)) {
+              if ((options as _Opts)?.convert === false) return helpers.error('string.uncapitalize')
+              else return uncapitalize(value)
+            }
+            return value
+          })
+          .prefs({ convert }),
+      { message: (options as _Opts)?.message }
+    )
+    return new ZString(
+      {
+        schema: this._schema.get(),
+        manifest: this._manifest.get() as ZManifestObject<`${Uncapitalize<string>}`>,
+        hooks: this._hooks.get() as ZHooksObject<
+          ZStringDef<{
+            transform: 'uncapitalize'
+            convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+          }>
+        >,
+      },
+      { options: { transform: 'uncapitalize', convert } }
+    )
   }
 
   insensitive(): this {
@@ -314,6 +459,6 @@ export class ZString extends Z<{
         },
         hooks: {},
       },
-      {}
+      { options: { transform: undefined, convert: true } }
     )
 }

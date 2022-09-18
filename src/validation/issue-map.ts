@@ -150,6 +150,8 @@ export const Z_ISSUE_MAP = {
   'string.uriCustomScheme': '{{#label}} must be a valid uri with a scheme matching the {{#scheme}} pattern',
   'string.uriRelativeOnly': '{{#label}} must be a valid relative uri',
   'string.uppercase': '{{#label}} must only contain uppercase characters',
+  'string.capitalize': '{{#label}} must be capitalized',
+  'string.uncapitalize': '{{#label}} must be uncapitalized',
   'string.transform': '{{#label}} could not be transformed',
 
   'set.base': '{{#label}} must be either an array or a set',

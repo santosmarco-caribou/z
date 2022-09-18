@@ -4,7 +4,7 @@ import { isArray } from 'lodash'
 import { type AnyZIssueCode, type ZIssueLocalContext, ZError, ZJoi } from '../_internals'
 import { ZType } from '../types'
 import type { IsEmptyObject } from '../utils'
-import { Z } from './base'
+import { Z } from './_base'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZCustom                                                      */

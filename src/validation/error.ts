@@ -8,7 +8,7 @@ import type { OmitInternals } from '../utils'
 
 /* ----------------------------------------------------- ZIssue ----------------------------------------------------- */
 
-export type ZIssue<Def extends ZDef> = {
+export type ZIssue<Def extends ZDef = ZDef> = {
   code: Simplify<ZIssueCode<Def['Schema']>>
   message: string
   path: Array<string | number>
@@ -19,7 +19,7 @@ export type ZIssue<Def extends ZDef> = {
 /*                                                       ZError                                                       */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export class ZError<Def extends ZDef> extends Error {
+export class ZError<Def extends ZDef = ZDef> extends Error {
   override readonly name: 'ZError'
   override readonly message: string
 
@@ -29,7 +29,7 @@ export class ZError<Def extends ZDef> extends Error {
   readonly typeHint: string
   readonly typeManifest: ZManifestObject<_ZOutput<Def>>
 
-  private constructor(_z: Z<Def>, private readonly _original: Joi.ValidationError) {
+  private constructor(_z: Z<Def>, readonly _original: Joi.ValidationError) {
     super()
 
     this.name = 'ZError'
@@ -71,4 +71,6 @@ export class ZError<Def extends ZDef> extends Error {
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = <Def extends ZDef>(z: Z<Def>, original: Joi.ValidationError): ZError<Def> => new ZError(z, original)
+
+  static isZError = (maybeZError: unknown): maybeZError is ZError => maybeZError instanceof ZError
 }

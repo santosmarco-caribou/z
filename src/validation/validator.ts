@@ -1,10 +1,8 @@
 import Joi from 'joi'
-import { cloneDeep } from 'lodash'
 import type { O } from 'ts-toolbelt'
 import type { PartialDeep, SetReturnType, Simplify } from 'type-fest'
 
 import {
-  _ZOutput,
   AnyZIssueCode,
   BaseZ,
   ParseOptions,
@@ -14,7 +12,7 @@ import {
   ZManifestObject,
   ZProps,
 } from '../_internals'
-import { EmptyObject, mergeSafe } from '../utils'
+import { EmptyObject } from '../utils'
 
 /* ------------------------------------------------------ ZMeta ----------------------------------------------------- */
 
@@ -84,19 +82,6 @@ export type CustomValidationResult =
 export interface ZValidator<Def extends ZDef> extends BaseZ<Def> {}
 
 export class ZValidator<Def extends ZDef> {
-  protected _validate(input: unknown, options: ParseOptions | undefined): Joi.ValidationResult<_ZOutput<Def>> {
-    const _opts = mergeSafe(DEFAULT_VALIDATION_OPTIONS, options ?? {})
-    const _input = this._hooks.get().beforeParse.reduce((acc, hook) => hook.handler(acc), cloneDeep(input))
-    const result = this._schema.get().validate(_input, _opts) as Joi.ValidationResult<_ZOutput<Def>>
-    return this._hooks.get().afterParse.reduce(
-      (acc, hook) => ({
-        ...acc,
-        value: acc.value ? hook.handler(acc.value) : undefined,
-      }),
-      cloneDeep(result)
-    )
-  }
-
   protected _addCheck(fn: (validator: Def['Schema']) => Def['Schema']): this
   protected _addCheck<IssueCode extends AnyZIssueCode>(
     issue: IssueCode,

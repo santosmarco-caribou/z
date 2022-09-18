@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import { _ZOutput, BaseZ, Z, ZDef, ZError, ZValidator } from '../_internals'
+import { _ZOutput, BaseZ, Z, ZDef, ZError } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZParser                                                      */
@@ -30,11 +30,11 @@ export type ParseOptions = {
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface ZParser<Def extends ZDef> extends BaseZ<Def>, ZValidator<Def> {}
+export interface ZParser<Def extends ZDef> extends BaseZ<Def> {}
 
 export class ZParser<Def extends ZDef> {
   safeParse(input: unknown, options?: ParseOptions): ParseResult<_ZOutput<Def>, Def> {
-    const { error, value } = this._validate(input, options)
+    const { error, value } = this._schema.createValidator(this._hooks)(input, options)
     if (error) return this._FAIL(error)
     else return this._OK(value)
   }

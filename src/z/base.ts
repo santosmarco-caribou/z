@@ -24,7 +24,7 @@ import {
   ZSchemaController,
   ZType,
   ZUnion,
-  ZValidator,
+  ZValidator
 } from '../_internals'
 import { formatHint } from '../utils'
 
@@ -202,6 +202,9 @@ export abstract class Z<Def extends ZDef> {
   isNullable(): boolean {
     return this.safeParse(null).ok
   }
+
+  /* ---------------------------------------------------------------------------------------------------------------- */
+
 }
 
 export type AnyZ<Output = any> = Z<{ Output: Output; Input: any; Schema: Joi.Schema }>

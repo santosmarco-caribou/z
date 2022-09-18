@@ -23,6 +23,10 @@ export interface ZHooksController<Def extends ZDef> {
   getByTrigger<T extends keyof ZHooksObject<Def>>(trigger: T): ZHooksObject<Def>[T]
   add<T extends keyof ZHooksObject<Def>>(trigger: T, hook: ZHooksObject<Def>[T][number]): this
   remove<T extends keyof ZHooksObject<Def>>(trigger: T, hookName: string): this
+  apply<T extends keyof ZHooksObject<Def>>(
+    trigger: T,
+    input: Parameters<ZHooksObject<Def>[T][number]['handler']>[0]
+  ): Parameters<ZHooksObject<Def>[T][number]['handler']>[0]
 }
 
 export const ZHooksController = <Def extends ZDef>(hooks: ZHooksObject<Def>): ZHooksController<Def> => {
@@ -45,6 +49,14 @@ export const ZHooksController = <Def extends ZDef>(hooks: ZHooksObject<Def>): ZH
       const triggerHooks = this.getByTrigger(trigger)
       $_hooks[trigger] = triggerHooks.filter(t => t.name !== hookName)
       return this
+    },
+    apply<T extends keyof ZHooksObject<Def>>(
+      trigger: T,
+      input: Parameters<ZHooksObject<Def>[T][number]['handler']>[0]
+    ): ReturnType<ZHooksObject<Def>[T][number]['handler']> {
+      const triggerHooks = this.getByTrigger(trigger)
+      triggerHooks.forEach(hook => (input = hook.handler(input)))
+      return input
     },
   }
 }

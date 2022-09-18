@@ -8,11 +8,11 @@ import {
   type ZCheckOptions,
   type ZHooksObject,
   type ZManifestObject,
+  generateZHint,
   Z,
   ZJoi,
   ZType,
 } from '../_internals'
-import { isComplexHint } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZArray                                                       */
@@ -38,12 +38,19 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
   ZArrayDef<T, Card>
 > {
   readonly name = ZType.Array
-  protected readonly _hint =
-    this._props.getOne('cardinality') === 'atleastone'
-      ? `[${this._props.getOne('element').hint}, ...${this._props.getOne('element').hint}[]]`
-      : isComplexHint(this._props.getOne('element').hint)
-      ? `Array<${this._props.getOne('element').hint}>`
-      : `${this._props.getOne('element').hint}[]`
+  protected readonly _hint = generateZHint(() => {
+    const { element, cardinality } = this._props.getAll()
+
+    if (typeof cardinality === 'number') {
+      return `[${[...Array(cardinality)].fill(element.hint).join(', ')}]`
+    }
+
+    if (cardinality === 'atleastone') {
+      return `[${element.hint}, ...${element.hint}[]]`
+    }
+
+    return `Array<${element.hint}>`
+  })
 
   get element(): T {
     return this._props.getOne('element')

@@ -161,6 +161,7 @@ export class ZString<
   alphanumeric(options?: ZCheckOptions<'string.alphanum'>): this {
     this._addCheck('string.alphanum', v => v.alphanum(), { message: options?.message })
     this._manifest.update('format', 'alphanumeric')
+    this._setHint(`string($alphanumeric)`)
     return this
   }
   /**
@@ -176,6 +177,7 @@ export class ZString<
   base64(options?: ZStringBase64Options): this {
     this._addCheck('string.base64', v => v.base64(options), { message: options?.message })
     this._manifest.update('format', 'base64')
+    this._setHint(`string($base64)`)
     return this
   }
 
@@ -185,6 +187,7 @@ export class ZString<
   hexadecimal(options?: ZStringHexadecimalOptions): this {
     this._addCheck('string.hex', v => v.hex(options), { message: options?.message })
     this._manifest.update('format', 'hexadecimal')
+    this._setHint(`string($hexadecimal)`)
     return this
   }
   /**
@@ -214,6 +217,7 @@ export class ZString<
   ip(options?: ZStringIpOptions): this {
     this._addCheck('string.ip', v => v.ip(options), { message: options?.message })
     this._manifest.update('format', 'ip')
+    this._setHint(`string($ip)`)
     return this
   }
 

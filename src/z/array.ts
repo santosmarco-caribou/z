@@ -1,5 +1,5 @@
 import type Joi from 'joi'
-import type { ReadonlyTuple } from 'type-fest'
+import type { Integer, ReadonlyTuple } from 'type-fest'
 
 import {
   type _ZInput,
@@ -69,7 +69,7 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
    *
    * @param min - The minimum number of elements in the array.
    */
-  min(min: number, options?: ZCheckOptions<'array.min'>): this {
+  min<T extends number>(min: Integer<T>, options?: ZCheckOptions<'array.min'>): this {
     this._addCheck('array.min', v => v.min(min), options)
     return this
   }
@@ -78,7 +78,7 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
    *
    * @param max - The maximum number of elements in the array.
    */
-  max(max: number, options?: ZCheckOptions<'array.max'>): this {
+  max<T extends number>(max: Integer<T>, options?: ZCheckOptions<'array.max'>): this {
     this._addCheck('array.max', v => v.max(max), options)
     return this
   }
@@ -87,7 +87,7 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
    *
    * @param length - The number of elements in the array.
    */
-  length<L extends number>(length: L, options?: ZCheckOptions<'array.length'>): ZArray<T, L> {
+  length<L extends number>(length: Integer<L>, options?: ZCheckOptions<'array.length'>): ZArray<T, L> {
     this._addCheck('array.length', v => v.length(length), options)
     return new ZArray<T, L>(
       {

@@ -155,6 +155,16 @@ export class ZNumber extends Z<{
   }
 
   /**
+   * Requires the number to be within a certain range.
+   *
+   * @param min - The minimum value allowed (inclusive).
+   * @param max - The maximum value allowed (inclusive).
+   */
+  between(min: number, max: number): this {
+    return this.min(min).max(max)
+  }
+
+  /**
    * Requires the number to be a multiple of a certain value.
    *
    * @param value - The value of which the number must be a multiple.

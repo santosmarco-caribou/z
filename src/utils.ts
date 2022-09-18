@@ -51,6 +51,12 @@ export const toUpperCase = <T extends string>(str: T): Uppercase<T> => str.toUpp
 
 export const toLowerCase = <T extends string>(str: T): Lowercase<T> => str.toLowerCase() as Lowercase<T>
 
+export const capitalize = <T extends string>(str: T): Capitalize<T> =>
+  (str.charAt(0).toUpperCase() + str.slice(1)) as Capitalize<T>
+
+export const uncapitalize = <T extends string>(str: T): Uncapitalize<T> =>
+  (str.charAt(0).toLowerCase() + str.slice(1)) as Uncapitalize<T>
+
 /* ----------------------------------------------------- Arrays ----------------------------------------------------- */
 
 export const isArray = (maybeArr: unknown): maybeArr is any[] => Array.isArray(maybeArr)

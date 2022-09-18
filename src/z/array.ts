@@ -1,18 +1,18 @@
 import type Joi from 'joi'
 import type { NonNegativeInteger, ReadonlyTuple } from 'type-fest'
 
-import { isComplexHint } from '../utils'
 import {
-  Z,
-  ZJoi,
-  ZType,
+  type _ZInput,
+  type _ZOutput,
   type AnyZ,
   type ZCheckOptions,
   type ZHooksObject,
   type ZManifestObject,
-  type _ZInput,
-  type _ZOutput,
+  Z,
+  ZJoi,
+  ZType,
 } from '../_internals'
+import { isComplexHint } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZArray                                                       */

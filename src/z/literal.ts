@@ -4,9 +4,9 @@ import type { Primitive } from 'type-fest'
 
 import { Z, ZJoi, ZType, ZValidator } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZLiteral                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZLiteral                                  */
+/* -------------------------------------------------------------------------- */
 
 export class ZLiteral<T extends NonNullable<Primitive>> extends Z<{
   Output: T
@@ -21,17 +21,25 @@ export class ZLiteral<T extends NonNullable<Primitive>> extends Z<{
     return this._props.getOne('value')
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
-  static create = <T extends NonNullable<Primitive>>(value: F.Narrow<T>): ZLiteral<T> =>
+  static create = <T extends NonNullable<Primitive>>(
+    value: F.Narrow<T>
+  ): ZLiteral<T> =>
     new ZLiteral(
       {
         schema:
           typeof value === 'bigint'
             ? ZValidator.custom(ZJoi.any(), (_value, { schema, OK, FAIL }) =>
-                typeof _value === 'bigint' && _value.valueOf() === value.valueOf()
+                typeof _value === 'bigint' &&
+                _value.valueOf() === value.valueOf()
                   ? OK(_value)
-                  : FAIL('any.only', { valids: [`BigInt(${value})`, ...(schema._valids?._values ?? [])] })
+                  : FAIL('any.only', {
+                      valids: [
+                        `BigInt(${value})`,
+                        ...(schema.describe().valids ?? []),
+                      ],
+                    })
               )
             : ZJoi.any().valid(value),
         manifest: {},
@@ -41,7 +49,7 @@ export class ZLiteral<T extends NonNullable<Primitive>> extends Z<{
     )
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 const generateHint = (value: NonNullable<Primitive>): string => {
   switch (typeof value) {

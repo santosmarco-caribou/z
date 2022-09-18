@@ -2,11 +2,11 @@ import type Joi from 'joi'
 
 import { _ZOutput, BaseZ, Z, ZDef, ZError } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZParser                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZParser                                  */
+/* -------------------------------------------------------------------------- */
 
-/* --------------------------------------------------- ParseResult -------------------------------------------------- */
+/* ------------------------------- ParseResult ------------------------------ */
 
 export type ParseResultOk<V> = {
   ok: true
@@ -20,21 +20,29 @@ export type ParseResultFail<Def extends ZDef> = {
   error: ReturnType<ZError<Def>['toPlainObject']>
 }
 
-export type ParseResult<V, Def extends ZDef> = ParseResultOk<V> | ParseResultFail<Def>
+export type ParseResult<V, Def extends ZDef> =
+  | ParseResultOk<V>
+  | ParseResultFail<Def>
 
-/* -------------------------------------------------- ParseOptions -------------------------------------------------- */
+/* ------------------------------ ParseOptions ------------------------------ */
 
 export type ParseOptions = {
   abortEarly?: boolean
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export interface ZParser<Def extends ZDef> extends BaseZ<Def> {}
 
 export class ZParser<Def extends ZDef> {
-  safeParse(input: unknown, options?: ParseOptions): ParseResult<_ZOutput<Def>, Def> {
-    const { error, value } = this._schema.createValidator(this._hooks)(input, options)
+  safeParse(
+    input: unknown,
+    options?: ParseOptions
+  ): ParseResult<_ZOutput<Def>, Def> {
+    const { error, value } = this._schema.createValidator(this._hooks)(
+      input,
+      options
+    )
     if (error) return this._FAIL(error)
     else return this._OK(value)
   }
@@ -45,7 +53,10 @@ export class ZParser<Def extends ZDef> {
     else return value
   }
 
-  safeParseAsync(input: unknown, options?: ParseOptions): Promise<ParseResult<_ZOutput<Def>, Def>> {
+  safeParseAsync(
+    input: unknown,
+    options?: ParseOptions
+  ): Promise<ParseResult<_ZOutput<Def>, Def>> {
     return new Promise(resolve => resolve(this.safeParse(input, options)))
   }
 
@@ -64,7 +75,7 @@ export class ZParser<Def extends ZDef> {
     return this.isValid(input, options)
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   private _OK(value: _ZOutput<Def>): ParseResultOk<_ZOutput<Def>> {
     return { ok: true, value, error: undefined }

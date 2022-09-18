@@ -3,9 +3,9 @@ import Joi from 'joi'
 import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
 import { unionizeHints } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZOptional                                                     */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZOptional                                 */
+/* -------------------------------------------------------------------------- */
 
 export class ZOptional<T extends AnyZ> extends Z<{
   Output: _ZOutput<T> | undefined
@@ -14,13 +14,16 @@ export class ZOptional<T extends AnyZ> extends Z<{
   InnerType: T
 }> {
   readonly name = ZType.Optional
-  protected readonly _hint = unionizeHints(this._props.getOne('innerType').hint, 'undefined')
+  protected readonly _hint = unionizeHints(
+    this._props.getOne('innerType').hint,
+    'undefined'
+  )
 
   unwrap(): T {
     return this._props.getOne('innerType')
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = <T extends AnyZ>(innerType: T): ZOptional<T> =>
     new ZOptional(
@@ -36,6 +39,6 @@ export class ZOptional<T extends AnyZ> extends Z<{
     )
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export type AnyZOptional = ZOptional<AnyZ>

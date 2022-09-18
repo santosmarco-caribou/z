@@ -1,5 +1,5 @@
 import { ZAny } from '../_internals'
-import { generateBaseSpec } from '../test-utils'
+import { generateBaseSpec } from '../spec-utils'
 
 generateBaseSpec('ZAny', ZAny, {
   expectedTypeName: 'ZAny',

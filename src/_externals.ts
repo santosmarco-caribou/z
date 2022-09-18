@@ -16,6 +16,7 @@ import {
   ZFalse,
   ZFalsy,
   ZFunction,
+  ZGlobals,
   ZInstanceOf,
   ZIntersection,
   ZLiteral,
@@ -61,6 +62,7 @@ const enumType = ZEnum.create
 const falseType = ZFalse.create
 const falsyType = ZFalsy.create
 const functionType = ZFunction.create
+const globals = ZGlobals.get
 const instanceofType = ZInstanceOf.create
 const intersectionType = ZIntersection.create
 const literalType = ZLiteral.create
@@ -106,6 +108,7 @@ export {
   falseType as false,
   falsyType as falsy,
   functionType as function,
+  globals,
   instanceofType as instanceof,
   intersectionType as intersection,
   literalType as literal,

@@ -2,9 +2,9 @@ import type Joi from 'joi'
 
 import { Z, ZJoi, ZManifestObject, ZType } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZSymbol                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZSymbol                                  */
+/* -------------------------------------------------------------------------- */
 
 export class ZSymbol extends Z<{
   Output: symbol
@@ -18,7 +18,7 @@ export class ZSymbol extends Z<{
     return ZUniqueSymbol.$_create(this, symbol)
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = (): ZSymbol =>
     new ZSymbol(
@@ -31,7 +31,7 @@ export class ZSymbol extends Z<{
     )
 }
 
-/* -------------------------------------------------- ZUniqueSymbol ------------------------------------------------- */
+/* ------------------------------ ZUniqueSymbol ----------------------------- */
 
 export class ZUniqueSymbol<S extends symbol> extends Z<{
   Output: S
@@ -46,9 +46,12 @@ export class ZUniqueSymbol<S extends symbol> extends Z<{
     return this._props.getOne('symbol')
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
-  static $_create = <S extends symbol>(parent: ZSymbol, symbol: S): ZUniqueSymbol<S> => {
+  static $_create = <S extends symbol>(
+    parent: ZSymbol,
+    symbol: S
+  ): ZUniqueSymbol<S> => {
     if (!symbol.description) {
       throw new Error('The provided symbol must have a description')
     }
@@ -62,9 +65,10 @@ export class ZUniqueSymbol<S extends symbol> extends Z<{
     )
   }
 
-  static create = <S extends symbol>(symbol: S): ZUniqueSymbol<S> => this.$_create(ZSymbol.create(), symbol)
+  static create = <S extends symbol>(symbol: S): ZUniqueSymbol<S> =>
+    this.$_create(ZSymbol.create(), symbol)
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export type AnyZUniqueSymbol = ZUniqueSymbol<symbol>

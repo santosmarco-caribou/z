@@ -13,11 +13,14 @@ import {
 } from '../_internals'
 import { MapToZOutput } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZFunction                                                     */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZFunction                                 */
+/* -------------------------------------------------------------------------- */
 
-export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ> extends Z<{
+export class ZFunction<
+  P extends readonly [AnyZ, ...AnyZ[]] | [],
+  R extends AnyZ
+> extends Z<{
   Output: (...args: _ZOutput<ZTuple<P>>) => _ZOutput<R>
   Input: (...args: _ZInput<ZTuple<P>>) => _ZInput<R>
   Schema: Joi.FunctionSchema
@@ -42,11 +45,15 @@ export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ
    *
    * @param parameters - parameters The schemas of the function's parameters.
    */
-  arguments<T extends readonly [AnyZ, ...AnyZ[]] | []>(parameters: T): ZFunction<T, R> {
+  arguments<T extends readonly [AnyZ, ...AnyZ[]] | []>(
+    parameters: T
+  ): ZFunction<T, R> {
     return new ZFunction<T, R>(
       {
         schema: this._schema.get(),
-        manifest: this._manifest.get() as ZManifestObject<(...args: MapToZOutput<T>) => _ZOutput<R>>,
+        manifest: this._manifest.get() as ZManifestObject<
+          (...args: MapToZOutput<T>) => _ZOutput<R>
+        >,
         hooks: this._hooks.get() as any,
       },
       { ...this._props.getAll(), parameters: ZTuple.create(parameters) }
@@ -55,7 +62,9 @@ export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ
   /**
    * {@inheritDoc ZFunction#arguments}
    */
-  args<T extends readonly [AnyZ, ...AnyZ[]] | []>(parameters: T): ZFunction<T, R> {
+  args<T extends readonly [AnyZ, ...AnyZ[]] | []>(
+    parameters: T
+  ): ZFunction<T, R> {
     return this.arguments(parameters)
   }
 
@@ -75,7 +84,9 @@ export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ
     )
   }
 
-  implement(fn: (...args: _ZOutput<ZTuple<P>>) => _ZOutput<R>): (...args: _ZOutput<ZTuple<P>>) => _ZOutput<R> {
+  implement(
+    fn: (...args: _ZOutput<ZTuple<P>>) => _ZOutput<R>
+  ): (...args: _ZOutput<ZTuple<P>>) => _ZOutput<R> {
     const validatedFn = (...args: _ZOutput<ZTuple<P>>): _ZOutput<R> => {
       const validatedArgs = this._props.getOne('parameters').parse(args)
       return this._props.getOne('returnType').parse(fn(...validatedArgs))
@@ -83,10 +94,13 @@ export class ZFunction<P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ
     return validatedFn
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create: {
-    <P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ>(parameters: P, returnType: R): ZFunction<P, R>
+    <P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ>(
+      parameters: P,
+      returnType: R
+    ): ZFunction<P, R>
     (): ZFunction<[], ZUnknown>
   } = <P extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ>(
     parameters?: P,

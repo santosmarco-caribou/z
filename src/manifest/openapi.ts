@@ -3,14 +3,23 @@ import { includes } from 'lodash'
 import type { SchemaObject } from 'openapi3-ts'
 import type { Merge } from 'type-fest'
 
-import type { _ZOutput, AnyZManifestObject, BaseZ, ZDef, ZManifestObject } from '../_internals'
+import type {
+  _ZOutput,
+  AnyZManifestObject,
+  BaseZ,
+  ZDef,
+  ZManifestObject,
+} from '../_internals'
 import { mergeSafe } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZOpenApi                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZOpenApi                                  */
+/* -------------------------------------------------------------------------- */
 
-const OPEN_API_PROPERTIES: Extract<keyof AnyZManifestObject, keyof SchemaObject>[] = [
+const OPEN_API_PROPERTIES: Extract<
+  keyof AnyZManifestObject,
+  keyof SchemaObject
+>[] = [
   'title',
   'description',
   'type',
@@ -23,7 +32,6 @@ const OPEN_API_PROPERTIES: Extract<keyof AnyZManifestObject, keyof SchemaObject>
   'multipleOf',
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ZOpenApi<Def extends ZDef> extends BaseZ<Def> {}
 export class ZOpenApi<Def extends ZDef> {
   toOpenApi(): Merge<ZManifestObject<_ZOutput<Def>>, SchemaObject> {

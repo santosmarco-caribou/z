@@ -1,11 +1,19 @@
 import Joi from 'joi'
 import { NonNegativeInteger } from 'type-fest'
 
-import { _ZInput, _ZOutput, AnyZ, Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
+import {
+  _ZInput,
+  _ZOutput,
+  AnyZ,
+  Z,
+  ZCheckOptions,
+  ZJoi,
+  ZType,
+} from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                        ZSet                                                        */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                    ZSet                                    */
+/* -------------------------------------------------------------------------- */
 
 export class ZSet<T extends AnyZ> extends Z<{
   Output: Set<_ZOutput<T>>
@@ -25,7 +33,10 @@ export class ZSet<T extends AnyZ> extends Z<{
    *
    * @param min - The minimum number of elements in the Set.
    */
-  min<T extends number>(min: NonNegativeInteger<T>, options?: ZCheckOptions<'array.min'>): this {
+  min<T extends number>(
+    min: NonNegativeInteger<T>,
+    options?: ZCheckOptions<'array.min'>
+  ): this {
     return this._addCheck('array.min', v => v.min(min), options)
   }
   /**
@@ -33,7 +44,10 @@ export class ZSet<T extends AnyZ> extends Z<{
    *
    * @param max - The maximum number of elements in the Set.
    */
-  max<T extends number>(max: NonNegativeInteger<T>, options?: ZCheckOptions<'array.max'>): this {
+  max<T extends number>(
+    max: NonNegativeInteger<T>,
+    options?: ZCheckOptions<'array.max'>
+  ): this {
     return this._addCheck('array.max', v => v.max(max), options)
   }
   /**
@@ -41,7 +55,10 @@ export class ZSet<T extends AnyZ> extends Z<{
    *
    * @param size - The exact number of elements in the Set.
    */
-  size<S extends number>(size: NonNegativeInteger<S>, options?: ZCheckOptions<'array.length'>): this {
+  size<S extends number>(
+    size: NonNegativeInteger<S>,
+    options?: ZCheckOptions<'array.length'>
+  ): this {
     return this._addCheck('array.length', v => v.length(size), options)
   }
 
@@ -52,14 +69,18 @@ export class ZSet<T extends AnyZ> extends Z<{
     return this.min(1, options)
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = <T extends AnyZ>(element: T): ZSet<T> =>
     new ZSet(
       {
-        schema: ZJoi.array().items(element._schema.get()).unique().cast('set').messages({
-          'array.base': '{{#label}} must be either an array or a Set',
-        }),
+        schema: ZJoi.array()
+          .items(element._schema.get())
+          .unique()
+          .cast('set')
+          .messages({
+            'array.base': '{{#label}} must be either an array or a Set',
+          }),
         manifest: {
           element: element._manifest.get(),
         },

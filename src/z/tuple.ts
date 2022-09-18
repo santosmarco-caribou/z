@@ -1,16 +1,30 @@
 import type Joi from 'joi'
 import type { A } from 'ts-toolbelt'
 
-import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZType } from '../_internals'
+import {
+  type _ZInput,
+  type _ZOutput,
+  type AnyZ,
+  Z,
+  ZJoi,
+  ZType,
+} from '../_internals'
 import type { MapToZInput, MapToZOutput } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZTuple                                                       */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZTuple                                   */
+/* -------------------------------------------------------------------------- */
 
-export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = never> extends Z<{
-  Output: A.Equals<[R], [never]> extends 1 ? [...MapToZOutput<T>, ..._ZOutput<R>[]] : MapToZOutput<T>
-  Input: A.Equals<[R], [never]> extends 1 ? [...MapToZInput<T>, ..._ZInput<R>[]] : MapToZInput<T>
+export class ZTuple<
+  T extends readonly [AnyZ, ...AnyZ[]] | [],
+  R extends AnyZ = never
+> extends Z<{
+  Output: A.Equals<[R], [never]> extends 1
+    ? [...MapToZOutput<T>, ..._ZOutput<R>[]]
+    : MapToZOutput<T>
+  Input: A.Equals<[R], [never]> extends 1
+    ? [...MapToZInput<T>, ..._ZInput<R>[]]
+    : MapToZInput<T>
   Schema: Joi.ArraySchema
   Elements: T
   RestType?: R
@@ -19,7 +33,11 @@ export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = 
   protected readonly _hint = `[${this._props
     .getOne('elements')
     .map(element => element.hint)
-    .join(', ')}${this._props.getOne('restType') ? `, ...${this._props.getOne('restType')?.hint ?? ''}[]` : ''}]`
+    .join(', ')}${
+    this._props.getOne('restType')
+      ? `, ...${this._props.getOne('restType')?.hint ?? ''}[]`
+      : ''
+  }]`
 
   /**
    * Retrieves the schemas of the tuple's elements.
@@ -42,9 +60,12 @@ export class ZTuple<T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = 
     )
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
-  static create = <T extends readonly [AnyZ, ...AnyZ[]] | [], R extends AnyZ = never>(
+  static create = <
+    T extends readonly [AnyZ, ...AnyZ[]] | [],
+    R extends AnyZ = never
+  >(
     elements: T,
     restType?: R
   ): ZTuple<T, R> =>

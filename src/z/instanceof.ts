@@ -2,9 +2,9 @@ import type Joi from 'joi'
 
 import { Z, ZJoi, ZType, ZValidator } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                     ZInstanceOf                                                    */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                 ZInstanceOf                                */
+/* -------------------------------------------------------------------------- */
 
 export class ZInstanceOf<T extends new (...args: any[]) => any> extends Z<{
   Output: InstanceType<T>
@@ -15,13 +15,17 @@ export class ZInstanceOf<T extends new (...args: any[]) => any> extends Z<{
   readonly name = ZType.InstanceOf
   protected readonly _hint = `instanceof ${this._props.getOne('type').name}`
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
-  static create = <T extends new (...args: any[]) => any>(type: T): ZInstanceOf<T> =>
+  static create = <T extends new (...args: any[]) => any>(
+    type: T
+  ): ZInstanceOf<T> =>
     new ZInstanceOf(
       {
         schema: ZValidator.custom(ZJoi.any(), (value, { OK, FAIL }) =>
-          value instanceof type ? OK(value) : FAIL('instanceof.base', { type: type.name })
+          value instanceof type
+            ? OK(value)
+            : FAIL('instanceof.base', { type: type.name })
         ),
         manifest: {},
         hooks: {},
@@ -30,6 +34,6 @@ export class ZInstanceOf<T extends new (...args: any[]) => any> extends Z<{
     )
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export type AnyZInstanceOf = ZInstanceOf<new (...args: any[]) => any>

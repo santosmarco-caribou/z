@@ -1,12 +1,21 @@
 import type Joi from 'joi'
 import { F } from 'ts-toolbelt'
+import { NonNegativeInteger } from 'type-fest'
 
-import { type ZCheckOptions, type ZHooksObject, type ZManifestObject, Z, ZJoi, ZType } from '../_internals'
+import {
+  type ZCheckOptions,
+  type ZHooksObject,
+  type ZManifestObject,
+  ManifestFormat,
+  Z,
+  ZJoi,
+  ZType,
+} from '../_internals'
 import { type MaybeArray, capitalize, uncapitalize } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZString                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZString                                  */
+/* -------------------------------------------------------------------------- */
 
 export type ZStringBase64BaseOptions = {
   paddingRequired?: boolean
@@ -59,7 +68,8 @@ export type ZStringDomainOptions = ZCheckOptions<
     minDomainSegments?: number
     /**
      * Options for TLD (top-level domain) validation.
-     * By default, the TLD must be a valid name listed on the [IANA registry](http://data.iana.org/TLD/tlds-alpha-by-domain.txt).
+     * By default, the TLD must be a valid name listed on the
+     * [IANA registry](http://data.iana.org/TLD/tlds-alpha-by-domain.txt).
      *
      * @default { allow: true }
      */
@@ -86,7 +96,10 @@ export type ZStringUriOptions = ZCheckOptions<
   }
 >
 
-export type ZStringDataUriOptions = ZCheckOptions<'string.dataUri', ZStringBase64BaseOptions>
+export type ZStringDataUriOptions = ZCheckOptions<
+  'string.dataUri',
+  ZStringBase64BaseOptions
+>
 
 export type ZStringEmailOptions = ZCheckOptions<
   'string.email',
@@ -106,7 +119,10 @@ export type ZStringUuidOptions = ZCheckOptions<
 >
 
 export type ZStringPatternOptions = ZCheckOptions<
-  'string.pattern.base' | 'string.pattern.name' | 'string.pattern.invert.base' | 'string.pattern.invert.name',
+  | 'string.pattern.base'
+  | 'string.pattern.name'
+  | 'string.pattern.invert.base'
+  | 'string.pattern.invert.name',
   {
     name?: string
     invert?: boolean
@@ -117,15 +133,32 @@ export type ZStringCasingBaseOptions = {
   convert?: boolean
 }
 
-export type ZStringLowercaseOptions = ZCheckOptions<'string.lowercase', ZStringCasingBaseOptions>
-export type ZStringUppercaseOptions = ZCheckOptions<'string.uppercase', ZStringCasingBaseOptions>
-export type ZStringCapitalizeOptions = ZCheckOptions<'string.capitalize', ZStringCasingBaseOptions>
-export type ZStringUncapitalizeOptions = ZCheckOptions<'string.uncapitalize', ZStringCasingBaseOptions>
+export type ZStringLowercaseOptions = ZCheckOptions<
+  'string.lowercase',
+  ZStringCasingBaseOptions
+>
+export type ZStringUppercaseOptions = ZCheckOptions<
+  'string.uppercase',
+  ZStringCasingBaseOptions
+>
+export type ZStringCapitalizeOptions = ZCheckOptions<
+  'string.capitalize',
+  ZStringCasingBaseOptions
+>
+export type ZStringUncapitalizeOptions = ZCheckOptions<
+  'string.uncapitalize',
+  ZStringCasingBaseOptions
+>
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export type ZStringOptions = {
-  transform: 'lowercase' | 'uppercase' | 'capitalize' | 'uncapitalize' | undefined
+  transform:
+    | 'lowercase'
+    | 'uppercase'
+    | 'capitalize'
+    | 'uncapitalize'
+    | undefined
   convert: boolean
 }
 
@@ -159,9 +192,10 @@ export class ZString<
    * Requires the input to only contain `a-z`, `A-Z`, and `0-9`.
    */
   alphanumeric(options?: ZCheckOptions<'string.alphanum'>): this {
-    this._addCheck('string.alphanum', v => v.alphanum(), { message: options?.message })
-    this._manifest.update('format', 'alphanumeric')
-    this._setHint(`string($alphanumeric)`)
+    this._addCheck('string.alphanum', v => v.alphanum(), {
+      message: options?.message,
+    })
+    this._updateFormat('alphanumeric')
     return this
   }
   /**
@@ -175,9 +209,10 @@ export class ZString<
    * Requires the input to be a valid `base64` string.
    */
   base64(options?: ZStringBase64Options): this {
-    this._addCheck('string.base64', v => v.base64(options), { message: options?.message })
-    this._manifest.update('format', 'base64')
-    this._setHint(`string($base64)`)
+    this._addCheck('string.base64', v => v.base64(options), {
+      message: options?.message,
+    })
+    this._updateFormat('base64')
     return this
   }
 
@@ -185,9 +220,10 @@ export class ZString<
    * Requires the input to be a valid hexadecimal string.
    */
   hexadecimal(options?: ZStringHexadecimalOptions): this {
-    this._addCheck('string.hex', v => v.hex(options), { message: options?.message })
-    this._manifest.update('format', 'hexadecimal')
-    this._setHint(`string($hexadecimal)`)
+    this._addCheck('string.hex', v => v.hex(options), {
+      message: options?.message,
+    })
+    this._updateFormat('hexadecimal')
     return this
   }
   /**
@@ -201,23 +237,26 @@ export class ZString<
    * Requires the input to be a valid domain string.
    */
   domain(options?: ZStringDomainOptions): this {
-    return this._addCheck('string.domain', v => v.domain(options), { message: options?.message })
+    return this._addCheck('string.domain', v => v.domain(options), {
+      message: options?.message,
+    })
   }
-
   /**
    * Requires the input to be a valid hostname string as per RFC1123.
    */
   hostname(options?: ZCheckOptions<'string.hostname'>): this {
-    return this._addCheck('string.hostname', v => v.hostname(), { message: options?.message })
+    return this._addCheck('string.hostname', v => v.hostname(), {
+      message: options?.message,
+    })
   }
-
   /**
    * Requires the input to be a valid IP address.
    */
   ip(options?: ZStringIpOptions): this {
-    this._addCheck('string.ip', v => v.ip(options), { message: options?.message })
-    this._manifest.update('format', 'ip')
-    this._setHint(`string($ip)`)
+    this._addCheck('string.ip', v => v.ip(options), {
+      message: options?.message,
+    })
+    this._updateFormat('ip')
     return this
   }
 
@@ -225,17 +264,20 @@ export class ZString<
    * Requires the input to be a valid RFC 3986 URI string.
    */
   uri(options?: ZStringUriOptions): this {
-    this._addCheck('string.uri', v => v.uri(options), { message: options?.message })
-    this._manifest.update('format', 'uri')
+    this._addCheck('string.uri', v => v.uri(options), {
+      message: options?.message,
+    })
+    this._updateFormat('uri')
     return this
   }
-
   /**
    * Requires the input to be a valid data URI string.
    */
   dataUri(options?: ZStringDataUriOptions): this {
-    this._addCheck('string.dataUri', v => v.dataUri(options), { message: options?.message })
-    this._manifest.update('format', 'data-uri')
+    this._addCheck('string.dataUri', v => v.dataUri(options), {
+      message: options?.message,
+    })
+    this._updateFormat('data-uri')
     return this
   }
 
@@ -243,8 +285,10 @@ export class ZString<
    * Requires the input to be a valid email address.
    */
   email(options?: ZStringEmailOptions): this {
-    this._addCheck('string.email', v => v.email(options), { message: options?.message })
-    this._manifest.update('format', 'email')
+    this._addCheck('string.email', v => v.email(options), {
+      message: options?.message,
+    })
+    this._updateFormat('email')
     return this
   }
 
@@ -254,8 +298,10 @@ export class ZString<
    * @param options - Rule options
    */
   uuid(options?: ZStringUuidOptions): this {
-    this._addCheck('string.guid', v => v.uuid(options), { message: options?.message })
-    this._manifest.update('format', 'uuid')
+    this._addCheck('string.guid', v => v.uuid(options), {
+      message: options?.message,
+    })
+    this._updateFormat('uuid')
     return this
   }
   /**
@@ -265,30 +311,72 @@ export class ZString<
     return this.uuid(options)
   }
 
+  /**
+   * Requires the input to be a valid ISO 8601 date.
+   */
   isoDate(options?: ZCheckOptions<'string.isoDate'>): this {
-    this._addCheck('string.isoDate', v => v.isoDate(), { message: options?.message })
-    this._manifest.update('format', 'date-time')
+    this._addCheck('string.isoDate', v => v.isoDate(), {
+      message: options?.message,
+    })
+    this._updateFormat('date-time')
     return this
   }
-
+  /**
+   * Requires the input to be a valid ISO 8601 duration.
+   */
   isoDuration(options?: ZCheckOptions<'string.isoDuration'>): this {
-    return this._addCheck('string.isoDuration', v => v.isoDuration(), { message: options?.message })
+    return this._addCheck('string.isoDuration', v => v.isoDuration(), {
+      message: options?.message,
+    })
   }
 
+  /**
+   * Requires the input to be a valid credit card number.
+   */
   creditCard(options?: ZCheckOptions<'string.creditCard'>): this {
-    return this._addCheck('string.creditCard', v => v.creditCard(), { message: options?.message })
+    return this._addCheck('string.creditCard', v => v.creditCard(), {
+      message: options?.message,
+    })
   }
 
-  min(min: number, options?: ZCheckOptions<'string.min'>): this {
-    return this._addCheck('string.min', v => v.min(min), { message: options?.message })
+  /**
+   * Requires the input to have at least a certain number of characters.
+   *
+   * @param min - The minimum number of characters in the string.
+   */
+  min<T extends number>(
+    min: NonNegativeInteger<T>,
+    options?: ZCheckOptions<'string.min'>
+  ): this {
+    return this._addCheck('string.min', v => v.min(min), {
+      message: options?.message,
+    })
   }
-
-  max(max: number, options?: ZCheckOptions<'string.max'>): this {
-    return this._addCheck('string.max', v => v.max(max), { message: options?.message })
+  /**
+   * Requires the input to have at most a certain number of characters.
+   *
+   * @param max - The maximum number of characters in the string.
+   */
+  max<T extends number>(
+    max: NonNegativeInteger<T>,
+    options?: ZCheckOptions<'string.max'>
+  ): this {
+    return this._addCheck('string.max', v => v.max(max), {
+      message: options?.message,
+    })
   }
-
-  length(length: number, options?: ZCheckOptions<'string.length'>): this {
-    return this._addCheck('string.length', v => v.length(length), { message: options?.message })
+  /**
+   * Requires the input to have an exact number of characters.
+   *
+   * @param length - The length of the string.
+   */
+  length<L extends number>(
+    length: NonNegativeInteger<L>,
+    options?: ZCheckOptions<'string.length'>
+  ): this {
+    return this._addCheck('string.length', v => v.length(length), {
+      message: options?.message,
+    })
   }
 
   /**
@@ -299,17 +387,29 @@ export class ZString<
    */
   pattern(regex: RegExp, options?: ZStringPatternOptions): this {
     if (!options || (!options.invert && !options.name))
-      return this._addCheck('string.pattern.base', v => v.pattern(regex), { message: options?.message })
+      return this._addCheck('string.pattern.base', v => v.pattern(regex), {
+        message: options?.message,
+      })
     else if (options.name && options.invert)
-      return this._addCheck('string.pattern.invert.name', v => v.pattern(regex, { invert: true }), {
-        message: options?.message,
-      })
+      return this._addCheck(
+        'string.pattern.invert.name',
+        v => v.pattern(regex, { invert: true }),
+        {
+          message: options?.message,
+        }
+      )
     else if (options.name)
-      return this._addCheck('string.pattern.name', v => v.pattern(regex), { message: options?.message })
-    else
-      return this._addCheck('string.pattern.invert.base', v => v.pattern(regex, { invert: true }), {
+      return this._addCheck('string.pattern.name', v => v.pattern(regex), {
         message: options?.message,
       })
+    else
+      return this._addCheck(
+        'string.pattern.invert.base',
+        v => v.pattern(regex, { invert: true }),
+        {
+          message: options?.message,
+        }
+      )
   }
   /**
    * {@inheritDoc ZString#pattern}
@@ -318,24 +418,32 @@ export class ZString<
     return this.pattern(regex, options)
   }
 
-  /* -------------------------------------------------- Transforms -------------------------------------------------- */
+  /* ------------------------------ Transforms ------------------------------ */
 
   lowercase<_Opts extends ZStringLowercaseOptions>(
     options?: F.Narrow<_Opts>
   ): ZString<{
     transform: 'lowercase'
-    convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+    convert: _Opts['convert'] extends boolean
+      ? _Opts['convert']
+      : Opts['convert']
   }> {
-    const convert = (options as _Opts)?.convert ?? this._props.getOne('options').convert
-    this._addCheck('string.lowercase', v => v.lowercase().prefs({ convert }), { message: (options as _Opts)?.message })
+    const convert =
+      (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    this._addCheck('string.lowercase', v => v.lowercase().prefs({ convert }), {
+      message: (options as _Opts)?.message,
+    })
     return new ZString(
       {
         schema: this._schema.get(),
-        manifest: this._manifest.get() as ZManifestObject<`${Lowercase<string>}`>,
+        manifest:
+          this._manifest.get() as ZManifestObject<`${Lowercase<string>}`>,
         hooks: this._hooks.get() as ZHooksObject<
           ZStringDef<{
             transform: 'lowercase'
-            convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+            convert: _Opts['convert'] extends boolean
+              ? _Opts['convert']
+              : Opts['convert']
           }>
         >,
       },
@@ -347,18 +455,26 @@ export class ZString<
     options?: F.Narrow<_Opts>
   ): ZString<{
     transform: 'uppercase'
-    convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+    convert: _Opts['convert'] extends boolean
+      ? _Opts['convert']
+      : Opts['convert']
   }> {
-    const convert = (options as _Opts)?.convert ?? this._props.getOne('options').convert
-    this._addCheck('string.uppercase', v => v.uppercase().prefs({ convert }), { message: (options as _Opts)?.message })
+    const convert =
+      (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    this._addCheck('string.uppercase', v => v.uppercase().prefs({ convert }), {
+      message: (options as _Opts)?.message,
+    })
     return new ZString(
       {
         schema: this._schema.get(),
-        manifest: this._manifest.get() as ZManifestObject<`${Uppercase<string>}`>,
+        manifest:
+          this._manifest.get() as ZManifestObject<`${Uppercase<string>}`>,
         hooks: this._hooks.get() as ZHooksObject<
           ZStringDef<{
             transform: 'uppercase'
-            convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+            convert: _Opts['convert'] extends boolean
+              ? _Opts['convert']
+              : Opts['convert']
           }>
         >,
       },
@@ -370,32 +486,30 @@ export class ZString<
     options?: F.Narrow<_Opts>
   ): ZString<{
     transform: 'capitalize'
-    convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+    convert: _Opts['convert'] extends boolean
+      ? _Opts['convert']
+      : Opts['convert']
   }> {
-    const convert = (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    const convert =
+      (options as _Opts)?.convert ?? this._props.getOne('options').convert
+
     this._addCheck(
       'string.capitalize',
-      v =>
-        v
-          .custom((value, helpers) => {
-            if (typeof value !== 'string') return helpers.error('string.base')
-            if (!value.charAt(0).match(/[A-Z]/)) {
-              if ((options as _Opts)?.convert === false) return helpers.error('string.capitalize')
-              else return capitalize(value)
-            }
-            return value
-          })
-          .prefs({ convert }),
+      handleCapitalizeUncapitalizeValidation('capitalize', { convert }),
       { message: (options as _Opts)?.message }
     )
+
     return new ZString(
       {
         schema: this._schema.get(),
-        manifest: this._manifest.get() as ZManifestObject<`${Capitalize<string>}`>,
+        manifest:
+          this._manifest.get() as ZManifestObject<`${Capitalize<string>}`>,
         hooks: this._hooks.get() as ZHooksObject<
           ZStringDef<{
             transform: 'capitalize'
-            convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+            convert: _Opts['convert'] extends boolean
+              ? _Opts['convert']
+              : Opts['convert']
           }>
         >,
       },
@@ -407,32 +521,30 @@ export class ZString<
     options?: F.Narrow<_Opts>
   ): ZString<{
     transform: 'uncapitalize'
-    convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+    convert: _Opts['convert'] extends boolean
+      ? _Opts['convert']
+      : Opts['convert']
   }> {
-    const convert = (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    const convert =
+      (options as _Opts)?.convert ?? this._props.getOne('options').convert
+
     this._addCheck(
       'string.uncapitalize',
-      v =>
-        v
-          .custom((value, helpers) => {
-            if (typeof value !== 'string') return helpers.error('string.base')
-            if (!value.charAt(0).match(/[A-Z]/)) {
-              if ((options as _Opts)?.convert === false) return helpers.error('string.uncapitalize')
-              else return uncapitalize(value)
-            }
-            return value
-          })
-          .prefs({ convert }),
+      handleCapitalizeUncapitalizeValidation('uncapitalize', { convert }),
       { message: (options as _Opts)?.message }
     )
+
     return new ZString(
       {
         schema: this._schema.get(),
-        manifest: this._manifest.get() as ZManifestObject<`${Uncapitalize<string>}`>,
+        manifest:
+          this._manifest.get() as ZManifestObject<`${Uncapitalize<string>}`>,
         hooks: this._hooks.get() as ZHooksObject<
           ZStringDef<{
             transform: 'uncapitalize'
-            convert: _Opts['convert'] extends boolean ? _Opts['convert'] : Opts['convert']
+            convert: _Opts['convert'] extends boolean
+              ? _Opts['convert']
+              : Opts['convert']
           }>
         >,
       },
@@ -445,14 +557,29 @@ export class ZString<
   }
 
   trim(options?: ZCheckOptions<'string.trim'>): this {
-    return this._addCheck('string.trim', v => v.trim(), { message: options?.message })
+    return this._addCheck('string.trim', v => v.trim(), {
+      message: options?.message,
+    })
   }
 
   replace(pattern: string | RegExp, replacement: string): this {
     return this._addCheck(v => v.replace(pattern, replacement))
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
+
+  private _addFormatToHint(format: ManifestFormat): this {
+    this._setHint(`string($${format})`)
+    return this
+  }
+
+  private _updateFormat(format: ManifestFormat): this {
+    this._manifest.update('format', format)
+    this._addFormatToHint(format)
+    return this
+  }
+
+  /* ------------------------------------------------------------------------ */
 
   static create = (): ZString =>
     new ZString(
@@ -466,3 +593,24 @@ export class ZString<
       { options: { transform: undefined, convert: true } }
     )
 }
+
+/* ---------------------------------- Utils --------------------------------- */
+
+const handleCapitalizeUncapitalizeValidation =
+  <V extends 'capitalize' | 'uncapitalize'>(
+    variation: V,
+    options: { convert: boolean | undefined }
+  ) =>
+  (v: Joi.StringSchema): Joi.StringSchema =>
+    v
+      .custom((value, helpers) => {
+        if (typeof value !== 'string') return helpers.error('string.base')
+        if (!value.charAt(0).match(/[A-Z]/)) {
+          if (options.convert === false)
+            return helpers.error(`string.${variation}`)
+          if (variation === 'capitalize') return capitalize(value)
+          else return uncapitalize(value)
+        }
+        return value
+      })
+      .prefs({ convert: options.convert })

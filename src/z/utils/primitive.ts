@@ -1,6 +1,17 @@
-import { ZBigInt, ZBoolean, ZNull, ZNumber, ZString, ZSymbol, ZUndefined, ZUnion } from '../../_internals'
+import {
+  ZBigInt,
+  ZBoolean,
+  ZNull,
+  ZNumber,
+  ZString,
+  ZSymbol,
+  ZUndefined,
+  ZUnion,
+} from '../../_internals'
 
-export type ZPrimitive = ZUnion<[ZNull, ZUndefined, ZString, ZNumber, ZBoolean, ZSymbol, ZBigInt]>
+export type ZPrimitive = ZUnion<
+  [ZNull, ZUndefined, ZString, ZNumber, ZBoolean, ZSymbol, ZBigInt]
+>
 
 export const ZPrimitive = {
   create: () =>

@@ -39,7 +39,9 @@ export class ZDiscriminatedUnion<
   Options: Option[]
 }> {
   readonly name = ZType.DiscriminatedUnion
-  protected readonly _hint = `${unionizeHints(...this._props.getOne('options').map(o => o.hint))}`
+  protected readonly _hint = `${unionizeHints(
+    ...this._props.getOne('options').map(o => o.hint)
+  )}`
 
   get options(): Option[] {
     return this._props.getOne('options')
@@ -62,7 +64,9 @@ export class ZDiscriminatedUnion<
     return new ZDiscriminatedUnion(
       {
         schema: ZJoi.object({
-          [String(discriminator)]: ZJoi.any().valid(...types.map(t => t.shape[discriminator].value)),
+          [String(discriminator)]: ZJoi.any().valid(
+            ...types.map(t => t.shape[discriminator].value)
+          ),
         }).append(
           ZJoi.alternatives().conditional(ZJoi.ref(String(discriminator)), {
             switch: types

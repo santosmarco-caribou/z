@@ -1,11 +1,18 @@
 import type Joi from 'joi'
 import type { U } from 'ts-toolbelt'
 
-import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZType } from '../_internals'
+import {
+  type _ZInput,
+  type _ZOutput,
+  type AnyZ,
+  Z,
+  ZJoi,
+  ZType,
+} from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                    ZIntersection                                                   */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                ZIntersection                               */
+/* -------------------------------------------------------------------------- */
 
 export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   Output: U.IntersectOf<_ZOutput<T[number]>>
@@ -23,17 +30,27 @@ export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
     return this._props.getOne('components')
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
-  static create = <T extends [AnyZ, ...AnyZ[]]>(components: T): ZIntersection<T> => {
-    const compAlreadyAlt = components.find(comp => comp._schema.get().type === 'alternatives')
+  static create = <T extends [AnyZ, ...AnyZ[]]>(
+    components: T
+  ): ZIntersection<T> => {
+    const compAlreadyAlt = components.find(
+      comp => comp._schema.get().type === 'alternatives'
+    )
 
     return new ZIntersection(
       {
         schema: (compAlreadyAlt
-          ? (compAlreadyAlt._schema.get() as ReturnType<typeof ZJoi['alternatives']>).concat(
+          ? (
+              compAlreadyAlt._schema.get() as ReturnType<
+                typeof ZJoi['alternatives']
+              >
+            ).concat(
               ZJoi.alternatives(
-                ...components.filter(comp => comp._id !== compAlreadyAlt._id).map(comp => comp._schema.get())
+                ...components
+                  .filter(comp => comp._id !== compAlreadyAlt._id)
+                  .map(comp => comp._schema.get())
               )
             )
           : ZJoi.alternatives(...components.map(comp => comp._schema.get()))

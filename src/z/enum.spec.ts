@@ -1,12 +1,25 @@
 import { ZEnum } from '../_internals'
-import { generateBaseSpec } from '../test-utils'
+import { generateBaseSpec } from '../spec-utils'
 
 const shouldNotParseDefaultConfig = (value: string) => ({
   parse: false,
-  expectedIssue: { code: 'any.only', message: `"value" must be one of [${value}]` },
+  expectedIssue: {
+    code: 'any.only',
+    message: `"value" must be one of [${value}]`,
+  },
   when: {
-    nullable: { expectedIssue: { code: 'any.only', message: `"value" must be one of [${value}, null]` } },
-    nullish: { expectedIssue: { code: 'any.only', message: `"value" must be one of [${value}, null]` } },
+    nullable: {
+      expectedIssue: {
+        code: 'any.only',
+        message: `"value" must be one of [${value}, null]`,
+      },
+    },
+    nullish: {
+      expectedIssue: {
+        code: 'any.only',
+        message: `"value" must be one of [${value}, null]`,
+      },
+    },
   },
 })
 
@@ -26,8 +39,17 @@ generateBaseSpec(
       B: { parse: true },
       C: { parse: true },
       // NOT
-      undefined: { parse: false, expectedIssue: { code: 'any.required', message: '"value" is required' } },
-      null: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B, C]' } },
+      undefined: {
+        parse: false,
+        expectedIssue: { code: 'any.required', message: '"value" is required' },
+      },
+      null: {
+        parse: false,
+        expectedIssue: {
+          code: 'any.only',
+          message: '"value" must be one of [A, B, C]',
+        },
+      },
       true: shouldNotParseDefaultConfig('A, B, C'),
       false: shouldNotParseDefaultConfig('A, B, C'),
       'BigInt(-100)': shouldNotParseDefaultConfig('A, B, C'),
@@ -66,8 +88,17 @@ generateBaseSpec(
       A: { parse: true },
       B: { parse: true },
       // NOT
-      undefined: { parse: false, expectedIssue: { code: 'any.required', message: '"value" is required' } },
-      null: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be one of [A, B]' } },
+      undefined: {
+        parse: false,
+        expectedIssue: { code: 'any.required', message: '"value" is required' },
+      },
+      null: {
+        parse: false,
+        expectedIssue: {
+          code: 'any.only',
+          message: '"value" must be one of [A, B]',
+        },
+      },
       C: shouldNotParseDefaultConfig('A, B'),
       true: shouldNotParseDefaultConfig('A, B'),
       false: shouldNotParseDefaultConfig('A, B'),

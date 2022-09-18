@@ -2,9 +2,9 @@ import Joi from 'joi'
 
 import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZBrand                                                       */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZBrand                                   */
+/* -------------------------------------------------------------------------- */
 
 export const ZBrandTag = Symbol('ZBrandTag')
 
@@ -12,7 +12,10 @@ export type ZBranded<T, Brand> = T & {
   readonly [ZBrandTag]: Brand
 }
 
-export class ZBrand<T extends AnyZ, B extends string | number | symbol> extends Z<{
+export class ZBrand<
+  T extends AnyZ,
+  B extends string | number | symbol
+> extends Z<{
   Output: ZBranded<_ZOutput<T>, B>
   Input: ZBranded<_ZInput<T>, B>
   Schema: Joi.AnySchema
@@ -22,9 +25,16 @@ export class ZBrand<T extends AnyZ, B extends string | number | symbol> extends 
   readonly name = ZType.Brand
   protected readonly _hint = String(this._props.getOne('brand'))
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  unwrap(): T {
+    return this._props.getOne('type')
+  }
 
-  static create = <T extends AnyZ, B extends string | number | symbol>(type: T, brand: B): ZBrand<T, B> =>
+  /* ------------------------------------------------------------------------ */
+
+  static create = <T extends AnyZ, B extends string | number | symbol>(
+    type: T,
+    brand: B
+  ): ZBrand<T, B> =>
     new ZBrand(
       {
         schema: type._schema.get(),

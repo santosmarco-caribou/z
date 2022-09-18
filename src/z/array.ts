@@ -8,15 +8,15 @@ import {
   type ZCheckOptions,
   type ZHooksObject,
   type ZManifestObject,
-  generateZHint,
   Z,
   ZJoi,
   ZType,
 } from '../_internals'
+import { generateZHint } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZArray                                                       */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZArray                                   */
+/* -------------------------------------------------------------------------- */
 
 type ZArrayDef<T extends AnyZ, Card extends 'many' | 'atleastone' | number> = {
   Output: Card extends number
@@ -34,9 +34,10 @@ type ZArrayDef<T extends AnyZ, Card extends 'many' | 'atleastone' | number> = {
   Cardinality: Card
 }
 
-export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number = 'many'> extends Z<
-  ZArrayDef<T, Card>
-> {
+export class ZArray<
+  T extends AnyZ,
+  Card extends 'many' | 'atleastone' | number = 'many'
+> extends Z<ZArrayDef<T, Card>> {
   readonly name = ZType.Array
   protected readonly _hint = generateZHint(() => {
     const { element, cardinality } = this._props.getAll()
@@ -76,7 +77,10 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
    *
    * @param min - The minimum number of elements in the array.
    */
-  min<T extends number>(min: NonNegativeInteger<T>, options?: ZCheckOptions<'array.min'>): this {
+  min<T extends number>(
+    min: NonNegativeInteger<T>,
+    options?: ZCheckOptions<'array.min'>
+  ): this {
     this._addCheck('array.min', v => v.min(min), options)
     return this
   }
@@ -85,7 +89,10 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
    *
    * @param max - The maximum number of elements in the array.
    */
-  max<T extends number>(max: NonNegativeInteger<T>, options?: ZCheckOptions<'array.max'>): this {
+  max<T extends number>(
+    max: NonNegativeInteger<T>,
+    options?: ZCheckOptions<'array.max'>
+  ): this {
     this._addCheck('array.max', v => v.max(max), options)
     return this
   }
@@ -94,12 +101,17 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
    *
    * @param length - The number of elements in the array.
    */
-  length<L extends number>(length: NonNegativeInteger<L>, options?: ZCheckOptions<'array.length'>): ZArray<T, L> {
+  length<L extends number>(
+    length: NonNegativeInteger<L>,
+    options?: ZCheckOptions<'array.length'>
+  ): ZArray<T, L> {
     this._addCheck('array.length', v => v.length(length), options)
     return new ZArray<T, L>(
       {
         schema: this._schema.get(),
-        manifest: this._manifest.get() as ZManifestObject<_ZOutput<ZArrayDef<T, L>>>,
+        manifest: this._manifest.get() as ZManifestObject<
+          _ZOutput<ZArrayDef<T, L>>
+        >,
         hooks: this._hooks.get() as ZHooksObject<ZArrayDef<T, L>>,
       },
       { element: this._props.getOne('element'), cardinality: length }
@@ -114,14 +126,16 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
     return new ZArray<T, 'atleastone'>(
       {
         schema: updated._schema.get(),
-        manifest: updated._manifest.get() as ZManifestObject<_ZOutput<ZArrayDef<T, 'atleastone'>>>,
+        manifest: updated._manifest.get() as ZManifestObject<
+          _ZOutput<ZArrayDef<T, 'atleastone'>>
+        >,
         hooks: updated._hooks.get() as ZHooksObject<ZArrayDef<T, 'atleastone'>>,
       },
       { element: updated._props.getOne('element'), cardinality: 'atleastone' }
     )
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = <T extends AnyZ>(element: T): ZArray<T> =>
     new ZArray(
@@ -135,5 +149,7 @@ export class ZArray<T extends AnyZ, Card extends 'many' | 'atleastone' | number 
       { element, cardinality: 'many' }
     )
 }
+
+/* -------------------------------------------------------------------------- */
 
 export type AnyZArray = ZArray<AnyZ, 'many' | 'atleastone'>

@@ -1,5 +1,5 @@
 import { ZUnknown } from '../_internals'
-import { generateBaseSpec } from '../test-utils'
+import { generateBaseSpec } from '../spec-utils'
 
 generateBaseSpec('ZUnknown', ZUnknown, {
   expectedTypeName: 'ZUnknown',

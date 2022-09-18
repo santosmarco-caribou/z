@@ -1,12 +1,22 @@
 import { ZLiteral } from '../_internals'
-import { generateBaseSpec } from '../test-utils'
+import { generateBaseSpec } from '../spec-utils'
 
 const shouldNotParseDefaultConfig = (value: string) => ({
   parse: false,
   expectedIssue: { code: 'any.only', message: `"value" must be [${value}]` },
   when: {
-    nullable: { expectedIssue: { code: 'any.only', message: `"value" must be one of [${value}, null]` } },
-    nullish: { expectedIssue: { code: 'any.only', message: `"value" must be one of [${value}, null]` } },
+    nullable: {
+      expectedIssue: {
+        code: 'any.only',
+        message: `"value" must be one of [${value}, null]`,
+      },
+    },
+    nullish: {
+      expectedIssue: {
+        code: 'any.only',
+        message: `"value" must be one of [${value}, null]`,
+      },
+    },
   },
 })
 
@@ -24,8 +34,14 @@ generateBaseSpec(
     should: {
       A: { parse: true },
       // NOT
-      undefined: { parse: false, expectedIssue: { code: 'any.required', message: '"value" is required' } },
-      null: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [A]' } },
+      undefined: {
+        parse: false,
+        expectedIssue: { code: 'any.required', message: '"value" is required' },
+      },
+      null: {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be [A]' },
+      },
       true: shouldNotParseDefaultConfig('A'),
       false: shouldNotParseDefaultConfig('A'),
       'BigInt(-100)': shouldNotParseDefaultConfig('A'),
@@ -65,8 +81,14 @@ generateBaseSpec(
     should: {
       true: { parse: true },
       // NOT
-      undefined: { parse: false, expectedIssue: { code: 'any.required', message: '"value" is required' } },
-      null: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [true]' } },
+      undefined: {
+        parse: false,
+        expectedIssue: { code: 'any.required', message: '"value" is required' },
+      },
+      null: {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be [true]' },
+      },
       false: shouldNotParseDefaultConfig('true'),
       'BigInt(-100)': shouldNotParseDefaultConfig('true'),
       'BigInt(0)': shouldNotParseDefaultConfig('true'),
@@ -106,8 +128,14 @@ generateBaseSpec(
     should: {
       '100': { parse: true },
       // NOT
-      undefined: { parse: false, expectedIssue: { code: 'any.required', message: '"value" is required' } },
-      null: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [100]' } },
+      undefined: {
+        parse: false,
+        expectedIssue: { code: 'any.required', message: '"value" is required' },
+      },
+      null: {
+        parse: false,
+        expectedIssue: { code: 'any.only', message: '"value" must be [100]' },
+      },
       true: shouldNotParseDefaultConfig('100'),
       false: shouldNotParseDefaultConfig('100'),
       'BigInt(-100)': shouldNotParseDefaultConfig('100'),
@@ -147,8 +175,17 @@ generateBaseSpec(
     should: {
       'BigInt(100)': { parse: true },
       // NOT
-      undefined: { parse: false, expectedIssue: { code: 'any.required', message: '"value" is required' } },
-      null: { parse: false, expectedIssue: { code: 'any.only', message: '"value" must be [BigInt(100)]' } },
+      undefined: {
+        parse: false,
+        expectedIssue: { code: 'any.required', message: '"value" is required' },
+      },
+      null: {
+        parse: false,
+        expectedIssue: {
+          code: 'any.only',
+          message: '"value" must be [BigInt(100)]',
+        },
+      },
       true: shouldNotParseDefaultConfig('BigInt(100)'),
       false: shouldNotParseDefaultConfig('BigInt(100)'),
       'BigInt(-100)': shouldNotParseDefaultConfig('BigInt(100)'),

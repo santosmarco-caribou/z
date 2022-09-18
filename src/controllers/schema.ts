@@ -1,14 +1,21 @@
 import Joi from 'joi'
 import { cloneDeep } from 'lodash'
 
-import { _ZOutput, ParseOptions, Z_ISSUE_MAP, ZDef, ZHooksController } from '../_internals'
+import {
+  _ZOutput,
+  ParseOptions,
+  Z_ISSUE_MAP,
+  ZDef,
+  ZHooksController,
+} from '../_internals'
 import { mergeSafe } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  ZSchemaController                                                 */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                              ZSchemaController                             */
+/* -------------------------------------------------------------------------- */
 
-export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions & Required<ParseOptions> = {
+export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions &
+  Required<ParseOptions> = {
   abortEarly: false,
   messages: Z_ISSUE_MAP,
 }
@@ -19,10 +26,15 @@ export interface ZSchemaController<Def extends ZDef> {
   updatePreferences(prefs: Joi.ValidationOptions): this
   createValidator(
     hooksController: ZHooksController<Def>
-  ): (input: unknown, options: ParseOptions | undefined) => Joi.ValidationResult<_ZOutput<Def>>
+  ): (
+    input: unknown,
+    options: ParseOptions | undefined
+  ) => Joi.ValidationResult<_ZOutput<Def>>
 }
 
-export const ZSchemaController = <Def extends ZDef>(schema: Def['Schema']): ZSchemaController<Def> => {
+export const ZSchemaController = <Def extends ZDef>(
+  schema: Def['Schema']
+): ZSchemaController<Def> => {
   let $_schema = schema
 
   return {
@@ -41,13 +53,19 @@ export const ZSchemaController = <Def extends ZDef>(schema: Def['Schema']): ZSch
     },
 
     createValidator(hooksController: ZHooksController<Def>) {
-      return (input: unknown, options: ParseOptions | undefined): Joi.ValidationResult<_ZOutput<Def>> => {
+      return (
+        input: unknown,
+        options: ParseOptions | undefined
+      ): Joi.ValidationResult<_ZOutput<Def>> => {
         const mergedOpts = mergeSafe(DEFAULT_VALIDATION_OPTIONS, options ?? {})
 
         const clonedInput = cloneDeep(input)
         const _input = hooksController.apply('beforeParse', clonedInput)
 
-        const result = $_schema.validate(_input, mergedOpts) as Joi.ValidationResult<_ZOutput<Def>>
+        const result = $_schema.validate(
+          _input,
+          mergedOpts
+        ) as Joi.ValidationResult<_ZOutput<Def>>
 
         if (result.value) {
           const clonedResult = cloneDeep(result.value)

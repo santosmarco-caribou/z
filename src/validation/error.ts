@@ -3,10 +3,17 @@ import { omit } from 'lodash'
 import type { Simplify } from 'type-fest'
 import util from 'util'
 
-import type { _ZOutput, Z, ZDef, ZIssueCode, ZManifestObject, ZType } from '../_internals'
+import type {
+  _ZOutput,
+  Z,
+  ZDef,
+  ZIssueCode,
+  ZManifestObject,
+  ZType,
+} from '../_internals'
 import type { OmitInternals } from '../utils'
 
-/* ----------------------------------------------------- ZIssue ----------------------------------------------------- */
+/* --------------------------------- ZIssue --------------------------------- */
 
 export type ZIssue<Def extends ZDef = ZDef> = {
   code: Simplify<ZIssueCode<Def['Schema']>>
@@ -15,9 +22,9 @@ export type ZIssue<Def extends ZDef = ZDef> = {
   received: any
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZError                                                       */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZError                                   */
+/* -------------------------------------------------------------------------- */
 
 export class ZError<Def extends ZDef = ZDef> extends Error {
   override readonly name: 'ZError'
@@ -51,7 +58,9 @@ export class ZError<Def extends ZDef = ZDef> extends Error {
     return this._original.annotate()
   }
 
-  toPlainObject(): OmitInternals<Omit<ZError<Def>, 'toPlainObject'> & { toString(): string }> {
+  toPlainObject(): OmitInternals<
+    Omit<ZError<Def>, 'toPlainObject'> & { toString(): string }
+  > {
     return {
       name: this.name,
       message: this.message,
@@ -68,9 +77,13 @@ export class ZError<Def extends ZDef = ZDef> extends Error {
     }
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
-  static create = <Def extends ZDef>(z: Z<Def>, original: Joi.ValidationError): ZError<Def> => new ZError(z, original)
+  static create = <Def extends ZDef>(
+    z: Z<Def>,
+    original: Joi.ValidationError
+  ): ZError<Def> => new ZError(z, original)
 
-  static isZError = (maybeZError: unknown): maybeZError is ZError => maybeZError instanceof ZError
+  static isZError = (maybeZError: unknown): maybeZError is ZError =>
+    maybeZError instanceof ZError
 }

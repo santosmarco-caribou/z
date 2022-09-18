@@ -1,6 +1,15 @@
-import { ZFalse, ZLiteral, ZNaN, ZNull, ZUndefined, ZUnion } from '../../_internals'
+import {
+  ZFalse,
+  ZLiteral,
+  ZNaN,
+  ZNull,
+  ZUndefined,
+  ZUnion,
+} from '../../_internals'
 
-export type ZFalsy = ZUnion<[ZFalse, ZLiteral<''>, ZLiteral<0>, ZNull, ZUndefined, ZNaN]>
+export type ZFalsy = ZUnion<
+  [ZFalse, ZLiteral<''>, ZLiteral<0>, ZNull, ZUndefined, ZNaN]
+>
 
 export const ZFalsy = {
   create: () =>

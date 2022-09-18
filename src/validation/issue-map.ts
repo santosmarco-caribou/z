@@ -2,9 +2,9 @@ import type Joi from 'joi'
 import type { S } from 'ts-toolbelt'
 import type { Replace } from 'type-fest'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZIssueMap                                                     */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZIssueMap                                 */
+/* -------------------------------------------------------------------------- */
 
 export const Z_ISSUE_MAP = {
   'alternatives.all': '{{#label}} does not match all of the required types',
@@ -13,31 +13,38 @@ export const Z_ISSUE_MAP = {
   'alternatives.one': '{{#label}} matches more than one allowed type',
   'alternatives.types': '{{#label}} must be one of {{#types}}',
 
-  'any.custom': '{{#label}} failed custom validation because {{#error.message}}',
+  'any.custom':
+    '{{#label}} failed custom validation because {{#error.message}}',
   'any.default': '{{#label}} threw an error when running default method',
   'any.failover': '{{#label}} threw an error when running failover method',
   'any.invalid': '{{#label}} contains an invalid value',
-  'any.only': '{{#label}} must be {if(#valids.length == 1, "", "one of ")}{{#valids}}',
+  'any.only':
+    '{{#label}} must be {if(#valids.length == 1, "", "one of ")}{{#valids}}',
   'any.ref': '{{#label}} {{#arg}} references {{:#ref}} which {{#reason}}',
   'any.required': '{{#label}} is required',
   'any.unknown': '{{#label}} is not allowed',
 
   'array.base': '{{#label}} must be an array',
   'array.excludes': '{{#label}} contains an excluded value',
-  'array.hasKnown': '{{#label}} does not contain at least one required match for type {:#patternLabel}',
+  'array.hasKnown':
+    '{{#label}} does not contain at least one required match for type {:#patternLabel}',
   'array.hasUnknown': '{{#label}} does not contain at least one required match',
   'array.includes': '{{#label}} does not match any of the allowed types',
   'array.includesRequiredBoth':
     '{{#label}} does not contain {{#knownMisses}} and {{#unknownMisses}} other required value(s)',
-  'array.includesRequiredKnowns': '{{#label}} does not contain {{#knownMisses}}',
-  'array.includesRequiredUnknowns': '{{#label}} does not contain {{#unknownMisses}} required value(s)',
+  'array.includesRequiredKnowns':
+    '{{#label}} does not contain {{#knownMisses}}',
+  'array.includesRequiredUnknowns':
+    '{{#label}} does not contain {{#unknownMisses}} required value(s)',
   'array.length': '{{#label}} must contain {{#limit}} items',
   'array.max': '{{#label}} must contain less than or equal to {{#limit}} items',
   'array.min': '{{#label}} must contain at least {{#limit}} items',
   'array.orderedLength': '{{#label}} must contain at most {{#limit}} items',
   'array.sort': '{{#label}} must be sorted in {#order} order by {{#by}}',
-  'array.sort.mismatching': '{{#label}} cannot be sorted due to mismatching types',
-  'array.sort.unsupported': '{{#label}} cannot be sorted due to unsupported type {#type}',
+  'array.sort.mismatching':
+    '{{#label}} cannot be sorted due to mismatching types',
+  'array.sort.unsupported':
+    '{{#label}} cannot be sorted due to unsupported type {#type}',
   'array.sparse': '{{#label}} must not be a sparse array item',
   'array.unique': '{{#label}} contains a duplicate value',
 
@@ -51,8 +58,10 @@ export const Z_ISSUE_MAP = {
   'boolean.base': '{{#label}} must be a boolean',
 
   'date.base': '{{#label}} must be a valid date',
-  'date.between': '{{#label}} must be a valid date between {{#minDate}} and {{#maxDate}}',
-  'date.format': '{{#label}} must be in {msg("date.format." + #format) || #format} format',
+  'date.between':
+    '{{#label}} must be a valid date between {{#minDate}} and {{#maxDate}}',
+  'date.format':
+    '{{#label}} must be in {msg("date.format." + #format) || #format} format',
   'date.greater': '{{#label}} must be greater than {{:#limit}}',
   'date.less': '{{#label}} must be less than {{:#limit}}',
   'date.max': '{{#label}} must be less than or equal to {{:#limit}}',
@@ -63,21 +72,31 @@ export const Z_ISSUE_MAP = {
 
   'function.arity': '{{#label}} must have an arity of {{#n}}',
   'function.class': '{{#label}} must be a class',
-  'function.maxArity': '{{#label}} must have an arity lesser or equal to {{#n}}',
-  'function.minArity': '{{#label}} must have an arity greater or equal to {{#n}}',
+  'function.maxArity':
+    '{{#label}} must have an arity lesser or equal to {{#n}}',
+  'function.minArity':
+    '{{#label}} must have an arity greater or equal to {{#n}}',
 
-  'object.and': '{{#label}} contains {{#presentWithLabels}} without its required peers {{#missingWithLabels}}',
+  'object.and':
+    '{{#label}} contains {{#presentWithLabels}} without its required peers {{#missingWithLabels}}',
   'object.assert':
     '{{#label}} is invalid because {if(#subject.key, `"` + #subject.key + `" failed to ` + (#message || "pass the assertion test"), #message || "the assertion failed")}',
   'object.base': '{{#label}} must be of type {{#type}}',
   'object.instance': '{{#label}} must be an instance of {{:#type}}',
-  'object.length': '{{#label}} must have {{#limit}} key{if(#limit == 1, "", "s")}',
-  'object.max': '{{#label}} must have less than or equal to {{#limit}} key{if(#limit == 1, "", "s")}',
-  'object.min': '{{#label}} must have at least {{#limit}} key{if(#limit == 1, "", "s")}',
-  'object.missing': '{{#label}} must contain at least one of {{#peersWithLabels}}',
-  'object.nand': '{{:#mainWithLabel}} must not exist simultaneously with {{#peersWithLabels}}',
-  'object.oxor': '{{#label}} contains a conflict between optional exclusive peers {{#peersWithLabels}}',
-  'object.pattern.match': '{{#label}} keys failed to match pattern requirements',
+  'object.length':
+    '{{#label}} must have {{#limit}} key{if(#limit == 1, "", "s")}',
+  'object.max':
+    '{{#label}} must have less than or equal to {{#limit}} key{if(#limit == 1, "", "s")}',
+  'object.min':
+    '{{#label}} must have at least {{#limit}} key{if(#limit == 1, "", "s")}',
+  'object.missing':
+    '{{#label}} must contain at least one of {{#peersWithLabels}}',
+  'object.nand':
+    '{{:#mainWithLabel}} must not exist simultaneously with {{#peersWithLabels}}',
+  'object.oxor':
+    '{{#label}} contains a conflict between optional exclusive peers {{#peersWithLabels}}',
+  'object.pattern.match':
+    '{{#label}} keys failed to match pattern requirements',
   'object.refType': '{{#label}} must be a Joi reference',
   'object.regex': '{{#label}} must be a RegExp object',
   'object.rename.multiple':
@@ -86,9 +105,12 @@ export const Z_ISSUE_MAP = {
     '{{#label}} cannot rename {{:#from}} because override is disabled and target {{:#to}} exists',
   'object.schema': '{{#label}} must be a Joi schema of {{#type}} type',
   'object.unknown': '{{#label}} is not allowed',
-  'object.with': '{{:#mainWithLabel}} missing required peer {{:#peerWithLabel}}',
-  'object.without': '{{:#mainWithLabel}} conflict with forbidden peer {{:#peerWithLabel}}',
-  'object.xor': '{{#label}} contains a conflict between exclusive peers {{#peersWithLabels}}',
+  'object.with':
+    '{{:#mainWithLabel}} missing required peer {{:#peerWithLabel}}',
+  'object.without':
+    '{{:#mainWithLabel}} conflict with forbidden peer {{:#peerWithLabel}}',
+  'object.xor':
+    '{{#label}} contains a conflict between exclusive peers {{#peersWithLabels}}',
 
   'instanceof.base': '{{#label}} must be an instance of {{#type}}',
 
@@ -109,7 +131,8 @@ export const Z_ISSUE_MAP = {
   'number.negative': '{{#label}} must be a negative number',
   'number.port': '{{#label}} must be a valid port',
   'number.positive': '{{#label}} must be a positive number',
-  'number.precision': '{{#label}} must have no more than {{#limit}} decimal place{if(#limit == 1, "", "s")}',
+  'number.precision':
+    '{{#label}} must have no more than {{#limit}} decimal place{if(#limit == 1, "", "s")}',
   'number.unsafe': '{{#label}} must be a safe number',
 
   'record.base': '{{#label}} must be of type record',
@@ -128,7 +151,8 @@ export const Z_ISSUE_MAP = {
   'string.empty': '{{#label}} is not allowed to be empty',
   'string.guid': '{{#label}} must be a valid GUID',
   'string.hex': '{{#label}} must only contain hexadecimal characters',
-  'string.hexAlign': '{{#label}} hex decoded representation must be byte aligned',
+  'string.hexAlign':
+    '{{#label}} hex decoded representation must be byte aligned',
   'string.hostname': '{{#label}} must be a valid hostname',
   'string.ip': '{{#label}} must be a valid ip address with a {{#cidr}} CIDR',
   'string.ipVersion':
@@ -137,17 +161,25 @@ export const Z_ISSUE_MAP = {
   'string.isoDuration': '{{#label}} must be a valid ISO 8601 duration',
   'string.length': '{{#label}} length must be {{#limit}} characters long',
   'string.lowercase': '{{#label}} must only contain lowercase characters',
-  'string.max': '{{#label}} length must be less than or equal to {{#limit}} characters long',
+  'string.max':
+    '{{#label}} length must be less than or equal to {{#limit}} characters long',
   'string.min': '{{#label}} length must be at least {{#limit}} characters long',
-  'string.normalize': '{{#label}} must be unicode normalized in the {{#form}} form',
-  'string.token': '{{#label}} must only contain alpha-numeric and underscore characters',
-  'string.pattern.base': '{{#label}} with value {:[.]} fails to match the required pattern: {{#regex}}',
-  'string.pattern.name': '{{#label}} with value {:[.]} fails to match the {{#name}} pattern',
-  'string.pattern.invert.base': '{{#label}} with value {:[.]} matches the inverted pattern: {{#regex}}',
-  'string.pattern.invert.name': '{{#label}} with value {:[.]} matches the inverted {{#name}} pattern',
+  'string.normalize':
+    '{{#label}} must be unicode normalized in the {{#form}} form',
+  'string.token':
+    '{{#label}} must only contain alpha-numeric and underscore characters',
+  'string.pattern.base':
+    '{{#label}} with value {:[.]} fails to match the required pattern: {{#regex}}',
+  'string.pattern.name':
+    '{{#label}} with value {:[.]} fails to match the {{#name}} pattern',
+  'string.pattern.invert.base':
+    '{{#label}} with value {:[.]} matches the inverted pattern: {{#regex}}',
+  'string.pattern.invert.name':
+    '{{#label}} with value {:[.]} matches the inverted {{#name}} pattern',
   'string.trim': '{{#label}} must not have leading or trailing whitespace',
   'string.uri': '{{#label}} must be a valid uri',
-  'string.uriCustomScheme': '{{#label}} must be a valid uri with a scheme matching the {{#scheme}} pattern',
+  'string.uriCustomScheme':
+    '{{#label}} must be a valid uri with a scheme matching the {{#scheme}} pattern',
   'string.uriRelativeOnly': '{{#label}} must be a valid relative uri',
   'string.uppercase': '{{#label}} must only contain uppercase characters',
   'string.capitalize': '{{#label}} must be capitalized',
@@ -162,7 +194,7 @@ export const Z_ISSUE_MAP = {
 
 export type ZIssueMap = typeof Z_ISSUE_MAP
 
-/* --------------------------------------------------- ZIssueCode --------------------------------------------------- */
+/* ------------------------------- ZIssueCode ------------------------------- */
 
 export type ZIssueCode<S extends Joi.Schema> = Extract<
   keyof ZIssueMap,
@@ -191,7 +223,7 @@ export type ZIssueCode<S extends Joi.Schema> = Extract<
 
 export type AnyZIssueCode = keyof ZIssueMap
 
-/* -------------------------------------------------- ZIssueContext ------------------------------------------------- */
+/* ------------------------------ ZIssueContext ----------------------------- */
 
 export type ZIssueLocalCtxTagTypeMap = {
   'error.message': any
@@ -232,11 +264,19 @@ export type GetLocalCtxTag<
 > =
   | (IssueCode extends 'any.only'
       ? '{{#label}}' | '{{#valids}}'
-      : Extract<S.Split<ZIssueMap[IssueCode], ' '>[number], `${'{' | ''}{${':' | ''}#${string}}${'}' | ''}`>)
+      : Extract<
+          S.Split<ZIssueMap[IssueCode], ' '>[number],
+          `${'{' | ''}{${':' | ''}#${string}}${'}' | ''}`
+        >)
   | (Opts['Extras'] extends true ? 'key' | 'value' : never)
 
 export type RemoveLocalCtxTagBraces<Tag extends string> = Replace<
-  Replace<Replace<Replace<Tag, '{', '', { all: true }>, '}', '', { all: true }>, ':', '', { all: true }>,
+  Replace<
+    Replace<Replace<Tag, '{', '', { all: true }>, '}', '', { all: true }>,
+    ':',
+    '',
+    { all: true }
+  >,
   '#',
   '',
   { all: true }

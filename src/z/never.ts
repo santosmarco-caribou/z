@@ -2,9 +2,9 @@ import type Joi from 'joi'
 
 import { Z, ZJoi, ZType, ZValidator } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZNever                                                       */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZNever                                   */
+/* -------------------------------------------------------------------------- */
 
 export class ZNever extends Z<{
   Output: never
@@ -14,12 +14,14 @@ export class ZNever extends Z<{
   readonly name = ZType.Never
   protected readonly _hint = 'never'
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = (): ZNever =>
     new ZNever(
       {
-        schema: ZValidator.custom(ZJoi.any(), (_, { FAIL }) => FAIL('any.unknown')),
+        schema: ZValidator.custom(ZJoi.any(), (_, { FAIL }) =>
+          FAIL('any.unknown')
+        ),
         manifest: {},
         hooks: {},
       },

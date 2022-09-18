@@ -5,9 +5,9 @@ import { ReadonlyDeep } from 'type-fest'
 import { _ZInput, _ZOutput, AnyZ, Z, ZType } from '../_internals'
 import { freezeDeep } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZReadonly                                                     */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZReadonly                                 */
+/* -------------------------------------------------------------------------- */
 
 export class ZReadonly<T extends AnyZ> extends Z<{
   Output: Readonly<_ZOutput<T>>
@@ -24,7 +24,7 @@ export class ZReadonly<T extends AnyZ> extends Z<{
     return this._props.getOne('innerType')
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = <T extends AnyZ>(innerType: T): ZReadonly<T> => {
     const hookName = `readonly-${nanoid()}`
@@ -48,7 +48,7 @@ export class ZReadonly<T extends AnyZ> extends Z<{
   }
 }
 
-/* -------------------------------------------------- ZReadonlyDeep ------------------------------------------------- */
+/* ------------------------------ ZReadonlyDeep ----------------------------- */
 
 export class ZReadonlyDeep<T extends AnyZ> extends Z<{
   Output: ReadonlyDeep<_ZOutput<T>>
@@ -58,14 +58,16 @@ export class ZReadonlyDeep<T extends AnyZ> extends Z<{
   HookName: string
 }> {
   readonly name = ZType.ReadonlyDeep
-  protected readonly _hint = `ReadonlyDeep<${this._props.getOne('innerType').hint}>`
+  protected readonly _hint = `ReadonlyDeep<${
+    this._props.getOne('innerType').hint
+  }>`
 
   writableDeep(): T {
     this._hooks.remove('afterParse', this._props.getOne('hookName'))
     return this._props.getOne('innerType')
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = <T extends AnyZ>(innerType: T): ZReadonlyDeep<T> => {
     const hookName = `readonly-deep-${nanoid()}`

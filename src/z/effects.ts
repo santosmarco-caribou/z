@@ -1,13 +1,13 @@
 import Joi from 'joi'
 import { nanoid } from 'nanoid'
 
-import { _ZInput, _ZOutput, AnyZ, Z, ZType } from '../_internals'
+import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZEffects                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZEffects                                  */
+/* -------------------------------------------------------------------------- */
 
-/* --------------------------------------------------- Preprocess --------------------------------------------------- */
+/* ------------------------------- Preprocess ------------------------------- */
 
 export class ZPreprocess<T extends AnyZ> extends Z<{
   Output: _ZOutput<T>
@@ -19,7 +19,12 @@ export class ZPreprocess<T extends AnyZ> extends Z<{
   readonly name = ZType.Preprocess
   protected readonly _hint = this._props.getOne('targetType').hint
 
-  static create = <T extends AnyZ>(preprocess: (arg: unknown) => _ZInput<T>, type: T): ZPreprocess<T> => {
+  /* ------------------------------------------------------------------------ */
+
+  static create = <T extends AnyZ>(
+    preprocess: (arg: unknown) => _ZInput<T>,
+    type: T
+  ): ZPreprocess<T> => {
     const hookName = `preprocess-${nanoid()}`
     return new ZPreprocess(
       {
@@ -42,7 +47,7 @@ export class ZPreprocess<T extends AnyZ> extends Z<{
   }
 }
 
-/* --------------------------------------------------- ZTransform --------------------------------------------------- */
+/* ------------------------------- ZTransform ------------------------------- */
 
 export class ZTransform<T extends AnyZ, NewOutput = _ZOutput<T>> extends Z<{
   Output: NewOutput
@@ -52,12 +57,16 @@ export class ZTransform<T extends AnyZ, NewOutput = _ZOutput<T>> extends Z<{
   HookName: string
 }> {
   readonly name = ZType.Transform
-  protected readonly _hint = `Transformed<${this._props.getOne('innerType').hint}>`
+  protected readonly _hint = `Transformed<${
+    this._props.getOne('innerType').hint
+  }>`
 
   revert(): T {
     this._hooks.remove('afterParse', this._props.getOne('hookName'))
     return this._props.getOne('innerType')
   }
+
+  /* ------------------------------------------------------------------------ */
 
   static create = <T extends AnyZ, NewOutput>(
     innerType: T,

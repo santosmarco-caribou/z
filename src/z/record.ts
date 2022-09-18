@@ -1,10 +1,19 @@
 import Joi from 'joi'
 
-import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZPropertyKey, ZTuple, ZType } from '../_internals'
+import {
+  type _ZInput,
+  type _ZOutput,
+  type AnyZ,
+  Z,
+  ZJoi,
+  ZPropertyKey,
+  ZTuple,
+  ZType,
+} from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZRecord                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZRecord                                  */
+/* -------------------------------------------------------------------------- */
 
 export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
   Output: Record<_ZOutput<K>, _ZOutput<V>>
@@ -14,7 +23,9 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
   ValueType: V
 }> {
   readonly name = ZType.Record
-  protected readonly _hint = `Record<${this._props.getOne('keyType').hint}, ${this._props.getOne('valueType').hint}>`
+  protected readonly _hint = `Record<${this._props.getOne('keyType').hint}, ${
+    this._props.getOne('valueType').hint
+  }>`
 
   get keyType(): K {
     return this._props.getOne('keyType')
@@ -24,14 +35,20 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
   }
 
   entries(): ZTuple<[K, V]> {
-    return ZTuple.create([this._props.getOne('keyType'), this._props.getOne('valueType')])
+    return ZTuple.create([
+      this._props.getOne('keyType'),
+      this._props.getOne('valueType'),
+    ])
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create: {
     <V extends AnyZ>(valueType: V): ZRecord<ZPropertyKey, V>
-    <K extends AnyZ<PropertyKey>, V extends AnyZ>(keyType: K, valueType: V): ZRecord<K, V>
+    <K extends AnyZ<PropertyKey>, V extends AnyZ>(
+      keyType: K,
+      valueType: V
+    ): ZRecord<K, V>
   } = <T extends AnyZ<PropertyKey> | AnyZ, U extends AnyZ = never>(
     keyOrValueType: T,
     valueType?: U
@@ -39,7 +56,10 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
     if (valueType) {
       return new ZRecord(
         {
-          schema: ZJoi.object().pattern(keyOrValueType._schema.get(), valueType._schema.get()),
+          schema: ZJoi.object().pattern(
+            keyOrValueType._schema.get(),
+            valueType._schema.get()
+          ),
           manifest: {
             keys: keyOrValueType._manifest.get(),
             values: valueType._manifest.get(),
@@ -64,6 +84,6 @@ export class ZRecord<K extends AnyZ<PropertyKey>, V extends AnyZ> extends Z<{
   }
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export type AnyZRecord = ZRecord<AnyZ<PropertyKey>, AnyZ>

@@ -3,9 +3,9 @@ import Joi from 'joi'
 import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
 import { unionizeHints } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZNullable                                                     */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZNullable                                 */
+/* -------------------------------------------------------------------------- */
 
 export class ZNullable<T extends AnyZ> extends Z<{
   Output: _ZOutput<T> | null
@@ -14,13 +14,16 @@ export class ZNullable<T extends AnyZ> extends Z<{
   InnerType: T
 }> {
   readonly name = ZType.Nullable
-  protected readonly _hint = unionizeHints(this._props.getOne('innerType').hint, 'null')
+  protected readonly _hint = unionizeHints(
+    this._props.getOne('innerType').hint,
+    'null'
+  )
 
   unwrap(): T {
     return this._props.getOne('innerType')
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = <T extends AnyZ>(innerType: T): ZNullable<T> =>
     new ZNullable(
@@ -33,6 +36,6 @@ export class ZNullable<T extends AnyZ> extends Z<{
     )
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export type AnyZNullable = ZNullable<AnyZ>

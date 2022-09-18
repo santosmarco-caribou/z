@@ -1,65 +1,63 @@
 import Joi from 'joi'
 import type { O } from 'ts-toolbelt'
-import type { PartialDeep, SetReturnType, Simplify } from 'type-fest'
+import type { Simplify } from 'type-fest'
 
-import { AnyZIssueCode, BaseZ, Z_ISSUE_MAP, ZDef, ZIssueLocalContext, ZManifestObject, ZProps } from '../_internals'
+import {
+  AnyZIssueCode,
+  BaseZ,
+  Z_ISSUE_MAP,
+  ZDef,
+  ZIssueLocalContext,
+} from '../_internals'
 import { EmptyObject, IsEmptyObject } from '../utils'
 
-/* ------------------------------------------------------ ZMeta ----------------------------------------------------- */
+/* ---------------------------------- ZJoi ---------------------------------- */
 
-export interface ZMetaObject<Def extends ZDef> {
-  _manifest: ZManifestObject<Def>
-  _props: ZProps<Def>
-  update(meta: PartialDeep<ZMetaObject<Def>>): this
-}
+export const ZJoi = Joi.defaults(schema => schema.required())
 
-export type AnyZMetaObject = ZMetaObject<ZDef>
-
-/* ------------------------------------------------------ ZJoi ------------------------------------------------------ */
-
-export type ZJoiSchema<Original extends Joi.Schema> = Original & {
-  $_terms: { metas: [AnyZMetaObject] }
-  _valids?: { _values?: Set<any> }
-}
-
-export type AnyZJoiSchema = ZJoiSchema<Joi.Schema>
-
-export type ZJoi = Omit<Joi.Root, Joi.Types> & {
-  [T in Joi.Types]: SetReturnType<Joi.Root[T], ZJoiSchema<ReturnType<Joi.Root[T]>>>
-}
-
-export const ZJoi = Joi.defaults(schema => schema.required()) as ZJoi
-
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 const VALIDATION_OK = Symbol('VALIDATION_OK')
 const VALIDATION_FAIL = Symbol('VALIDATION_FAIL')
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                     ZValidator                                                     */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                 ZValidator                                 */
+/* -------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------- Checks ----------------------------------------------------- */
+/* --------------------------------- Checks --------------------------------- */
 
-export type ZCheckOptions<IssueCode extends AnyZIssueCode, Extras extends O.Object = EmptyObject> = Simplify<
-  { message?: string | ((context: ZIssueLocalContext<IssueCode>) => string) } & Extras,
+export type ZCheckOptions<
+  IssueCode extends AnyZIssueCode,
+  Extras extends O.Object = EmptyObject
+> = Simplify<
+  {
+    message?: string | ((context: ZIssueLocalContext<IssueCode>) => string)
+  } & Extras,
   { deep: true }
 >
 
-/* ------------------------------------------------ Custom validation ----------------------------------------------- */
+/* ---------------------------- Custom validation --------------------------- */
 
-type CustomValidationHelpers<Output, Schema extends AnyZJoiSchema> = {
+type CustomValidationHelpers<Output, Schema extends Joi.Schema> = {
   schema: Schema
   OK<V extends Output = Output>(value: V): [typeof VALIDATION_OK, V]
   FAIL<IssueCode extends AnyZIssueCode>(
     issue: IssueCode,
-    ...args: IsEmptyObject<Omit<ZIssueLocalContext<IssueCode>, 'label'>> extends true
+    ...args: IsEmptyObject<
+      Omit<ZIssueLocalContext<IssueCode>, 'label'>
+    > extends true
       ? never[]
       : [Omit<ZIssueLocalContext<IssueCode>, 'label'>]
-  ): [typeof VALIDATION_FAIL, IssueCode, Omit<ZIssueLocalContext<IssueCode>, 'label'>]
+  ): [
+    typeof VALIDATION_FAIL,
+    IssueCode,
+    Omit<ZIssueLocalContext<IssueCode>, 'label'>
+  ]
 }
 
-type CustomValidationResult = [typeof VALIDATION_OK, any] | [typeof VALIDATION_FAIL, AnyZIssueCode, Record<string, any>]
+type CustomValidationResult =
+  | [typeof VALIDATION_OK, any]
+  | [typeof VALIDATION_FAIL, AnyZIssueCode, Record<string, any>]
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -86,19 +84,23 @@ export class ZValidator<Def extends ZDef> {
 
     if (options?.message) {
       const ctxTags = [
-        ...[...Z_ISSUE_MAP[fnOrIssue].matchAll(/{{#[^}]*}}/g)].map(m => m[0]?.slice(3, -2)),
+        ...[...Z_ISSUE_MAP[fnOrIssue].matchAll(/{{#[^}]*}}/g)].map(m =>
+          m[0]?.slice(3, -2)
+        ),
         'key',
         'value',
-      ] as ZIssueLocalContext<IssueCode, { Extras: true }>[keyof ZIssueLocalContext<IssueCode, { Extras: true }>][]
+      ] as ZIssueLocalContext<
+        IssueCode,
+        { Extras: true }
+      >[keyof ZIssueLocalContext<IssueCode, { Extras: true }>][]
 
       const msgStr =
         typeof options.message === 'string'
           ? options.message
           : options.message(
-              Object.fromEntries(ctxTags.map(tag => [tag, `{{#${tag as string}}}`])) as ZIssueLocalContext<
-                IssueCode,
-                { Extras: true }
-              >
+              Object.fromEntries(
+                ctxTags.map(tag => [tag, `{{#${tag as string}}}`])
+              ) as ZIssueLocalContext<IssueCode, { Extras: true }>
             )
 
       this._schema.update(v => v.message(msgStr))
@@ -110,11 +112,14 @@ export class ZValidator<Def extends ZDef> {
 
   static custom = <Output, BaseSchema extends Joi.Schema<Output>>(
     baseSchema: BaseSchema,
-    fn: (value: unknown, helpers: CustomValidationHelpers<Output, ZJoiSchema<BaseSchema>>) => CustomValidationResult
+    fn: (
+      value: unknown,
+      helpers: CustomValidationHelpers<Output, BaseSchema>
+    ) => CustomValidationResult
   ): BaseSchema => {
     const validator: Joi.CustomValidator<Output> = (_value, _helpers) => {
-      const helpers: CustomValidationHelpers<Output, ZJoiSchema<BaseSchema>> = {
-        schema: _helpers.schema as ZJoiSchema<BaseSchema>,
+      const helpers: CustomValidationHelpers<Output, BaseSchema> = {
+        schema: _helpers.schema as BaseSchema,
         OK: <V extends Output = Output>(value: V) => [VALIDATION_OK, value],
         FAIL: (issue, ...args) => [VALIDATION_FAIL, issue, args[0]],
       }

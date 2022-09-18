@@ -3,16 +3,23 @@ import type { F } from 'ts-toolbelt'
 
 import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZDefault                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZDefault                                  */
+/* -------------------------------------------------------------------------- */
 
-export class ZDefault<T extends AnyZ, D extends _ZOutput<T> | (() => _ZOutput<T>)> extends Z<{
+export class ZDefault<
+  T extends AnyZ,
+  D extends _ZOutput<T> | (() => _ZOutput<T>)
+> extends Z<{
   Output: undefined extends _ZOutput<T>
-    ? Exclude<_ZOutput<T>, undefined> | (D extends F.Function ? ReturnType<D> : D)
+    ?
+        | Exclude<_ZOutput<T>, undefined>
+        | (D extends F.Function ? ReturnType<D> : D)
     : _ZOutput<T>
   Input: undefined extends _ZInput<T>
-    ? Exclude<_ZInput<T>, undefined> | (D extends F.Function ? ReturnType<D> : D)
+    ?
+        | Exclude<_ZInput<T>, undefined>
+        | (D extends F.Function ? ReturnType<D> : D)
     : _ZInput<T>
   Schema: Joi.AnySchema
   WithDefault: T
@@ -27,7 +34,12 @@ export class ZDefault<T extends AnyZ, D extends _ZOutput<T> | (() => _ZOutput<T>
       : this._props.getOne('defaultValue')
   }
 
-  static create = <T extends AnyZ, D extends _ZOutput<T>>(withDefault: T, defaultValue: F.Narrow<D>): ZDefault<T, D> =>
+  /* ------------------------------------------------------------------------ */
+
+  static create = <T extends AnyZ, D extends _ZOutput<T>>(
+    withDefault: T,
+    defaultValue: F.Narrow<D>
+  ): ZDefault<T, D> =>
     new ZDefault(
       {
         schema: withDefault._schema.get().default(defaultValue),

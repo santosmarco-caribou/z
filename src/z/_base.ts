@@ -5,10 +5,10 @@ import type { A, F } from 'ts-toolbelt'
 import type { CamelCasedProperties } from 'type-fest'
 
 import {
-  colorizeZHint,
   ZArray,
   ZBrand,
   ZBrandTag,
+  ZGlobals,
   ZHooksController,
   ZHooksObject,
   ZIntersection,
@@ -31,7 +31,7 @@ import {
   ZUnion,
   ZValidator,
 } from '../_internals'
-import { formatHint } from '../utils'
+import { colorizeZHint } from '../utils'
 
 settings.initFunction = '_init'
 
@@ -57,7 +57,9 @@ export type AnyZDependencies = ZDependencies<ZDef>
 
 /* ----------------------------------------------------- ZProps ----------------------------------------------------- */
 
-export type ZProps<Def extends ZDef> = CamelCasedProperties<Omit<Def, keyof ZDef>>
+export type ZProps<Def extends ZDef> = CamelCasedProperties<
+  Omit<Def, keyof ZDef>
+>
 
 export type AnyZProps = ZProps<ZDef>
 
@@ -80,7 +82,12 @@ export type AnyBaseZ = BaseZ<ZDef>
 /*                                                          Z                                                         */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export interface Z<Def extends ZDef> extends BaseZ<Def>, ZValidator<Def>, ZParser<Def>, ZManifest<Def>, ZOpenApi<Def> {}
+export interface Z<Def extends ZDef>
+  extends BaseZ<Def>,
+    ZValidator<Def>,
+    ZParser<Def>,
+    ZManifest<Def>,
+    ZOpenApi<Def> {}
 
 @mix(ZValidator, ZParser, ZManifest, ZOpenApi)
 export abstract class Z<Def extends ZDef> {
@@ -114,12 +121,21 @@ export abstract class Z<Def extends ZDef> {
 
     this._schema = ZSchemaController(schema)
     this._manifest = ZManifestController(manifest)
-    this._hooks = ZHooksController({ beforeParse: hooks.beforeParse ?? [], afterParse: hooks.afterParse ?? [] })
+    this._hooks = ZHooksController({
+      beforeParse: hooks.beforeParse ?? [],
+      afterParse: hooks.afterParse ?? [],
+    })
     this._props = ZPropsController(props)
   }
 
   get hint(): string {
-    return colorizeZHint(this._hint)
+    let _hint = this._hint
+
+    if (!ZGlobals.get().options.stripColorsOnHints) {
+      _hint = colorizeZHint(_hint)
+    }
+
+    return _hint
   }
 
   protected _setHint(hint: string): this {
@@ -199,7 +215,9 @@ export abstract class Z<Def extends ZDef> {
     return ZPromise.create(this)
   }
 
-  brand<B extends string | number | symbol>(brand: F.Narrow<B>): ZBrand<this, B> {
+  brand<B extends string | number | symbol>(
+    brand: F.Narrow<B>
+  ): ZBrand<this, B> {
     return ZBrand.create(this, brand as B)
   }
 
@@ -223,12 +241,18 @@ export abstract class Z<Def extends ZDef> {
 
   /* ---------------------------------------------------------------------------------------------------------------- */
 
-  transform<NewOut>(transform: (arg: Def['Output']) => NewOut): ZTransform<this, NewOut> {
+  transform<NewOut>(
+    transform: (arg: Def['Output']) => NewOut
+  ): ZTransform<this, NewOut> {
     return ZTransform.create(this, transform)
   }
 }
 
-export type AnyZ<Output = any> = Z<{ Output: Output; Input: any; Schema: Joi.Schema }>
+export type AnyZ<Output = any> = Z<{
+  Output: Output
+  Input: any
+  Schema: Joi.Schema
+}>
 
 /* ------------------------------------------------- Type inference ------------------------------------------------- */
 
@@ -238,7 +262,11 @@ export type _ZOutput<T extends ZDef | AnyBaseZ> = T extends ZDef
   ? T['$_output']
   : never
 
-export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef ? T['Input'] : T extends AnyBaseZ ? T['$_input'] : never
+export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef
+  ? T['Input']
+  : T extends AnyBaseZ
+  ? T['$_input']
+  : never
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

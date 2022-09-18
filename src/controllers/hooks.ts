@@ -1,8 +1,8 @@
 import type { _ZOutput, ZDef } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  ZHooksController                                                  */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                              ZHooksController                              */
+/* -------------------------------------------------------------------------- */
 
 export type ZHook<I = any, O = any> = {
   readonly name: string
@@ -16,12 +16,17 @@ export type ZHooksObject<Def extends ZDef> = {
 
 export type AnyZHooksObject = ZHooksObject<ZDef>
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export interface ZHooksController<Def extends ZDef> {
   get(): ZHooksObject<Def>
-  getByTrigger<T extends keyof ZHooksObject<Def>>(trigger: T): ZHooksObject<Def>[T]
-  add<T extends keyof ZHooksObject<Def>>(trigger: T, hook: ZHooksObject<Def>[T][number]): this
+  getByTrigger<T extends keyof ZHooksObject<Def>>(
+    trigger: T
+  ): ZHooksObject<Def>[T]
+  add<T extends keyof ZHooksObject<Def>>(
+    trigger: T,
+    hook: ZHooksObject<Def>[T][number]
+  ): this
   remove<T extends keyof ZHooksObject<Def>>(trigger: T, hookName: string): this
   apply<T extends keyof ZHooksObject<Def>>(
     trigger: T,
@@ -29,17 +34,24 @@ export interface ZHooksController<Def extends ZDef> {
   ): Parameters<ZHooksObject<Def>[T][number]['handler']>[0]
 }
 
-export const ZHooksController = <Def extends ZDef>(hooks: ZHooksObject<Def>): ZHooksController<Def> => {
+export const ZHooksController = <Def extends ZDef>(
+  hooks: ZHooksObject<Def>
+): ZHooksController<Def> => {
   const $_hooks = hooks
 
   return {
     get(): ZHooksObject<Def> {
       return $_hooks
     },
-    getByTrigger<T extends keyof ZHooksObject<Def>>(trigger: T): ZHooksObject<Def>[T] {
+    getByTrigger<T extends keyof ZHooksObject<Def>>(
+      trigger: T
+    ): ZHooksObject<Def>[T] {
       return $_hooks[trigger]
     },
-    add<T extends keyof ZHooksObject<Def>>(trigger: T, hook: ZHooksObject<Def>[T][number]) {
+    add<T extends keyof ZHooksObject<Def>>(
+      trigger: T,
+      hook: ZHooksObject<Def>[T][number]
+    ) {
       const triggerHooks = this.getByTrigger(trigger)
       if (triggerHooks.some(t => t.name === hook.name)) return this
       $_hooks[trigger] = [...triggerHooks, hook]

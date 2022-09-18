@@ -1,11 +1,25 @@
 import Joi from 'joi'
 import type { S } from 'ts-toolbelt'
 
-import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZTuple, ZType } from '../_internals'
+import {
+  type _ZInput,
+  type _ZOutput,
+  type AnyZ,
+  Z,
+  ZJoi,
+  ZTuple,
+  ZType,
+} from '../_internals'
+
+/* -------------------------------------------------------------------------- */
+/*                                  ZTemplate                                 */
+/* -------------------------------------------------------------------------- */
 
 type Literal = string | number | bigint | boolean
 
-export class ZTemplate<T extends readonly [AnyZ<Literal>, ...AnyZ<Literal>[]]> extends Z<{
+export class ZTemplate<
+  T extends readonly [AnyZ<Literal>, ...AnyZ<Literal>[]]
+> extends Z<{
   Output: S.Join<_ZOutput<ZTuple<T>>>
   Input: S.Join<_ZInput<ZTuple<T>>>
   Schema: Joi.StringSchema
@@ -30,9 +44,11 @@ export class ZTemplate<T extends readonly [AnyZ<Literal>, ...AnyZ<Literal>[]]> e
     })
     .join('')}\``
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
-  static create = <T extends readonly [AnyZ<Literal>, ...AnyZ<Literal>[]]>(elements: T): ZTemplate<T> =>
+  static create = <T extends readonly [AnyZ<Literal>, ...AnyZ<Literal>[]]>(
+    elements: T
+  ): ZTemplate<T> =>
     new ZTemplate<T>(
       {
         schema: ZJoi.string(),

@@ -1,6 +1,18 @@
 import Joi from 'joi'
 
-import { type _ZInput, type _ZOutput, type AnyZ, Z, ZJoi, ZType, ZValidator } from '../_internals'
+import {
+  type _ZInput,
+  type _ZOutput,
+  type AnyZ,
+  Z,
+  ZJoi,
+  ZType,
+  ZValidator,
+} from '../_internals'
+
+/* -------------------------------------------------------------------------- */
+/*                                  ZPromise                                  */
+/* -------------------------------------------------------------------------- */
 
 export class ZPromise<T extends AnyZ> extends Z<{
   Output: Promise<_ZOutput<T>>
@@ -11,7 +23,11 @@ export class ZPromise<T extends AnyZ> extends Z<{
   readonly name = ZType.Promise
   protected readonly _hint = `Promise<${this._props.getOne('awaited').hint}>`
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  unwrap(): T {
+    return this._props.getOne('awaited')
+  }
+
+  /* ------------------------------------------------------------------------ */
 
   static create = <T extends AnyZ>(awaited: T): ZPromise<T> =>
     new ZPromise(

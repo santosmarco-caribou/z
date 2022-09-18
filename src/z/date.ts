@@ -2,15 +2,17 @@ import type Joi from 'joi'
 
 import { Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                        ZDate                                                       */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                    ZDate                                   */
+/* -------------------------------------------------------------------------- */
 
 const __NOW__ = Symbol('__NOW__')
 
 type ZDateCheckInput = Date | typeof __NOW__
 
-export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends Z<{
+export class ZDate<
+  Opts extends { strict: boolean } = { strict: false }
+> extends Z<{
   Output: Date
   Input: Opts['strict'] extends true ? Date : Date | number | string
   Schema: Joi.DateSchema
@@ -25,7 +27,11 @@ export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends
    * @param date - The date to compare to.
    */
   before(date: ZDateCheckInput, options?: ZCheckOptions<'date.less'>): this {
-    this._addCheck('date.less', v => v.less(this._parseCheckInput(date)), options)
+    this._addCheck(
+      'date.less',
+      v => v.less(this._parseCheckInput(date)),
+      options
+    )
     return this
   }
   /**
@@ -34,7 +40,11 @@ export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends
    * @param date - The date to compare to.
    */
   after(date: ZDateCheckInput, options?: ZCheckOptions<'date.greater'>): this {
-    this._addCheck('date.greater', v => v.greater(this._parseCheckInput(date)), options)
+    this._addCheck(
+      'date.greater',
+      v => v.greater(this._parseCheckInput(date)),
+      options
+    )
     return this
   }
   /**
@@ -62,14 +72,14 @@ export class ZDate<Opts extends { strict: boolean } = { strict: false }> extends
     )
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   private _parseCheckInput(input: ZDateCheckInput): Date {
     if (input === __NOW__) return new Date()
     else return input
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = Object.assign(
     (): ZDate =>

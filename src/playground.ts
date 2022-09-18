@@ -5,7 +5,10 @@ const PersonSchema = z.object({
   firstName: z.string().trim().description("The person's first name"),
   middleName: z.string().trim().optional().summary('Optional'),
   lastName: z.string().trim().lowercase(),
-  nameSuffix: z.enum(['Jr', 'III', 'II', 'I']).optional().notes('To be improved in the future'),
+  nameSuffix: z
+    .enum(['Jr', 'III', 'II', 'I'])
+    .optional()
+    .notes('To be improved in the future'),
   age: z.number().integer().min(18).max(120),
   dateOfBirth: z.date().after(new Date('January 01, 1900 00:00:00')),
   email: z.string().email(),
@@ -26,9 +29,16 @@ const PersonSchema = z.object({
   childrenNames: z.array(z.string().trim()).length(3).optional(),
   favoriteColorsRgb: z.record(
     z.string().trim(),
-    z.tuple([z.number().between(0, 255), z.number().between(0, 255), z.number().between(0, 255)])
+    z.tuple([
+      z.number().between(0, 255),
+      z.number().between(0, 255),
+      z.number().between(0, 255),
+    ])
   ),
-  favoriteColorsHex: z.record(z.propertykey(), z.string().regex(/^#[0-9a-f]{6}$/i)),
+  favoriteColorsHex: z.record(
+    z.propertykey(),
+    z.string().regex(/^#[0-9a-f]{6}$/i)
+  ),
   vehicle: z.union([
     z.object({
       type: z.literal('car'),

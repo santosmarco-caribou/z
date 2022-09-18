@@ -2,9 +2,9 @@ import { mergeWith } from 'lodash'
 
 import type { ZDef, ZProps } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  ZPropsController                                                  */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                              ZPropsController                              */
+/* -------------------------------------------------------------------------- */
 
 export interface ZPropsController<Def extends ZDef> {
   getAll(): ZProps<Def>
@@ -12,7 +12,9 @@ export interface ZPropsController<Def extends ZDef> {
   update(fn: (curr: ZProps<Def>) => ZProps<Def>): this
 }
 
-export const ZPropsController = <Def extends ZDef>(props: ZProps<Def>): ZPropsController<Def> => {
+export const ZPropsController = <Def extends ZDef>(
+  props: ZProps<Def>
+): ZPropsController<Def> => {
   const $_props = props
 
   return {

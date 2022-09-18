@@ -1,9 +1,9 @@
 import type { _ZOutput, BaseZ, ZDef, ZValidator } from '../_internals'
 import { hasProp } from '../utils'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                      ZManifest                                                     */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                  ZManifest                                 */
+/* -------------------------------------------------------------------------- */
 
 export type ManifestBasicInfo = {
   title?: string
@@ -31,7 +31,7 @@ export type ManifestFormat =
   | 'uri'
   | 'uuid'
 
-/* ------------------------------------------------- ZManifestObject ------------------------------------------------ */
+/* ----------------------------- ZManifestObject ---------------------------- */
 
 export type ZManifestObject<T> = ManifestBasicInfo & {
   type?: ManifestType
@@ -43,7 +43,7 @@ export type ZManifestObject<T> = ManifestBasicInfo & {
   notes?: ManifestBasicInfoWithValue<string>[]
   unit?: string
   deprecated?: boolean
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
   // ZNumber
   minimum?: number
   maximum?: number
@@ -60,9 +60,11 @@ export type ZManifestObject<T> = ManifestBasicInfo & {
 
 export type AnyZManifestObject = ZManifestObject<any>
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
-export interface ZManifest<Def extends ZDef> extends BaseZ<Def>, ZValidator<Def> {}
+export interface ZManifest<Def extends ZDef>
+  extends BaseZ<Def>,
+    ZValidator<Def> {}
 
 export class ZManifest<Def extends ZDef> {
   get manifest(): ZManifestObject<_ZOutput<Def>> {
@@ -101,7 +103,8 @@ export class ZManifest<Def extends ZDef> {
    * Annotates the schema with a brief summary.
    *
    * @remarks
-   * The summary should be short and concise. For longer explanations, see {@link Z#description}.
+   * The summary should be short and concise.
+   * For longer explanations, see {@link Z#description}.
    *
    * @param summary - The schema's summary.
    *
@@ -138,26 +141,39 @@ export class ZManifest<Def extends ZDef> {
   /**
    * Annotates the schema with a default value.
    */
-  default(value: _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>): this {
-    this._manifest.update('default', hasProp(value, 'value') ? value : { value: value })
+  default(
+    value: _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>
+  ): this {
+    this._manifest.update(
+      'default',
+      hasProp(value, 'value') ? value : { value: value }
+    )
     return this
   }
 
   /**
    * Adds one or more examples to the schema's manifest.
    */
-  examples(...examples: Array<_ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>>): this {
+  examples(
+    ...examples: Array<
+      _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>
+    >
+  ): this {
     const exampleObjects = examples.map((example): { value: any } =>
       hasProp(example, 'value') ? example : { value: example }
     )
-    this._schema.update(v => v.example(exampleObjects.map(example => example.value)))
+    this._schema.update(v =>
+      v.example(exampleObjects.map(example => example.value))
+    )
     this._manifest.update('examples', exampleObjects)
     return this
   }
   /**
    * Adds an example to the schema's manifest.
    */
-  example(example: _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>): this {
+  example(
+    example: _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>
+  ): this {
     return this.examples(example)
   }
 
@@ -165,7 +181,9 @@ export class ZManifest<Def extends ZDef> {
    * Adds one or more tags to the schema's manifest.
    */
   tags(...tags: (string | ManifestBasicInfoWithValue<string>)[]): this {
-    const tagObjects = tags.map(tag => (typeof tag === 'string' ? { value: tag } : tag))
+    const tagObjects = tags.map(tag =>
+      typeof tag === 'string' ? { value: tag } : tag
+    )
     this._schema.update(v => v.tag(...tagObjects.map(tag => tag.value)))
     this._manifest.update('tags', tagObjects)
     return this
@@ -181,7 +199,9 @@ export class ZManifest<Def extends ZDef> {
    * Adds one or more notes to the schema's manifest.
    */
   notes(...notes: (string | ManifestBasicInfoWithValue<string>)[]): this {
-    const noteObjects = notes.map(note => (typeof note === 'string' ? { value: note } : note))
+    const noteObjects = notes.map(note =>
+      typeof note === 'string' ? { value: note } : note
+    )
     this._schema.update(v => v.note(...noteObjects.map(note => note.value)))
     this._manifest.update('notes', noteObjects)
     return this

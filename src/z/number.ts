@@ -2,13 +2,16 @@ import type Joi from 'joi'
 
 import { Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                       ZNumber                                                      */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                   ZNumber                                  */
+/* -------------------------------------------------------------------------- */
 
-export type ZNumberPrecisionOptions = ZCheckOptions<'number.precision', { strict?: boolean }>
+export type ZNumberPrecisionOptions = ZCheckOptions<
+  'number.precision',
+  { strict?: boolean }
+>
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export class ZNumber extends Z<{
   Output: number
@@ -22,7 +25,9 @@ export class ZNumber extends Z<{
    * Requires the number to be an integer (no floating point).
    */
   integer(options?: ZCheckOptions<'number.integer'>): this {
-    this._addCheck('number.integer', v => v.integer(), { message: options?.message })
+    this._addCheck('number.integer', v => v.integer(), {
+      message: options?.message,
+    })
     this._manifest.update('format', 'integer')
     return this
   }
@@ -68,7 +73,9 @@ export class ZNumber extends Z<{
    * Requires the number to be positive.
    */
   positive(options?: ZCheckOptions<'number.positive'>): this {
-    return this._addCheck('number.positive', v => v.positive(), { message: options?.message })
+    return this._addCheck('number.positive', v => v.positive(), {
+      message: options?.message,
+    })
   }
   /**
    * Requires the number to be less than or equal to 0.
@@ -81,7 +88,9 @@ export class ZNumber extends Z<{
    * Requires the number to be negative.
    */
   negative(options?: ZCheckOptions<'number.negative'>): this {
-    return this._addCheck('number.negative', v => v.negative(), { message: options?.message })
+    return this._addCheck('number.negative', v => v.negative(), {
+      message: options?.message,
+    })
   }
   /**
    * Requires the number to be greater than or equal to 0.
@@ -96,7 +105,9 @@ export class ZNumber extends Z<{
    * @param value - The minimum value allowed.
    */
   min(value: number, options?: ZCheckOptions<'number.min'>): this {
-    this._addCheck('number.min', v => v.min(value), { message: options?.message })
+    this._addCheck('number.min', v => v.min(value), {
+      message: options?.message,
+    })
     this._manifest.update('minimum', value)
     return this
   }
@@ -113,7 +124,9 @@ export class ZNumber extends Z<{
    * @param value - The minimum value allowed (exclusive).
    */
   greater(value: number, options?: ZCheckOptions<'number.greater'>): this {
-    return this._addCheck('number.greater', v => v.greater(value), { message: options?.message })
+    return this._addCheck('number.greater', v => v.greater(value), {
+      message: options?.message,
+    })
   }
   /**
    * {@inheritDoc ZNumber#greater}
@@ -128,7 +141,9 @@ export class ZNumber extends Z<{
    * @param value - The maximum value allowed.
    */
   max(value: number, options?: ZCheckOptions<'number.max'>): this {
-    this._addCheck('number.max', v => v.max(value), { message: options?.message })
+    this._addCheck('number.max', v => v.max(value), {
+      message: options?.message,
+    })
     this._manifest.update('maximum', value)
     return this
   }
@@ -145,7 +160,9 @@ export class ZNumber extends Z<{
    * @param value - The maximum value allowed (exclusive).
    */
   less(value: number, options?: ZCheckOptions<'number.less'>): this {
-    return this._addCheck('number.less', v => v.less(value), { message: options?.message })
+    return this._addCheck('number.less', v => v.less(value), {
+      message: options?.message,
+    })
   }
   /**
    * {@inheritDoc ZNumber#less}
@@ -170,7 +187,9 @@ export class ZNumber extends Z<{
    * @param value - The value of which the number must be a multiple.
    */
   multiple(value: number, options?: ZCheckOptions<'number.multiple'>): this {
-    return this._addCheck('number.multiple', v => v.multiple(value), { message: options?.message })
+    return this._addCheck('number.multiple', v => v.multiple(value), {
+      message: options?.message,
+    })
   }
 
   /**
@@ -196,10 +215,12 @@ export class ZNumber extends Z<{
    * This is on by default.
    */
   safe(options?: ZCheckOptions<'number.unsafe'>) {
-    this._addCheck('number.unsafe', v => v.unsafe(false), { message: options?.message })
+    this._addCheck('number.unsafe', v => v.unsafe(false), {
+      message: options?.message,
+    })
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static create = (): ZNumber =>
     new ZNumber(

@@ -2,7 +2,7 @@ import type Joi from 'joi'
 import { keys, merge, omit, pick } from 'lodash'
 import type { F, L, U } from 'ts-toolbelt'
 
-import { type AnyZ,Z, ZAny, ZEnum, ZJoi, ZOptional, ZType } from '../_internals'
+import { type AnyZ, Z, ZAny, ZEnum, ZJoi, ZOptional, ZType } from '../_internals'
 import type { MapToZInput, MapToZOutput, WithQuestionMarks } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */

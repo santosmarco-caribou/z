@@ -14,7 +14,8 @@ export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   Components: T
 }> {
   readonly name = ZType.Intersection
-  protected readonly _hint: string = this._props.getOne('components')
+  protected readonly _hint: string = this._props
+    .getOne('components')
     .map(z => z.hint)
     .join(' & ')
 

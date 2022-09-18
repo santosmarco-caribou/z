@@ -11,6 +11,7 @@ import {
   ZHooksObject,
   ZIntersection,
   ZManifest,
+  ZManifestController,
   ZManifestObject,
   ZNullable,
   ZOpenApi,
@@ -20,13 +21,12 @@ import {
   ZPropsController,
   ZReadonly,
   ZReadonlyDeep,
+  ZSchemaController,
   ZType,
   ZUnion,
   ZValidator,
 } from '../_internals'
-import { ZManifestController } from '../manifest/manifest-controller'
 import { formatHint } from '../utils'
-import { ZSchemaController } from '../validation/schema'
 
 settings.initFunction = '_init'
 

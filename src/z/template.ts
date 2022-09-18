@@ -12,7 +12,8 @@ export class ZTemplate<T extends readonly [AnyZ<Literal>, ...AnyZ<Literal>[]]> e
   Elements: T
 }> {
   readonly name = ZType.Template
-  protected readonly _hint = `\`${this._props.getOne('elements')
+  protected readonly _hint = `\`${this._props
+    .getOne('elements')
     .map(el => {
       let elHint = el.hint
       if (elHint.startsWith('BigInt')) elHint = 'bigint'

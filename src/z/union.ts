@@ -29,7 +29,9 @@ export class ZUnion<T extends [AnyZ, ...AnyZ[]]> extends Z<{
       {
         schema: optAlreadyAlt
           ? (optAlreadyAlt._schema.get() as ReturnType<typeof ZJoi['alternatives']>).concat(
-              ZJoi.alternatives(...options.filter(opt => opt._id !== optAlreadyAlt._id).map(option => option._schema.get()))
+              ZJoi.alternatives(
+                ...options.filter(opt => opt._id !== optAlreadyAlt._id).map(option => option._schema.get())
+              )
             )
           : ZJoi.alternatives(...options.map(option => option._schema.get())),
         manifest: {},

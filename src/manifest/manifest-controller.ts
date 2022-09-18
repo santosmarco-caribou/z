@@ -1,5 +1,4 @@
-import type { ZDef } from '../_internals'
-import type { ZManifestObject } from './manifest'
+import type { ZDef, ZManifestObject } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                 ZManifestController                                                */

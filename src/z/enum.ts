@@ -16,7 +16,8 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
 }> {
   readonly name = ZType.Enum
   protected readonly _hint = unionizeHints(
-    ...this._props.getOne('values')
+    ...this._props
+      .getOne('values')
       .map(value => `'${value}'`)
       .sort()
   )

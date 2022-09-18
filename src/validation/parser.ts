@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import { _ZOutput,BaseZ, Z, ZDef, ZError, ZValidator } from '../_internals'
+import { _ZOutput, BaseZ, Z, ZDef, ZError, ZValidator } from '../_internals'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                       ZParser                                                      */

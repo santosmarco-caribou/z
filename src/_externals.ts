@@ -9,6 +9,7 @@ import {
   ZBinary,
   ZBoolean,
   ZBrand,
+  ZCustom,
   ZDate,
   ZEnum,
   ZFalse,
@@ -24,6 +25,7 @@ import {
   ZNumber,
   ZObject,
   ZOptional,
+  ZPreprocess,
   ZPromise,
   ZPropertyKey,
   ZReadonly,
@@ -48,6 +50,7 @@ const bigintType = ZBigInt.create
 const binaryType = ZBinary.create
 const booleanType = ZBoolean.create
 const brandType = ZBrand.create
+const customType = ZCustom.create
 const dateType = ZDate.create
 const enumType = ZEnum.create
 const falseType = ZFalse.create
@@ -63,6 +66,7 @@ const nullType = ZNull.create
 const numberType = ZNumber.create
 const objectType = ZObject.create
 const optionalType = ZOptional.create
+const preprocessType = ZPreprocess.create
 const promiseType = ZPromise.create
 const propertyKeyType = ZPropertyKey.create
 const readonlyDeepType = ZReadonlyDeep.create
@@ -87,6 +91,7 @@ export {
   binaryType as binary,
   booleanType as boolean,
   brandType as brand,
+  customType as custom,
   dateType as date,
   enumType as enum,
   falseType as false,
@@ -102,6 +107,7 @@ export {
   numberType as number,
   objectType as object,
   optionalType as optional,
+  preprocessType as preprocess,
   promiseType as promise,
   propertyKeyType as propertykey,
   readonlyType as readonly,

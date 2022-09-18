@@ -34,7 +34,13 @@ export class ZReadonly<T extends AnyZ> extends Z<{
         manifest: innerType._manifest.get(),
         hooks: {
           beforeParse: innerType._hooks.get().beforeParse,
-          afterParse: [...innerType._hooks.get().afterParse, { name: hookName, handler: Object.freeze }],
+          afterParse: [
+            ...innerType._hooks.get().afterParse,
+            {
+              name: hookName,
+              handler: Object.freeze,
+            },
+          ],
         },
       },
       { innerType, hookName }
@@ -69,7 +75,13 @@ export class ZReadonlyDeep<T extends AnyZ> extends Z<{
         manifest: innerType._manifest.get(),
         hooks: {
           beforeParse: innerType._hooks.get().beforeParse,
-          afterParse: [...innerType._hooks.get().afterParse, { name: hookName, handler: input => freezeDeep(input) }],
+          afterParse: [
+            ...innerType._hooks.get().afterParse,
+            {
+              name: hookName,
+              handler: input => freezeDeep(input),
+            },
+          ],
         },
       },
       { innerType, hookName }

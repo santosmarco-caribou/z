@@ -139,13 +139,24 @@ z.string().trim()
 z.string().replace()
 ```
 
-#### `.alphanumeric()` _or `.alphanum()`_
+#### `.alphanumeric()`
+
+> _or `.alphanum()`_
 
 Requires the input to only contain `a-z`, `A-Z`, and `0-9`.
 
 ```ts
 z.string().alphanumeric().parse('abc123') // => 'abc123'
 z.string().alphanumeric().parse('abc123!') // => throws
+```
+
+#### `.base64()`
+
+Requires the input to be a valid `base64` string.
+
+```ts
+z.string().base64().parse('VE9PTUFOWVNFQ1JFVFM=') // => 'abc123'
+z.string().base64().parse('VE9PTUFOWVNFQ1JFVFM') // => throws
 ```
 
 ---

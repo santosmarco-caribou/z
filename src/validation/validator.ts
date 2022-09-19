@@ -31,7 +31,9 @@ export type ZCheckOptions<
   Extras extends O.Object = EmptyObject
 > = Simplify<
   {
-    message?: string | ((context: ZIssueLocalContext<IssueCode>) => string)
+    message?:
+      | string
+      | ((context: ZIssueLocalContext<IssueCode, { Extras: true }>) => string)
   } & Extras,
   { deep: true }
 >

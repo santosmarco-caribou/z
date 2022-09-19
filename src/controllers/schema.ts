@@ -6,6 +6,7 @@ import {
   ParseOptions,
   Z_ISSUE_MAP,
   ZDef,
+  ZGlobals,
   ZHooksController,
 } from '../_internals'
 import { mergeSafe } from '../utils'
@@ -57,7 +58,10 @@ export const ZSchemaController = <Def extends ZDef>(
         input: unknown,
         options: ParseOptions | undefined
       ): Joi.ValidationResult<_ZOutput<Def>> => {
-        const mergedOpts = mergeSafe(DEFAULT_VALIDATION_OPTIONS, options ?? {})
+        const mergedOpts = mergeSafe(
+          { messages: cloneDeep(ZGlobals.get().options.errorMessages) },
+          options ?? {}
+        )
 
         const clonedInput = cloneDeep(input)
         const _input = hooksController.apply('beforeParse', clonedInput)

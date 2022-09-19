@@ -1,5 +1,6 @@
 import { PartialDeep } from 'type-fest'
 
+import { AnyZIssueCode, Z_ISSUE_MAP } from '../_internals'
 import { mergeObjsAndArrays } from '../utils'
 
 /* -------------------------------------------------------------------------- */
@@ -12,7 +13,8 @@ export type ZGlobalsOptions = {
    *
    * @default false
    */
-  stripColorsOnHints?: boolean
+  stripColorsOnHints: boolean
+  errorMessages: Record<AnyZIssueCode, string>
 }
 
 export class ZGlobals {
@@ -20,6 +22,7 @@ export class ZGlobals {
 
   readonly options: ZGlobalsOptions = {
     stripColorsOnHints: false,
+    errorMessages: Z_ISSUE_MAP,
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function

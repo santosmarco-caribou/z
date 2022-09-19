@@ -43,6 +43,7 @@ import {
   ZTemplate,
   ZTrue,
   ZTuple,
+  ZTypedArray,
   ZUndefined,
   ZUnion,
   ZUniqueSymbol,
@@ -90,6 +91,7 @@ const symbolType = ZSymbol.create
 const templateType = ZTemplate.create
 const trueType = ZTrue.create
 const tupleType = ZTuple.create
+const typedArrayType = ZTypedArray.create
 const undefinedType = ZUndefined.create
 const unionType = ZUnion.create
 const uniqsymbolType = ZUniqueSymbol.create
@@ -137,6 +139,7 @@ export {
   templateType as template,
   trueType as true,
   tupleType as tuple,
+  typedArrayType as typedArray,
   undefinedType as undefined,
   unionType as union,
   uniqsymbolType as uniqsymbol,

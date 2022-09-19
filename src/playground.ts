@@ -113,7 +113,12 @@ console.log(
 
 type C_ = S.Join<[string, number, 'abc', true, 'a' | '123' | 'b']>
 
-console.log(z.number().integer({ message: 'a' }).safeParse(1.2))
+console.log(
+  z
+    .number()
+    .integer({ message: ctx => ctx.value })
+    .safeParse(1.2)
+)
 
 // console.log(
 //   z.discriminatedUnion('type', [
@@ -121,3 +126,9 @@ console.log(z.number().integer({ message: 'a' }).safeParse(1.2))
 //     z.object({ type: z.literal('truck'), make: z.string().trim() }),
 //   ])
 // )
+
+console.log(z.typedArray(Int16Array).and(z.string()).safeParse('2'))
+
+console.log(z.instanceof(RegExp)._schema.get().describe().rules[0].args)
+
+console.log(RegExp.name)

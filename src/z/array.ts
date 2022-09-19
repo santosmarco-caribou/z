@@ -114,6 +114,7 @@ export class ZArray<
    * Requires the array to have at most a certain number of elements (inclusive).
    *
    * @param max - The maximum number of elements in the array.
+   * @param {ZCheckOptions<'array.max'>} [options] - Options for this rule.
    */
   max<T extends number>(
     max: NonNegativeInteger<T>,
@@ -127,6 +128,7 @@ export class ZArray<
    * Requires the array to have an exact number of elements.
    *
    * @param length - The number of elements in the array.
+   * @param {ZCheckOptions<'array.length'>} [options] - Options for this rule.
    */
   length<L extends number>(
     length: NonNegativeInteger<L>,
@@ -147,6 +149,8 @@ export class ZArray<
 
   /**
    * Requires the array to have at least one element.
+   *
+   * @param {ZCheckOptions<'array.min'>} [options] - Options for this rule.
    */
   nonempty(options?: ZCheckOptions<'array.min'>): ZArray<T, 'atleastone'> {
     const updated = this.min(1, options)

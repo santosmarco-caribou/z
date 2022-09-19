@@ -15,7 +15,7 @@ export class ZBinary extends Z<{
   protected readonly _hint = 'Buffer'
 
   /**
-   * Sets the string encoding format if a string input is converted to a buffer.
+   * Sets the string encoding format if a string input is converted to a Buffer.
    *
    * @param encoding - The encoding format.
    */
@@ -24,25 +24,28 @@ export class ZBinary extends Z<{
   }
 
   /**
-   * Specifies the minimum length of the buffer.
+   * Specifies the minimum length of the Buffer.
    *
-   * @param min - The minimum length of the buffer.
+   * @param min - The minimum length of the Buffer.
+   * @param {ZCheckOptions<'binary.min'>} [options] - Options for this rule.
    */
   min(min: number, options?: ZCheckOptions<'binary.min'>): this {
     return this._addCheck('binary.min', v => v.min(min), options)
   }
   /**
-   * Specifies the maximum length of the buffer.
+   * Specifies the maximum length of the Buffer.
    *
-   * @param max - The maximum length of the buffer.
+   * @param max - The maximum length of the Buffer.
+   * @param {ZCheckOptions<'binary.max'>} [options] - Options for this rule.
    */
   max(max: number, options?: ZCheckOptions<'binary.max'>): this {
     return this._addCheck('binary.max', v => v.max(max), options)
   }
   /**
-   * Specifies the exact length of the buffer.
+   * Specifies the exact length of the Buffer.
    *
-   * @param length - The length of the buffer.
+   * @param length - The length of the Buffer.
+   * @param {ZCheckOptions<'binary.length'>} [options] - Options for this rule.
    */
   length(length: number, options?: ZCheckOptions<'binary.length'>): this {
     return this._addCheck('binary.length', v => v.length(length), options)

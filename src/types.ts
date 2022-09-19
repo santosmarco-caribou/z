@@ -44,6 +44,7 @@ export enum ZType {
   True = 'ZTrue',
   Truthy = 'ZTruthy',
   Tuple = 'ZTuple',
+  TypedArray = 'ZTypedArray',
   Undefined = 'ZUndefined',
   Union = 'ZUnion',
   UniqueSymbol = 'ZUniqueSymbol',

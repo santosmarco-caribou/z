@@ -139,7 +139,7 @@ export {
   templateType as template,
   trueType as true,
   tupleType as tuple,
-  typedArrayType as typedArray,
+  typedArrayType as typedarray,
   undefinedType as undefined,
   unionType as union,
   uniqsymbolType as uniqsymbol,

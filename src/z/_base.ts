@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { nanoid } from 'nanoid'
 import { mix, settings } from 'ts-mixer'
 import type { A, F } from 'ts-toolbelt'
-import type { CamelCasedProperties } from 'type-fest'
+import type { CamelCasedProperties, ReadonlyTuple } from 'type-fest'
 
 import {
   AllowedDefaults,
@@ -283,10 +283,15 @@ export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef
 
 /* -------------------------------------------------------------------------- */
 
-export type TypeOf<T extends AnyZ> = T extends Z<infer Def>
-  ? keyof _ZOutput<Def> extends typeof ZBrandTag
-    ? _ZOutput<Def>
-    : _ZOutput<Def> extends Map<any, any> | Set<any>
-    ? _ZOutput<Def>
-    : A.Compute<_ZOutput<Def>, 'deep'>
-  : never
+export type TypeOf<T extends AnyZ> = keyof _ZOutput<T> extends typeof ZBrandTag
+  ? // Branded types shouldn't be computed
+    _ZOutput<T>
+  : _ZOutput<T> extends Date | Map<any, any> | Set<any>
+  ? // Dates, Maps and Sets also shouldn't be computed
+    _ZOutput<T>
+  : T extends ZArray<infer E, infer C>
+  ? // This is to fix a bug with ZArrays (reason still unknown)
+    C extends number
+    ? ReadonlyTuple<_ZOutput<E>, C>
+    : _ZOutput<T>
+  : A.Compute<_ZOutput<T>, 'deep'>

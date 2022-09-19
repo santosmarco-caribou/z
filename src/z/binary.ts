@@ -1,4 +1,5 @@
 import type Joi from 'joi'
+import { Finite, NonNegativeInteger } from 'type-fest'
 
 import { Z, ZCheckOptions, ZJoi, ZType } from '../_internals'
 
@@ -29,7 +30,10 @@ export class ZBinary extends Z<{
    * @param min - The minimum length of the Buffer.
    * @param {ZCheckOptions<'binary.min'>} [options] - Options for this rule.
    */
-  min(min: number, options?: ZCheckOptions<'binary.min'>): this {
+  min<T extends number>(
+    min: Finite<NonNegativeInteger<T>>,
+    options?: ZCheckOptions<'binary.min'>
+  ): this {
     return this._addCheck('binary.min', v => v.min(min), options)
   }
   /**
@@ -38,7 +42,10 @@ export class ZBinary extends Z<{
    * @param max - The maximum length of the Buffer.
    * @param {ZCheckOptions<'binary.max'>} [options] - Options for this rule.
    */
-  max(max: number, options?: ZCheckOptions<'binary.max'>): this {
+  max<T extends number>(
+    max: Finite<NonNegativeInteger<T>>,
+    options?: ZCheckOptions<'binary.max'>
+  ): this {
     return this._addCheck('binary.max', v => v.max(max), options)
   }
   /**
@@ -47,7 +54,10 @@ export class ZBinary extends Z<{
    * @param length - The length of the Buffer.
    * @param {ZCheckOptions<'binary.length'>} [options] - Options for this rule.
    */
-  length(length: number, options?: ZCheckOptions<'binary.length'>): this {
+  length<T extends number>(
+    length: Finite<NonNegativeInteger<T>>,
+    options?: ZCheckOptions<'binary.length'>
+  ): this {
     return this._addCheck('binary.length', v => v.length(length), options)
   }
 

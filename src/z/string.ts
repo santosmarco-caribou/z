@@ -1,5 +1,5 @@
 import type Joi from 'joi'
-import { NonNegativeInteger } from 'type-fest'
+import { Finite, NonNegativeInteger } from 'type-fest'
 
 import {
   type ZCheckOptions,
@@ -344,7 +344,7 @@ export class ZString<
    * @param min - The minimum number of characters in the string.
    */
   min<T extends number>(
-    min: NonNegativeInteger<T>,
+    min: Finite<NonNegativeInteger<T>>,
     options?: ZCheckOptions<'string.min'>
   ): this {
     return this._addCheck('string.min', v => v.min(min), {
@@ -357,7 +357,7 @@ export class ZString<
    * @param max - The maximum number of characters in the string.
    */
   max<T extends number>(
-    max: NonNegativeInteger<T>,
+    max: Finite<NonNegativeInteger<T>>,
     options?: ZCheckOptions<'string.max'>
   ): this {
     return this._addCheck('string.max', v => v.max(max), {
@@ -370,7 +370,7 @@ export class ZString<
    * @param length - The length of the string.
    */
   length<L extends number>(
-    length: NonNegativeInteger<L>,
+    length: Finite<NonNegativeInteger<L>>,
     options?: ZCheckOptions<'string.length'>
   ): this {
     return this._addCheck('string.length', v => v.length(length), {

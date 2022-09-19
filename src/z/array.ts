@@ -1,5 +1,5 @@
 import type Joi from 'joi'
-import type { NonNegativeInteger, ReadonlyTuple } from 'type-fest'
+import type { Finite, NonNegativeInteger, ReadonlyTuple } from 'type-fest'
 
 import {
   type _ZInput,
@@ -122,7 +122,7 @@ export class ZArray<
    * @param {ZCheckOptions<'array.min'>} [options] - Options for this rule.
    */
   min<T extends number>(
-    min: NonNegativeInteger<T>,
+    min: Finite<NonNegativeInteger<T>>,
     options?: ZCheckOptions<'array.min'>
   ): this {
     this._addCheck('array.min', v => v.min(min), options)
@@ -135,7 +135,7 @@ export class ZArray<
    * @param {ZCheckOptions<'array.max'>} [options] - Options for this rule.
    */
   max<T extends number>(
-    max: NonNegativeInteger<T>,
+    max: Finite<NonNegativeInteger<T>>,
     options?: ZCheckOptions<'array.max'>
   ): this {
     this._addCheck('array.max', v => v.max(max), options)
@@ -149,7 +149,7 @@ export class ZArray<
    * @param {ZCheckOptions<'array.length'>} [options] - Options for this rule.
    */
   length<L extends number>(
-    length: NonNegativeInteger<L>,
+    length: Finite<NonNegativeInteger<L>>,
     options?: ZCheckOptions<'array.length'>
   ): ZArray<T, L> {
     this._addCheck('array.length', v => v.length(length), options)

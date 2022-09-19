@@ -1,14 +1,8 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "categorizeByGroup": true,
-  "categoryOrder": [
-    "ZTypes",
-    "Main methods",
-    "*"
-  ],
-  "entryPoints": [
-    "src/index.ts"
-  ],
+  "categoryOrder": ["ZTypes", "Main methods", "*"],
+  "entryPoints": ["src/index.ts"],
   "excludeInternal": true,
   "excludePrivate": true,
   "name": "ZSchemas",

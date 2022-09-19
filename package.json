@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "build": "yarn lint:fix && yarn format:write && tsc && yarn docs",
+    "dev": "ts-node-dev --transpile-only --respawn '/Users/marcosantos/Desktop/code/best-server/src/playground.ts'",
     "docs": "rm -rf docs && typedoc",
     "format:check": "prettier --check src",
     "format:write": "prettier --write src",
@@ -13,8 +14,7 @@
     "lint:fix": "eslint --fix src",
     "test": "jest src",
     "test:watch": "jest --watch --verbose src",
-    "test:watch:failed": "jest --reporters=jest",
-    "dev": "ts-node-dev --transpile-only --respawn '/Users/marcosantos/Desktop/code/best-server/src/playground.ts'"
+    "test:watch:failed": "jest --reporters=jest"
   },
   "dependencies": {
     "chalk": "4.1.2",

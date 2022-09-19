@@ -8,6 +8,7 @@ import {
   type ZCheckOptions,
   type ZHooksObject,
   type ZManifestObject,
+  SomeZObject,
   Z,
   ZJoi,
   ZType,
@@ -18,10 +19,11 @@ import { generateZHint } from '../utils'
 /*                                   ZArray                                   */
 /* -------------------------------------------------------------------------- */
 
-export type ZArraySortOptions = ZCheckOptions<
+export type ZArraySortOptions<T extends AnyZ> = ZCheckOptions<
   'array.sort',
   {
     strict?: boolean
+    by?: T extends SomeZObject ? Extract<keyof T['shape'], 'string'> : never
   }
 >
 
@@ -74,11 +76,19 @@ export class ZArray<
    *
    * @param {ZArraySortOptions} [options] - Options for this rule.
    */
-  ascending(options?: ZArraySortOptions): this {
+  ascending(options?: ZArraySortOptions<T>): this {
     options?.strict && this._schema.updatePreferences({ convert: false })
-    this._addCheck('array.sort', v => v.sort({ order: 'ascending' }), {
-      message: options?.message,
-    })
+    this._addCheck(
+      'array.sort',
+      v =>
+        v.sort({
+          order: 'ascending',
+          by: typeof options?.by === 'string' ? options.by : undefined,
+        }),
+      {
+        message: options?.message,
+      }
+    )
     return this
   }
   /**
@@ -89,11 +99,19 @@ export class ZArray<
    *
    * @param {ZArraySortOptions} [options] - Options for this rule.
    */
-  descending(options?: ZArraySortOptions): this {
+  descending(options?: ZArraySortOptions<T>): this {
     options?.strict && this._schema.updatePreferences({ convert: false })
-    this._addCheck('array.sort', v => v.sort({ order: 'descending' }), {
-      message: options?.message,
-    })
+    this._addCheck(
+      'array.sort',
+      v =>
+        v.sort({
+          order: 'descending',
+          by: typeof options?.by === 'string' ? options.by : undefined,
+        }),
+      {
+        message: options?.message,
+      }
+    )
     return this
   }
 

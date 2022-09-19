@@ -25,6 +25,19 @@ export const Z_ISSUE_MAP = {
   'any.unknown': '{{#label}} is not allowed',
 
   'array.base': '{{#label}} must be an array',
+  'array.min':
+    '{{#label}} must contain at least {{#limit}} item{if(#limit == 1, "", "s")}',
+  'array.max':
+    '{{#label}} must contain at most {{#limit}} item{if(#limit == 1, "", "s")}',
+  'array.length': '{{#label}} must contain exactly {{#limit}} items',
+  'array.sort': '{{#label}} must be sorted in {#order} order by {{#by}}',
+  'array.sort.mismatching':
+    '{{#label}} cannot be sorted due to mismatching types',
+  'array.sort.unsupported':
+    '{{#label}} cannot be sorted due to unsupported type {#type}',
+  'array.includesRequiredUnknowns':
+    '{{#label}} does not contain {{#unknownMisses}} required value{if(#unknownMisses == 1, "", "s")}',
+  /* ------------------------------------------------------------------------ */
   'array.excludes': '{{#label}} contains an excluded value',
   'array.hasKnown':
     '{{#label}} does not contain at least one required match for type {:#patternLabel}',
@@ -34,18 +47,7 @@ export const Z_ISSUE_MAP = {
     '{{#label}} does not contain {{#knownMisses}} and {{#unknownMisses}} other required value(s)',
   'array.includesRequiredKnowns':
     '{{#label}} does not contain {{#knownMisses}}',
-  'array.includesRequiredUnknowns':
-    '{{#label}} does not contain {{#unknownMisses}} required value(s)',
-  'array.length': '{{#label}} must contain {{#limit}} items',
-  'array.max': '{{#label}} must contain less than or equal to {{#limit}} items',
-  'array.min':
-    '{{#label}} must contain at least {{#limit}} item{if(#limit == 1, "", "s")}',
   'array.orderedLength': '{{#label}} must contain at most {{#limit}} items',
-  'array.sort': '{{#label}} must be sorted in {#order} order by {{#by}}',
-  'array.sort.mismatching':
-    '{{#label}} cannot be sorted due to mismatching types',
-  'array.sort.unsupported':
-    '{{#label}} cannot be sorted due to unsupported type {#type}',
   'array.sparse': '{{#label}} must not be a sparse array item',
   'array.unique': '{{#label}} contains a duplicate value',
 

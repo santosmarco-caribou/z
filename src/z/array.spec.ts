@@ -1,119 +1,58 @@
-import { ZAny, ZArray } from '../_internals'
+import { z } from '../index'
+import { assertEqual } from '../utils'
 
-describe('ZArray', () => {
-  let z: ZArray<ZAny>
+const minTwo = z.string().array().min(2)
+const maxTwo = z.string().array().max(2)
+const justTwo = z.string().array().length(2)
+const intNum = z.string().array().nonempty()
+const nonEmptyMax = z.string().array().nonempty().max(2)
 
-  beforeEach(() => {
-    z = ZArray.create(ZAny.create())
-  })
+type t1 = z.infer<typeof minTwo>
+assertEqual<string[], t1>(true)
 
-  test('should have a name of "ZArray"', () => {
-    expect(z.name).toBe('ZArray')
-  })
+type t3 = z.infer<typeof justTwo>
+assertEqual<readonly [string, string], t3>(true)
 
-  test(`should have a hint of "Array<any>"`, () => {
-    expect(z.hint).toBe('Array<any>')
-  })
+type t2 = z.infer<typeof nonEmptyMax>
+assertEqual<[string, ...string[]], t2>(true)
 
-  test('should parse []', () => {
-    expect(z.parse([])).toStrictEqual([])
-  })
+it('parses valid inputs', () => {
+  minTwo.parse(['a', 'a'])
+  minTwo.parse(['a', 'a', 'a'])
+  maxTwo.parse(['a', 'a'])
+  maxTwo.parse(['a'])
+  justTwo.parse(['a', 'a'])
+  intNum.parse(['a'])
+  nonEmptyMax.parse(['a'])
+})
 
-  describe('.ascending()', () => {
-    test(`should parse [1, 2, 3, 4]"`, () => {
-      expect(z.ascending().parse([1, 2, 3, 4])).toStrictEqual([1, 2, 3, 4])
-    })
+it('does not parse invalid inputs', () => {
+  expect(() => minTwo.parse(['a'])).toThrowError(
+    '"value" must contain at least 2 items'
+  )
+  expect(() => maxTwo.parse(['a', 'a', 'a'])).toThrowError(
+    '"value" must contain at most 2 items'
+  )
+  expect(() => justTwo.parse(['a'])).toThrowError(
+    '"value" must contain exactly 2 items'
+  )
+  expect(() => justTwo.parse(['a', 'a', 'a'])).toThrowError(
+    '"value" must contain exactly 2 items'
+  )
+  expect(() => intNum.parse([])).toThrowError(
+    '"value" does not contain 1 required value'
+  )
+  expect(() => nonEmptyMax.parse([])).toThrowError(
+    '"value" does not contain 1 required value'
+  )
+  expect(() => nonEmptyMax.parse(['a', 'a', 'a'])).toThrowError(
+    '"value" must contain at most 2 items'
+  )
+})
 
-    test(`should parse and convert [2, 3, 1, 4]"`, () => {
-      expect(z.ascending().parse([2, 3, 1, 4])).toStrictEqual([1, 2, 3, 4])
-    })
-
-    test(`should not parse [2, 3, 1, 4] in strict mode"`, () => {
-      expect(
-        z.ascending({ strict: true }).safeParse([2, 3, 1, 4]).error?.message
-      ).toBe('"value" must be sorted in ascending order by value')
-    })
-  })
-
-  describe('.descending()', () => {
-    test(`should parse [4, 3, 2, 1]"`, () => {
-      expect(z.descending().parse([4, 3, 2, 1])).toStrictEqual([4, 3, 2, 1])
-    })
-
-    test(`should parse and convert [2, 3, 1, 4]"`, () => {
-      expect(z.descending().parse([2, 3, 1, 4])).toStrictEqual([4, 3, 2, 1])
-    })
-
-    test(`should not parse [2, 3, 1, 4] in strict mode"`, () => {
-      expect(
-        z.descending({ strict: true }).safeParse([2, 3, 1, 4]).error?.message
-      ).toBe('"value" must be sorted in descending order by value')
-    })
-  })
-
-  describe('.min()', () => {
-    test(`should parse [1, 2, 3] with min(2)"`, () => {
-      expect(z.min(2).parse([1, 2, 3])).toStrictEqual([1, 2, 3])
-    })
-
-    test(`should parse [1, 2] with min(2)"`, () => {
-      expect(z.min(2).parse([1, 2])).toStrictEqual([1, 2])
-    })
-
-    test(`should not parse [1] with min(2)"`, () => {
-      expect(z.min(2).safeParse([1]).error?.message).toBe(
-        '"value" must contain at least 2 items'
-      )
-    })
-  })
-
-  describe('.max()', () => {
-    test(`should parse [1] with max(2)"`, () => {
-      expect(z.max(2).parse([1])).toStrictEqual([1])
-    })
-
-    test(`should parse [1, 2] with max(2)"`, () => {
-      expect(z.max(2).parse([1, 2])).toStrictEqual([1, 2])
-    })
-
-    test(`should not parse [1, 2, 3] with max(2)"`, () => {
-      expect(z.max(2).safeParse([1, 2, 3]).error?.message).toBe(
-        '"value" must contain less than or equal to 2 items'
-      )
-    })
-  })
-
-  describe('.length()', () => {
-    test(`should parse [1, 2] with length(2)"`, () => {
-      expect(z.length(2).parse([1, 2])).toStrictEqual([1, 2])
-    })
-
-    test(`should not parse [1] with length(2)"`, () => {
-      expect(z.length(2).safeParse([1]).error?.message).toBe(
-        '"value" must contain 2 items'
-      )
-    })
-
-    test(`should not parse [1, 2, 3] with length(2)"`, () => {
-      expect(z.length(2).safeParse([1, 2, 3]).error?.message).toBe(
-        '"value" must contain 2 items'
-      )
-    })
-  })
-
-  describe('.nonempty()', () => {
-    test(`should parse [1, 2] with nonempty()"`, () => {
-      expect(z.nonempty().parse([1, 2])).toStrictEqual([1, 2])
-    })
-
-    test(`should parse [1] with nonempty()"`, () => {
-      expect(z.nonempty().parse([1])).toStrictEqual([1])
-    })
-
-    test(`should not parse [] with nonempty()"`, () => {
-      expect(z.nonempty().safeParse([]).error?.message).toBe(
-        '"value" must contain at least 1 item'
-      )
-    })
+describe('.element', () => {
+  it('works', () => {
+    justTwo.element.parse('a')
+    expect(() => justTwo.element.parse(1)).toThrow()
   })
 })

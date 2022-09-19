@@ -10,7 +10,6 @@ import {
   ZBrand,
   ZBrandTag,
   ZDefault,
-  ZGlobals,
   ZHooksController,
   ZHooksObject,
   ZIntersection,
@@ -71,9 +70,9 @@ export type ZFormattedHintOptions = {
   /**
    * Whether to colorize the output.
    *
-   * @default false
+   * @default true
    */
-  color?: true
+  color?: boolean
 }
 
 /* -------------------------------------------------------------------------- */
@@ -141,23 +140,15 @@ export abstract class Z<Def extends ZDef> {
     this._props = ZPropsController(props)
   }
 
+  /* --------------------------------- Hint --------------------------------- */
+
   get hint(): string {
     return this._hint
   }
 
   getFormattedHint({ color = true }: ZFormattedHintOptions): string {
-    let _hint = this._hint
-
-    if (!ZGlobals.get().options.stripColorsOnHints && color) {
-      _hint = colorizeZHint(_hint)
-    }
-
-    return _hint
-  }
-
-  protected _setHint(hint: string): this {
-    this._hint = hint
-    return this
+    const formatted = color ? colorizeZHint(this._hint) : this._hint
+    return formatted
   }
 
   /* ------------------------------------------------------------------------ */

@@ -226,3 +226,17 @@ export const safeJsonStringify = (value: any): string =>
   JSON.stringify(value, (_, val) =>
     typeof val === 'bigint' ? `BigInt(${val.toString()})` : val
   )
+
+/* ---------------------------------- Tests --------------------------------- */
+
+type AssertEqual<T, U> = (<V>() => V extends T ? 1 : 2) extends <
+  V
+>() => V extends U ? 1 : 2
+  ? true
+  : false
+
+export const assertEqual = <A, B>(val: AssertEqual<A, B>) => val
+export function assertIs<T>(_arg: T): void {}
+export function assertNever(_arg: never): never {
+  throw new Error()
+}

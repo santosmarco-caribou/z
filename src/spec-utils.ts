@@ -2,10 +2,8 @@
 
 import { Entries } from 'type-fest'
 
-import { AnyZ, ZGlobals } from './_internals'
+import { AnyZ } from './_internals'
 import { safeJsonStringify } from './utils'
-
-ZGlobals.get().options.stripColorsOnHints = true
 
 const BASE_SPEC_TEST_VALUE_MAP = {
   undefined: undefined,

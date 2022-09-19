@@ -185,7 +185,7 @@ export class ZString<
   }
 > extends Z<ZStringDef<Opts>> {
   readonly name = ZType.String
-  protected readonly _hint = 'string'
+  protected _hint = 'string'
 
   /**
    * Requires the input to only contain `a-z`, `A-Z`, and `0-9`.
@@ -602,7 +602,7 @@ export class ZString<
   /* ------------------------------------------------------------------------ */
 
   private _addFormatToHint(format: ManifestFormat): this {
-    this._setHint(`string($${format})`)
+    this._hint = `string($${format})`
     return this
   }
 

@@ -8,12 +8,6 @@ import { mergeObjsAndArrays } from '../utils'
 /* -------------------------------------------------------------------------- */
 
 export type ZGlobalsOptions = {
-  /**
-   * Whether to disable colors on the `ZType` hints.
-   *
-   * @default false
-   */
-  stripColorsOnHints: boolean
   errorMessages: Record<AnyZIssueCode, string>
 }
 
@@ -21,7 +15,6 @@ export class ZGlobals {
   private static _instance?: ZGlobals
 
   readonly options: ZGlobalsOptions = {
-    stripColorsOnHints: false,
     errorMessages: Z_ISSUE_MAP,
   }
 

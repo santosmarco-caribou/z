@@ -17,7 +17,7 @@ import { mergeSafe } from '../utils'
 
 export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions &
   Required<ParseOptions> = {
-  abortEarly: true,
+  abortEarly: false,
   messages: Z_ISSUE_MAP,
 }
 

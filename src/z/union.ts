@@ -7,6 +7,7 @@ import {
   Z,
   ZJoi,
   ZType,
+  ZValidator,
 } from '../_internals'
 import { unionizeHints } from '../utils'
 
@@ -17,44 +18,46 @@ import { unionizeHints } from '../utils'
 export class ZUnion<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   Output: _ZOutput<T[number]>
   Input: _ZInput<T[number]>
-  Schema: Joi.AlternativesSchema
-  Options: T
+  Schema: Joi.AnySchema
+  Alternatives: T
 }> {
   readonly name = ZType.Union
   protected readonly _hint = unionizeHints(
-    ...this._props.getOne('options').map(option => option.hint)
+    ...this._props.getOne('alternatives').map(alt => alt.hint)
   )
 
-  get options(): T {
-    return this._props.getOne('options')
+  get alternatives(): T {
+    return this._props.getOne('alternatives')
   }
 
   /* ------------------------------------------------------------------------ */
 
-  static create = <T extends [AnyZ, ...AnyZ[]]>(options: T): ZUnion<T> => {
-    const optAlreadyAlt = options.find(
-      opt => opt._schema.get().type === 'alternatives'
+  static create = <T extends [AnyZ, ...AnyZ[]]>(alternatives: T): ZUnion<T> => {
+    const altZType = alternatives.find(
+      alt => alt._schema.get().type === 'alternatives'
     )
+
+    const schema = altZType
+      ? (altZType._schema.get() as Joi.AlternativesSchema).concat(
+          ZJoi.alternatives(
+            ...alternatives
+              .filter(alt => alt._id !== altZType._id)
+              .map(alt => alt._schema.get())
+          )
+        )
+      : ZJoi.alternatives(...alternatives.map(alt => alt._schema.get()))
 
     return new ZUnion(
       {
-        schema: optAlreadyAlt
-          ? (
-              optAlreadyAlt._schema.get() as ReturnType<
-                typeof ZJoi['alternatives']
-              >
-            ).concat(
-              ZJoi.alternatives(
-                ...options
-                  .filter(opt => opt._id !== optAlreadyAlt._id)
-                  .map(option => option._schema.get())
-              )
-            )
-          : ZJoi.alternatives(...options.map(option => option._schema.get())),
+        schema: ZValidator.custom(ZJoi.any(), (_value, { OK, FAIL }) => {
+          const { value } = schema.validate(_value)
+          if (value) return OK(value)
+          return FAIL('union.base', { types: alternatives.map(o => o.hint) })
+        }),
         manifest: {},
         hooks: {},
       },
-      { options }
+      { alternatives }
     )
   }
 }

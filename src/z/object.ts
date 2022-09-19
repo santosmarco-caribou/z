@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 import { keys, merge, omit, pick } from 'lodash'
-import type { A, F, L, U } from 'ts-toolbelt'
+import type { A, L, U } from 'ts-toolbelt'
 import type { LiteralUnion } from 'type-fest'
 
 import {
@@ -19,6 +19,7 @@ import {
   generateZHint,
   MapToZInput,
   MapToZOutput,
+  safeJsonStringify,
   WithQuestionMarks,
 } from '../utils'
 
@@ -59,33 +60,27 @@ export class ZObject<
   }
 > extends Z<ZObjectDef<Shape, Opts>> {
   readonly name = ZType.Object
-  protected readonly _hint = generateZHint(() => {
-    const _generateHint = (_shape: AnyZObjectShape, indentation = 2): string =>
-      '{\n' +
-      Object.entries(_shape)
-        .map(
-          ([key, z]) =>
-            `${' '.repeat(indentation)}${key}${z?.isOptional() ? '?' : ''}: ${
-              (z instanceof ZObject
-                ? _generateHint(z.shape as AnyZObjectShape, indentation + 2)
-                : z?.hint) ?? ''
-            };`
-        )
-        .join('\n') +
-      `\n${' '.repeat(indentation - 2)}}`
-    return _generateHint(this._props.getOne('shape'), 2)
-  })
+  protected readonly _hint = generateZHint(() =>
+    safeJsonStringify(
+      Object.fromEntries(
+        Object.entries(this.shape).map(([key, z]) => [key, z?.hint])
+      )
+    )
+  )
 
   get shape(): Shape {
     return this._props.getOne('shape')
   }
 
   keyof(): ZEnum<[U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>]> {
-    return ZEnum.create(
-      keys(this._props.getOne('shape')) as F.Narrow<
-        [U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>]
-      >
-    )
+    const shapeKeys = keys(this._props.getOne('shape'))
+    return ZEnum.create<
+      Extract<keyof Shape, string>,
+      [U.ListOf<keyof Shape>[0], ...L.Tail<U.ListOf<keyof Shape>>]
+    >([shapeKeys[0] ?? '', ...shapeKeys.slice(1)] as [
+      U.ListOf<keyof Shape>[0],
+      ...L.Tail<U.ListOf<keyof Shape>>
+    ])
   }
 
   pick<K extends keyof Shape>(keys: K[]): ZObject<Pick<Shape, K>, Opts> {

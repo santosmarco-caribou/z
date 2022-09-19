@@ -191,6 +191,9 @@ export const Z_ISSUE_MAP = {
 
   'symbol.base': '{{#label}} must be a symbol',
   'symbol.map': '{{#label}} must be one of {{#map}}',
+
+  'union.base': '{{#label}} must be one of {{#types}}',
+  'intersection.base': '{{#label}} must match all of {{#types}}',
 } as const
 
 export type ZIssueMap = typeof Z_ISSUE_MAP

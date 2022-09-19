@@ -139,19 +139,6 @@ export class ZManifest<Def extends ZDef> {
   }
 
   /**
-   * Annotates the schema with a default value.
-   */
-  default(
-    value: _ZOutput<Def> | ManifestBasicInfoWithValue<_ZOutput<Def>>
-  ): this {
-    this._manifest.update(
-      'default',
-      hasProp(value, 'value') ? value : { value: value }
-    )
-    return this
-  }
-
-  /**
    * Adds one or more examples to the schema's manifest.
    */
   examples(

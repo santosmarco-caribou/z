@@ -1,5 +1,4 @@
 import type Joi from 'joi'
-import { F } from 'ts-toolbelt'
 import { NonNegativeInteger } from 'type-fest'
 
 import {
@@ -420,19 +419,29 @@ export class ZString<
 
   /* ------------------------------ Transforms ------------------------------ */
 
+  /**
+   * Requires the input to be all lowercase.
+   *
+   * The schema will attempt to convert the input to the correct format by default.
+   * You can disable this behavior by passing `{ convert: false }` as an option.
+   *
+   * @param {ZStringLowercaseOptions} [options] - Options for this rule.
+   */
   lowercase<_Opts extends ZStringLowercaseOptions>(
-    options?: F.Narrow<_Opts>
+    options?: _Opts
   ): ZString<{
     transform: 'lowercase'
     convert: _Opts['convert'] extends boolean
       ? _Opts['convert']
       : Opts['convert']
   }> {
-    const convert =
-      (options as _Opts)?.convert ?? this._props.getOne('options').convert
-    this._addCheck('string.lowercase', v => v.lowercase().prefs({ convert }), {
-      message: (options as _Opts)?.message,
+    const convert = options?.convert ?? this._props.getOne('options').convert
+    this._schema.updatePreferences({ convert: false })
+
+    this._addCheck('string.lowercase', v => v.lowercase(), {
+      message: options?.message,
     })
+
     return new ZString(
       {
         schema: this._schema.get(),
@@ -451,19 +460,29 @@ export class ZString<
     )
   }
 
+  /**
+   * Requires the input to be all uppercase.
+   *
+   * The schema will attempt to convert the input to the correct format by default.
+   * You can disable this behavior by passing `{ convert: false }` as an option.
+   *
+   * @param {ZStringUppercaseOptions} [options] - Options for this rule.
+   */
   uppercase<_Opts extends ZStringUppercaseOptions>(
-    options?: F.Narrow<_Opts>
+    options?: _Opts
   ): ZString<{
     transform: 'uppercase'
     convert: _Opts['convert'] extends boolean
       ? _Opts['convert']
       : Opts['convert']
   }> {
-    const convert =
-      (options as _Opts)?.convert ?? this._props.getOne('options').convert
-    this._addCheck('string.uppercase', v => v.uppercase().prefs({ convert }), {
-      message: (options as _Opts)?.message,
+    const convert = options?.convert ?? this._props.getOne('options').convert
+    this._schema.updatePreferences({ convert: false })
+
+    this._addCheck('string.uppercase', v => v.uppercase(), {
+      message: options?.message,
     })
+
     return new ZString(
       {
         schema: this._schema.get(),
@@ -482,21 +501,28 @@ export class ZString<
     )
   }
 
+  /**
+   * Requires the input to be capitalized.
+   *
+   * The schema will attempt to convert the input to the correct format by default.
+   * You can disable this behavior by passing `{ convert: false }` as an option.
+   *
+   * @param {ZStringCapitalizeOptions} [options] - Options for this rule.
+   */
   capitalize<_Opts extends ZStringCapitalizeOptions>(
-    options?: F.Narrow<_Opts>
+    options?: _Opts
   ): ZString<{
     transform: 'capitalize'
     convert: _Opts['convert'] extends boolean
       ? _Opts['convert']
       : Opts['convert']
   }> {
-    const convert =
-      (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    const convert = options?.convert ?? this._props.getOne('options').convert
 
     this._addCheck(
       'string.capitalize',
       handleCapitalizeUncapitalizeValidation('capitalize', { convert }),
-      { message: (options as _Opts)?.message }
+      { message: options?.message }
     )
 
     return new ZString(
@@ -517,21 +543,28 @@ export class ZString<
     )
   }
 
+  /**
+   * Requires the input to be uncapitalized.
+   *
+   * The schema will attempt to convert the input to the correct format by default.
+   * You can disable this behavior by passing `{ convert: false }` as an option.
+   *
+   * @param {ZStringUncapitalizeOptions} [options] - Options for this rule.
+   */
   uncapitalize<_Opts extends ZStringUncapitalizeOptions>(
-    options?: F.Narrow<_Opts>
+    options?: _Opts
   ): ZString<{
     transform: 'uncapitalize'
     convert: _Opts['convert'] extends boolean
       ? _Opts['convert']
       : Opts['convert']
   }> {
-    const convert =
-      (options as _Opts)?.convert ?? this._props.getOne('options').convert
+    const convert = options?.convert ?? this._props.getOne('options').convert
 
     this._addCheck(
       'string.uncapitalize',
       handleCapitalizeUncapitalizeValidation('uncapitalize', { convert }),
-      { message: (options as _Opts)?.message }
+      { message: options?.message }
     )
 
     return new ZString(

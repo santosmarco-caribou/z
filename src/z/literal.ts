@@ -2,24 +2,27 @@ import type Joi from 'joi'
 import type { F } from 'ts-toolbelt'
 
 import { Z, ZJoi, ZType } from '../_internals'
+import { generateZHint } from '../utils'
 
 /* -------------------------------------------------------------------------- */
 /*                                  ZLiteral                                  */
 /* -------------------------------------------------------------------------- */
 
-type AllowedLiterals = string | number | boolean | symbol
+export type AllowedLiterals = string | number | boolean
 
-export class ZLiteral<T extends NonNullable<AllowedLiterals>> extends Z<{
+export class ZLiteral<T extends AllowedLiterals> extends Z<{
   Output: T
   Input: T
   Schema: Joi.AnySchema
   Value: T
 }> {
   readonly name = ZType.Literal
-  protected readonly _hint =
-    typeof this._props.getOne('value') === 'string'
-      ? `'${String(this._props.getOne('value'))}'`
-      : String(this._props.getOne('value'))
+  protected readonly _hint = generateZHint(() => {
+    const innerValue = this._props.getOne('value')
+    return typeof innerValue === 'string'
+      ? `'${String(innerValue)}'`
+      : String(innerValue)
+  })
 
   get value(): T {
     return this._props.getOne('value')
@@ -27,7 +30,7 @@ export class ZLiteral<T extends NonNullable<AllowedLiterals>> extends Z<{
 
   /* ------------------------------------------------------------------------ */
 
-  static create = <T extends NonNullable<AllowedLiterals>>(
+  static create = <T extends AllowedLiterals>(
     value: F.Narrow<T>
   ): ZLiteral<T> =>
     new ZLiteral(
@@ -39,3 +42,7 @@ export class ZLiteral<T extends NonNullable<AllowedLiterals>> extends Z<{
       { value: value as T }
     )
 }
+
+/* -------------------------------------------------------------------------- */
+
+export type AnyZLiteral = ZLiteral<AllowedLiterals>

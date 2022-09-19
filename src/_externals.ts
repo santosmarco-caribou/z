@@ -11,6 +11,7 @@ import {
   ZBrand,
   ZCustom,
   ZDate,
+  ZDefault,
   ZDiscriminatedUnion,
   ZEnum,
   ZFalse,
@@ -57,6 +58,7 @@ const booleanType = ZBoolean.create
 const brandType = ZBrand.create
 const customType = ZCustom.create
 const dateType = ZDate.create
+const defaultType = ZDefault.create
 const discriminatedUnionType = ZDiscriminatedUnion.create
 const enumType = ZEnum.create
 const falseType = ZFalse.create
@@ -103,6 +105,7 @@ export {
   brandType as brand,
   customType as custom,
   dateType as date,
+  defaultType as default,
   discriminatedUnionType as discriminatedUnion,
   enumType as enum,
   falseType as false,

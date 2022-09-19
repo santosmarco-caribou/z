@@ -5,9 +5,11 @@ import type { A, F } from 'ts-toolbelt'
 import type { CamelCasedProperties } from 'type-fest'
 
 import {
+  AllowedDefaults,
   ZArray,
   ZBrand,
   ZBrandTag,
+  ZDefault,
   ZGlobals,
   ZHooksController,
   ZHooksObject,
@@ -35,9 +37,9 @@ import { colorizeZHint } from '../utils'
 
 settings.initFunction = '_init'
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                              ZDef/ZDependencies/ZProps                                             */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                          ZDef/ZDependencies/ZProps                         */
+/* -------------------------------------------------------------------------- */
 
 export type ZDef = {
   Output: any
@@ -45,7 +47,7 @@ export type ZDef = {
   Schema: Joi.Schema
 }
 
-/* -------------------------------------------------- ZDependencies ------------------------------------------------- */
+/* ------------------------------ ZDependencies ----------------------------- */
 
 export type ZDependencies<Def extends ZDef> = {
   schema: Def['Schema']
@@ -55,7 +57,7 @@ export type ZDependencies<Def extends ZDef> = {
 
 export type AnyZDependencies = ZDependencies<ZDef>
 
-/* ----------------------------------------------------- ZProps ----------------------------------------------------- */
+/* --------------------------------- ZProps --------------------------------- */
 
 export type ZProps<Def extends ZDef> = CamelCasedProperties<
   Omit<Def, keyof ZDef>
@@ -63,9 +65,20 @@ export type ZProps<Def extends ZDef> = CamelCasedProperties<
 
 export type AnyZProps = ZProps<ZDef>
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                        BaseZ                                                       */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------- ZOptions -------------------------------- */
+
+export type ZFormattedHintOptions = {
+  /**
+   * Whether to colorize the output.
+   *
+   * @default false
+   */
+  color?: true
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                    BaseZ                                   */
+/* -------------------------------------------------------------------------- */
 
 export interface BaseZ<Def extends ZDef> {
   readonly $_output: Def['Output']
@@ -78,9 +91,9 @@ export interface BaseZ<Def extends ZDef> {
 
 export type AnyBaseZ = BaseZ<ZDef>
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                          Z                                                         */
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                                      Z                                     */
+/* -------------------------------------------------------------------------- */
 
 export interface Z<Def extends ZDef>
   extends BaseZ<Def>,
@@ -129,9 +142,13 @@ export abstract class Z<Def extends ZDef> {
   }
 
   get hint(): string {
+    return this._hint
+  }
+
+  getFormattedHint({ color = true }: ZFormattedHintOptions): string {
     let _hint = this._hint
 
-    if (!ZGlobals.get().options.stripColorsOnHints) {
+    if (!ZGlobals.get().options.stripColorsOnHints && color) {
       _hint = colorizeZHint(_hint)
     }
 
@@ -143,7 +160,7 @@ export abstract class Z<Def extends ZDef> {
     return this
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   /**
    * Retrieves an optional version of the `ZType`.
@@ -199,6 +216,10 @@ export abstract class Z<Def extends ZDef> {
     return ZNonNullable.create(this)
   }
 
+  default<D extends AllowedDefaults>(value: D): ZDefault<this, D> {
+    return ZDefault.create(this, value)
+  }
+
   array(): ZArray<this> {
     return ZArray.create(this)
   }
@@ -229,7 +250,7 @@ export abstract class Z<Def extends ZDef> {
     return ZReadonlyDeep.create(this)
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   isOptional(): boolean {
     return this.safeParse(undefined).ok
@@ -239,7 +260,7 @@ export abstract class Z<Def extends ZDef> {
     return this.safeParse(null).ok
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   transform<NewOut>(
     transform: (arg: Def['Output']) => NewOut
@@ -254,7 +275,7 @@ export type AnyZ<Output = any> = Z<{
   Schema: Joi.Schema
 }>
 
-/* ------------------------------------------------- Type inference ------------------------------------------------- */
+/* ----------------------------- Type inference ----------------------------- */
 
 export type _ZOutput<T extends ZDef | AnyBaseZ> = T extends ZDef
   ? T['Output']
@@ -268,7 +289,7 @@ export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef
   ? T['$_input']
   : never
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export type TypeOf<T extends AnyZ> = T extends Z<infer Def>
   ? keyof _ZOutput<Def> extends typeof ZBrandTag

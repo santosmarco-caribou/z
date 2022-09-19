@@ -1,5 +1,4 @@
 import type Joi from 'joi'
-import type { F } from 'ts-toolbelt'
 
 import { Z, ZJoi, ZType } from '../_internals'
 import { toLowerCase, toUpperCase, unionizeHints } from '../utils'
@@ -8,7 +7,7 @@ import { toLowerCase, toUpperCase, unionizeHints } from '../utils'
 /*                                    ZEnum                                   */
 /* -------------------------------------------------------------------------- */
 
-export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
+export class ZEnum<T extends [string, ...string[]]> extends Z<{
   Output: T[number]
   Input: T[number]
   Schema: Joi.AnySchema
@@ -53,7 +52,7 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
 
   /* ------------------------------------------------------------------------ */
 
-  private _transform<_T extends readonly [string, ...string[]]>(
+  private _transform<_T extends [string, ...string[]]>(
     fn: (values: T) => _T
   ): ZEnum<_T> {
     const transformedValues = fn(this._props.getOne('values'))
@@ -69,15 +68,19 @@ export class ZEnum<T extends readonly [string, ...string[]]> extends Z<{
 
   /* ------------------------------------------------------------------------ */
 
-  static create = <T extends readonly [string, ...string[]]>(
-    values: F.Narrow<T>
-  ): ZEnum<T> =>
+  static create = <T extends string, U extends [T, ...T[]]>(
+    values: U
+  ): ZEnum<U> =>
     new ZEnum(
       {
         schema: ZJoi.any().valid(...values),
         manifest: {},
         hooks: {},
       },
-      { values: values as T }
+      { values: values }
     )
 }
+
+/* -------------------------------------------------------------------------- */
+
+export type AnyZEnum = ZEnum<[string, ...string[]]>

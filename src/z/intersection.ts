@@ -8,6 +8,7 @@ import {
   Z,
   ZJoi,
   ZType,
+  ZValidator,
 } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
@@ -17,7 +18,7 @@ import {
 export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   Output: U.IntersectOf<_ZOutput<T[number]>>
   Input: U.IntersectOf<_ZInput<T[number]>>
-  Schema: Joi.AlternativesSchema
+  Schema: Joi.AnySchema
   Components: T
 }> {
   readonly name = ZType.Intersection
@@ -35,30 +36,35 @@ export class ZIntersection<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   static create = <T extends [AnyZ, ...AnyZ[]]>(
     components: T
   ): ZIntersection<T> => {
-    const compAlreadyAlt = components.find(
+    const altZType = components.find(
       comp => comp._schema.get().type === 'alternatives'
     )
 
+    const schema = (
+      altZType
+        ? (altZType._schema.get() as Joi.AlternativesSchema).concat(
+            ZJoi.alternatives(
+              ...components
+                .filter(alt => alt._id !== altZType._id)
+                .map(alt => alt._schema.get())
+            )
+          )
+        : ZJoi.alternatives(...components.map(alt => alt._schema.get()))
+    ).match('all')
+
     return new ZIntersection(
       {
-        schema: (compAlreadyAlt
-          ? (
-              compAlreadyAlt._schema.get() as ReturnType<
-                typeof ZJoi['alternatives']
-              >
-            ).concat(
-              ZJoi.alternatives(
-                ...components
-                  .filter(comp => comp._id !== compAlreadyAlt._id)
-                  .map(comp => comp._schema.get())
-              )
-            )
-          : ZJoi.alternatives(...components.map(comp => comp._schema.get()))
-        ).match('all'),
+        schema: ZValidator.custom(ZJoi.any(), (_value, { OK, FAIL }) => {
+          const { value } = schema.validate(_value)
+          if (value) return OK(value)
+          return FAIL('intersection.base', {
+            types: components.map(o => o.hint),
+          })
+        }),
         manifest: {},
         hooks: {},
       },
-      { components: components }
+      { components }
     )
   }
 }

@@ -1,27 +1,23 @@
 import Joi from 'joi'
 import type { F } from 'ts-toolbelt'
 
-import { type _ZInput, type _ZOutput, type AnyZ, Z, ZType } from '../_internals'
+import { type _ZInput, _ZOutput, AnyZ, Z, ZType } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
 /*                                  ZDefault                                  */
 /* -------------------------------------------------------------------------- */
 
-export class ZDefault<
-  T extends AnyZ,
-  D extends _ZOutput<T> | (() => _ZOutput<T>)
-> extends Z<{
-  Output: undefined extends _ZOutput<T>
-    ?
-        | Exclude<_ZOutput<T>, undefined>
-        | (D extends F.Function ? ReturnType<D> : D)
-    : _ZOutput<T>
-  Input: undefined extends _ZInput<T>
-    ?
-        | Exclude<_ZInput<T>, undefined>
-        | (D extends F.Function ? ReturnType<D> : D)
-    : _ZInput<T>
-  Schema: Joi.AnySchema
+type _AllowedDefaults = boolean | number | string | any[] | object | null
+export type AllowedDefaults = _AllowedDefaults | (() => _AllowedDefaults)
+
+export class ZDefault<T extends AnyZ, D extends AllowedDefaults> extends Z<{
+  Output:
+    | Exclude<_ZOutput<T>, undefined>
+    | (D extends (...args: any[]) => infer R ? R : D)
+  Input:
+    | Exclude<_ZInput<T>, undefined>
+    | (D extends (...args: any[]) => infer R ? R : D)
+  Schema: Joi.Schema
   WithDefault: T
   DefaultValue: D
 }> {
@@ -36,16 +32,21 @@ export class ZDefault<
 
   /* ------------------------------------------------------------------------ */
 
-  static create = <T extends AnyZ, D extends _ZOutput<T>>(
+  static create = <T extends AnyZ, D extends AllowedDefaults>(
     withDefault: T,
-    defaultValue: F.Narrow<D>
-  ): ZDefault<T, D> =>
-    new ZDefault(
+    defaultValue: D
+  ): ZDefault<T, D> => {
+    const updatedManifest = withDefault._manifest
+      .update('default', { value: defaultValue })
+      .get()
+
+    return new ZDefault(
       {
         schema: withDefault._schema.get().default(defaultValue),
-        manifest: withDefault._manifest.get(),
+        manifest: updatedManifest,
         hooks: withDefault._hooks.get(),
       },
       { withDefault, defaultValue }
     )
+  }
 }

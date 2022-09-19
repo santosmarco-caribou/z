@@ -1,9 +1,9 @@
-import { L } from 'ts-toolbelt'
+import { L, S } from 'ts-toolbelt'
 import { z } from '.'
 
 const PersonSchema = z.object({
   firstName: z.string().trim().description("The person's first name"),
-  middleName: z.string().trim().optional().summary('Optional'),
+  middleName: z.string().trim().optional().summary('Optional').or(z.number()),
   lastName: z.string().trim().lowercase(),
   nameSuffix: z
     .enum(['Jr', 'III', 'II', 'I'])
@@ -92,19 +92,32 @@ const PersonSchema = z.object({
     ),
 })
 
-console.log(PersonSchema.hint)
+type A = z.infer<typeof PersonSchema>
 
-const ass = z.instanceof(RegExp)
-
-type A = z.infer<typeof PersonSchema> & number
-
-console.log(ass.hint)
-
+const c = z.template([
+  z.string(),
+  z.number(),
+  z.literal('abc'),
+  z.true(),
+  z.enum(['123', 'a', 'b']),
+])
+type C = z.infer<typeof c>
 console.log(
-  z.array(z.any()).ascending({ strict: true }).safeParse([2, 3, 1, 4]),
-  z.object({}).strict()._schema.get().describe()
+  z.template([
+    z.string(),
+    z.number(),
+    z.literal('abc'),
+    z.enum(['123', 'a', 'b']),
+  ])
 )
 
-const b = z.literal(BigInt(100))
+type C_ = S.Join<[string, number, 'abc', true, 'a' | '123' | 'b']>
 
-console.log(z.null().nonnullable().hint)
+console.log(z.number().integer({ message: 'a' }).safeParse(1.2))
+
+// console.log(
+//   z.discriminatedUnion('type', [
+//     z.objegitct({ type: z.literal('car'), make: z.string().trim() }),
+//     z.object({ type: z.literal('truck'), make: z.string().trim() }),
+//   ])
+// )

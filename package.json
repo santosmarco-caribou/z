@@ -25,6 +25,8 @@
     "lodash": "^4.17.21",
     "nanoid": "3.3.4",
     "redux": "^4.2.0",
+    "runtype": "^0.2.3",
+    "runtypes": "^6.6.0",
     "ts-mixer": "^6.0.1"
   },
   "devDependencies": {

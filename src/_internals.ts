@@ -7,7 +7,7 @@ export * from './manifest/openapi'
 export * from './types'
 export * from './validation/error'
 export * from './validation/issue-map'
-export * from "./globals/globals"
+export * from './globals/globals'
 export * from './validation/parser'
 export * from './controllers/schema'
 export * from './validation/validator'

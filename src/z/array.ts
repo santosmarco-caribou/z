@@ -67,10 +67,10 @@ export class ZArray<
   }
 
   /**
-   * Requires the array to be in ascending order.
+   * Requires the input to be an array in ascending order.
    *
-   * The schema will attempt to convert the array to the correct order by default.
-   * To disable this behavior, pass `{ strict: true }` as an option.
+   * The schema will attempt to convert the input to the correct order by default.
+   * You can disable this behavior by passing `{ strict: true }` as an option.
    *
    * @param {ZArraySortOptions} [options] - Options for this rule.
    */
@@ -82,10 +82,10 @@ export class ZArray<
     return this
   }
   /**
-   * Requires the array to be in descending order.
+   * Requires the input to be an array in descending order.
    *
-   * The schema will attempt to convert the array to the correct order by default.
-   * To disable this behavior, pass `{ strict: true }` as an option.
+   * The schema will attempt to convert the input to the correct order by default.
+   * You can disable this behavior by passing `{ strict: true }` as an option.
    *
    * @param {ZArraySortOptions} [options] - Options for this rule.
    */

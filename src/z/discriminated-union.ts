@@ -1,11 +1,11 @@
 import Joi from 'joi'
 import { isUndefined } from 'lodash'
-import { Primitive } from 'type-fest'
 
 import {
   _ZInput,
   _ZOutput,
   _zShapeToJoiSchemaMap,
+  AllowedLiterals,
   AnyZObjectShape,
   Z,
   ZJoi,
@@ -21,7 +21,7 @@ import { unionizeHints } from '../utils'
 
 export type ZDiscriminatedUnionOption<
   Discriminator extends string,
-  DiscriminatorValue extends NonNullable<Primitive>
+  DiscriminatorValue extends AllowedLiterals
 > = ZObject<
   {
     [K in Discriminator]: ZLiteral<DiscriminatorValue>
@@ -30,7 +30,7 @@ export type ZDiscriminatedUnionOption<
 
 export class ZDiscriminatedUnion<
   Discriminator extends string,
-  DiscriminatorValue extends NonNullable<Primitive>,
+  DiscriminatorValue extends AllowedLiterals,
   Option extends ZDiscriminatedUnionOption<Discriminator, DiscriminatorValue>
 > extends Z<{
   Output: _ZOutput<Option>
@@ -51,7 +51,7 @@ export class ZDiscriminatedUnion<
 
   static create = <
     Discriminator extends string,
-    DiscriminatorValue extends NonNullable<Primitive>,
+    DiscriminatorValue extends AllowedLiterals,
     Types extends [
       ZDiscriminatedUnionOption<Discriminator, DiscriminatorValue>,
       ZDiscriminatedUnionOption<Discriminator, DiscriminatorValue>,

@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import { type ZManifestObject,Z, ZJoi, ZType } from '../_internals'
+import { type ZManifestObject, Z, ZJoi, ZType } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
 /*                                  ZBoolean                                  */

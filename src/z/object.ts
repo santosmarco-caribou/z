@@ -275,6 +275,8 @@ export class ZObject<
     return zObject
   }
 
+  /* ------------------------------------------------------------------------ */
+
   static create = <Shape extends AnyZObjectShape>(
     shape: Shape
   ): ZObject<Shape> =>

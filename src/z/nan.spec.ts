@@ -105,4 +105,19 @@ generateBaseSpec('ZNaN', ZNaN, {
       expectedIssue: { code: 'nan.base', message: '"value" must be a NaN' },
     },
   },
+  baseMethodsConfig: {
+    nonnullable: {
+      expectedHint: 'NaN',
+      expectedIssues: {
+        undefined: {
+          code: 'any.required',
+          message: '"value" is required',
+        },
+        null: {
+          code: 'any.invalid',
+          message: '"value" contains an invalid value',
+        },
+      },
+    },
+  },
 })

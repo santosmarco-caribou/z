@@ -70,6 +70,21 @@ generateBaseSpec(
       tomorrow: shouldNotParseDefaultConfig('A, B, C'),
       isostring: shouldNotParseDefaultConfig('A, B, C'),
     },
+    baseMethodsConfig: {
+      nonnullable: {
+        expectedHint: "'A' | 'B' | 'C'",
+        expectedIssues: {
+          undefined: {
+            code: 'any.required',
+            message: '"value" is required',
+          },
+          null: {
+            code: 'any.only',
+            message: '"value" must be one of [A, B, C]',
+          },
+        },
+      },
+    },
   }
 )
 
@@ -119,6 +134,21 @@ generateBaseSpec(
       now: shouldNotParseDefaultConfig('A, B'),
       tomorrow: shouldNotParseDefaultConfig('A, B'),
       isostring: shouldNotParseDefaultConfig('A, B'),
+    },
+    baseMethodsConfig: {
+      nonnullable: {
+        expectedHint: "'A' | 'B'",
+        expectedIssues: {
+          undefined: {
+            code: 'any.required',
+            message: '"value" is required',
+          },
+          null: {
+            code: 'any.only',
+            message: '"value" must be one of [A, B]',
+          },
+        },
+      },
     },
   }
 )

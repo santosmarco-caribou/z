@@ -18,6 +18,15 @@ import { generateZHint } from '../utils'
 /*                                   ZArray                                   */
 /* -------------------------------------------------------------------------- */
 
+export type ZArraySortOptions = ZCheckOptions<
+  'array.sort',
+  {
+    strict?: boolean
+  }
+>
+
+/* -------------------------------------------------------------------------- */
+
 type ZArrayDef<T extends AnyZ, Card extends 'many' | 'atleastone' | number> = {
   Output: Card extends number
     ? ReadonlyTuple<_ZOutput<T>, Card>
@@ -59,23 +68,40 @@ export class ZArray<
 
   /**
    * Requires the array to be in ascending order.
+   *
+   * The schema will attempt to convert the array to the correct order by default.
+   * To disable this behavior, pass `{ strict: true }` as an option.
+   *
+   * @param {ZArraySortOptions} [options] - Options for this rule.
    */
-  ascending(options?: ZCheckOptions<'array.sort'>): this {
-    this._addCheck('array.sort', v => v.sort({ order: 'ascending' }), options)
+  ascending(options?: ZArraySortOptions): this {
+    options?.strict && this._schema.updatePreferences({ convert: false })
+    this._addCheck('array.sort', v => v.sort({ order: 'ascending' }), {
+      message: options?.message,
+    })
     return this
   }
   /**
    * Requires the array to be in descending order.
+   *
+   * The schema will attempt to convert the array to the correct order by default.
+   * To disable this behavior, pass `{ strict: true }` as an option.
+   *
+   * @param {ZArraySortOptions} [options] - Options for this rule.
    */
-  descending(options?: ZCheckOptions<'array.sort'>): this {
-    this._addCheck('array.sort', v => v.sort({ order: 'descending' }), options)
+  descending(options?: ZArraySortOptions): this {
+    options?.strict && this._schema.updatePreferences({ convert: false })
+    this._addCheck('array.sort', v => v.sort({ order: 'descending' }), {
+      message: options?.message,
+    })
     return this
   }
 
   /**
-   * Requires the array to have at least a certain number of elements.
+   * Requires the array to have at least a certain number of elements (inclusive).
    *
    * @param min - The minimum number of elements in the array.
+   * @param {ZCheckOptions<'array.min'>} [options] - Options for this rule.
    */
   min<T extends number>(
     min: NonNegativeInteger<T>,
@@ -85,7 +111,7 @@ export class ZArray<
     return this
   }
   /**
-   * Requires the array to have at most a certain number of elements.
+   * Requires the array to have at most a certain number of elements (inclusive).
    *
    * @param max - The maximum number of elements in the array.
    */
@@ -96,6 +122,7 @@ export class ZArray<
     this._addCheck('array.max', v => v.max(max), options)
     return this
   }
+
   /**
    * Requires the array to have an exact number of elements.
    *

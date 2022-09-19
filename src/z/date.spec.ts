@@ -118,4 +118,19 @@ generateBaseSpec('ZDate', ZDate, {
         expect(z.between(YESTERDAY, TOMORROW).parse(NOW)).toStrictEqual(NOW),
     },
   ],
+  baseMethodsConfig: {
+    nonnullable: {
+      expectedHint: 'Date',
+      expectedIssues: {
+        undefined: {
+          code: 'any.required',
+          message: '"value" is required',
+        },
+        null: {
+          code: 'any.invalid',
+          message: '"value" contains an invalid value',
+        },
+      },
+    },
+  },
 })

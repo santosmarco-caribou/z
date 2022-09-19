@@ -17,6 +17,12 @@ const shouldNotParseDefaultConfig = (value: string) => ({
         message: `"value" must be one of [${value}, null]`,
       },
     },
+    nonnullable: {
+      expectedIssue: {
+        code: 'any.only',
+        message: `"value" must be [${value}]`,
+      },
+    },
   },
 })
 
@@ -63,6 +69,21 @@ generateBaseSpec(
       now: shouldNotParseDefaultConfig('A'),
       tomorrow: shouldNotParseDefaultConfig('A'),
       isostring: shouldNotParseDefaultConfig('A'),
+    },
+    baseMethodsConfig: {
+      nonnullable: {
+        expectedHint: "'A'",
+        expectedIssues: {
+          undefined: {
+            code: 'any.required',
+            message: '"value" is required',
+          },
+          null: {
+            code: 'any.only',
+            message: '"value" must be [A]',
+          },
+        },
+      },
     },
   }
 )
@@ -111,6 +132,21 @@ generateBaseSpec(
       tomorrow: shouldNotParseDefaultConfig('true'),
       isostring: shouldNotParseDefaultConfig('true'),
     },
+    baseMethodsConfig: {
+      nonnullable: {
+        expectedHint: 'true',
+        expectedIssues: {
+          undefined: {
+            code: 'any.required',
+            message: '"value" is required',
+          },
+          null: {
+            code: 'any.only',
+            message: '"value" must be [true]',
+          },
+        },
+      },
+    },
   }
 )
 
@@ -158,55 +194,20 @@ generateBaseSpec(
       tomorrow: shouldNotParseDefaultConfig('100'),
       isostring: shouldNotParseDefaultConfig('100'),
     },
-  }
-)
-
-generateBaseSpec(
-  'ZLiteral(BigInt(100))',
-  { create: () => ZLiteral.create(BigInt(100)) },
-  {
-    expectedTypeName: 'ZLiteral',
-    expectedHints: {
-      default: 'BigInt(100)',
-      optional: 'BigInt(100) | undefined',
-      nullable: 'BigInt(100) | null',
-      nullish: 'BigInt(100) | null | undefined',
-    },
-    should: {
-      'BigInt(100)': { parse: true },
-      // NOT
-      undefined: {
-        parse: false,
-        expectedIssue: { code: 'any.required', message: '"value" is required' },
-      },
-      null: {
-        parse: false,
-        expectedIssue: {
-          code: 'any.only',
-          message: '"value" must be [BigInt(100)]',
+    baseMethodsConfig: {
+      nonnullable: {
+        expectedHint: '100',
+        expectedIssues: {
+          undefined: {
+            code: 'any.required',
+            message: '"value" is required',
+          },
+          null: {
+            code: 'any.only',
+            message: '"value" must be [100]',
+          },
         },
       },
-      true: shouldNotParseDefaultConfig('BigInt(100)'),
-      false: shouldNotParseDefaultConfig('BigInt(100)'),
-      'BigInt(-100)': shouldNotParseDefaultConfig('BigInt(100)'),
-      'BigInt(0)': shouldNotParseDefaultConfig('BigInt(100)'),
-      NaN: shouldNotParseDefaultConfig('BigInt(100)'),
-      A: shouldNotParseDefaultConfig('BigInt(100)'),
-      B: shouldNotParseDefaultConfig('BigInt(100)'),
-      C: shouldNotParseDefaultConfig('BigInt(100)'),
-      '-100.123': shouldNotParseDefaultConfig('BigInt(100)'),
-      '-100': shouldNotParseDefaultConfig('BigInt(100)'),
-      '-10': shouldNotParseDefaultConfig('BigInt(100)'),
-      '-1': shouldNotParseDefaultConfig('BigInt(100)'),
-      '0': shouldNotParseDefaultConfig('BigInt(100)'),
-      '1': shouldNotParseDefaultConfig('BigInt(100)'),
-      '10': shouldNotParseDefaultConfig('BigInt(100)'),
-      '100': shouldNotParseDefaultConfig('BigInt(100)'),
-      '100.123': shouldNotParseDefaultConfig('BigInt(100)'),
-      yesterday: shouldNotParseDefaultConfig('BigInt(100)'),
-      now: shouldNotParseDefaultConfig('BigInt(100)'),
-      tomorrow: shouldNotParseDefaultConfig('BigInt(100)'),
-      isostring: shouldNotParseDefaultConfig('BigInt(100)'),
     },
   }
 )

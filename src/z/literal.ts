@@ -1,21 +1,25 @@
 import type Joi from 'joi'
 import type { F } from 'ts-toolbelt'
-import type { Primitive } from 'type-fest'
 
-import { Z, ZJoi, ZType, ZValidator } from '../_internals'
+import { Z, ZJoi, ZType } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
 /*                                  ZLiteral                                  */
 /* -------------------------------------------------------------------------- */
 
-export class ZLiteral<T extends NonNullable<Primitive>> extends Z<{
+type AllowedLiterals = string | number | boolean | symbol
+
+export class ZLiteral<T extends NonNullable<AllowedLiterals>> extends Z<{
   Output: T
   Input: T
   Schema: Joi.AnySchema
   Value: T
 }> {
   readonly name = ZType.Literal
-  protected readonly _hint = generateHint(this._props.getOne('value'))
+  protected readonly _hint =
+    typeof this._props.getOne('value') === 'string'
+      ? `'${String(this._props.getOne('value'))}'`
+      : String(this._props.getOne('value'))
 
   get value(): T {
     return this._props.getOne('value')
@@ -23,41 +27,15 @@ export class ZLiteral<T extends NonNullable<Primitive>> extends Z<{
 
   /* ------------------------------------------------------------------------ */
 
-  static create = <T extends NonNullable<Primitive>>(
+  static create = <T extends NonNullable<AllowedLiterals>>(
     value: F.Narrow<T>
   ): ZLiteral<T> =>
     new ZLiteral(
       {
-        schema:
-          typeof value === 'bigint'
-            ? ZValidator.custom(ZJoi.any(), (_value, { schema, OK, FAIL }) =>
-                typeof _value === 'bigint' &&
-                _value.valueOf() === value.valueOf()
-                  ? OK(_value)
-                  : FAIL('any.only', {
-                      valids: [
-                        `BigInt(${value})`,
-                        ...(schema.describe().valids ?? []),
-                      ],
-                    })
-              )
-            : ZJoi.any().valid(value),
+        schema: ZJoi.any().valid(value),
         manifest: {},
         hooks: {},
       },
       { value: value as T }
     )
-}
-
-/* -------------------------------------------------------------------------- */
-
-const generateHint = (value: NonNullable<Primitive>): string => {
-  switch (typeof value) {
-    case 'string':
-      return `'${value}'`
-    case 'bigint':
-      return `BigInt(${value})`
-    default:
-      return String(value)
-  }
 }

@@ -38,7 +38,8 @@ export const Z_ISSUE_MAP = {
     '{{#label}} does not contain {{#unknownMisses}} required value(s)',
   'array.length': '{{#label}} must contain {{#limit}} items',
   'array.max': '{{#label}} must contain less than or equal to {{#limit}} items',
-  'array.min': '{{#label}} must contain at least {{#limit}} items',
+  'array.min':
+    '{{#label}} must contain at least {{#limit}} item{if(#limit == 1, "", "s")}',
   'array.orderedLength': '{{#label}} must contain at most {{#limit}} items',
   'array.sort': '{{#label}} must be sorted in {#order} order by {{#by}}',
   'array.sort.mismatching':

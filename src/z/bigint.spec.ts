@@ -159,4 +159,19 @@ generateBaseSpec('ZBigInt', ZBigInt, {
       },
     },
   },
+  baseMethodsConfig: {
+    nonnullable: {
+      expectedHint: 'bigint',
+      expectedIssues: {
+        undefined: {
+          code: 'any.required',
+          message: '"value" is required',
+        },
+        null: {
+          code: 'any.invalid',
+          message: '"value" contains an invalid value',
+        },
+      },
+    },
+  },
 })

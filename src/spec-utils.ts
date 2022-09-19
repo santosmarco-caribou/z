@@ -60,10 +60,17 @@ type ShouldNotParseConfig = {
 type ShouldConfig = {
   [K in BaseSpecTestValuesKey]: (ShouldParseConfig | ShouldNotParseConfig) & {
     when?: {
-      [K in Exclude<keyof ExpectedHintsConfig, 'default'>]?: {
+      [K in Exclude<keyof ExpectedHintsConfig, 'default'> | 'nonnullable']?: {
         expectedIssue?: ExpectedIssue
       }
     }
+  }
+}
+
+type BaseSpecBaseMethodsConfig = {
+  nonnullable: {
+    expectedHint: string
+    expectedIssues: { undefined: ExpectedIssue; null: ExpectedIssue }
   }
 }
 
@@ -76,6 +83,7 @@ type BaseSpecConfig<Z extends AnyZ> = {
   expectedTypeName: string
   expectedHints: ExpectedHintsConfig
   should: ShouldConfig
+  baseMethodsConfig: BaseSpecBaseMethodsConfig
   additionalSpecs?: AdditionalSpecConfig<Z>[]
 }
 
@@ -86,7 +94,10 @@ export const generateBaseSpec = <Z extends AnyZ>(
 ): void => {
   const _generateBaseSpec = <_Z extends AnyZ>(
     sut: { create: () => _Z },
-    config: Omit<BaseSpecConfig<_Z>, 'expectedHints' | 'should'> & {
+    config: Omit<
+      BaseSpecConfig<_Z>,
+      'expectedHints' | 'should' | 'baseMethodsConfig'
+    > & {
       expectedHint: string
       shouldParse: Partial<Record<BaseSpecTestValuesKey, ShouldParseConfig>>
       shouldNotParse: Partial<
@@ -266,6 +277,47 @@ export const generateBaseSpec = <Z extends AnyZ>(
           {
             title: 'should have .isNullable() evaluate to true',
             spec: z => expect(z.isNullable()).toBe(true),
+          },
+        ],
+      }
+    )
+  })
+
+  describe('.nonnullable()', () => {
+    _generateBaseSpec(
+      { create: () => sut.create().nonnullable() },
+      {
+        expectedTypeName: 'ZNonNullable',
+        expectedHint: config.baseMethodsConfig.nonnullable.expectedHint,
+        shouldParse: Object.fromEntries(
+          shouldParse.filter(([key]) => key !== 'undefined' && key !== 'null')
+        ),
+        shouldNotParse: {
+          ...Object.fromEntries(
+            shouldNotParse.map(([key, val]) => [
+              key,
+              val.when?.nonnullable ? { ...val, ...val.when.nonnullable } : val,
+            ])
+          ),
+          undefined: {
+            parse: false,
+            expectedIssue:
+              config.baseMethodsConfig.nonnullable.expectedIssues.undefined,
+          },
+          null: {
+            parse: false,
+            expectedIssue:
+              config.baseMethodsConfig.nonnullable.expectedIssues.null,
+          },
+        },
+        additionalSpecs: [
+          {
+            title: 'should have .isOptional() evaluate to false',
+            spec: z => expect(z.isOptional()).toBe(false),
+          },
+          {
+            title: 'should have .isNullable() evaluate to false',
+            spec: z => expect(z.isNullable()).toBe(false),
           },
         ],
       }

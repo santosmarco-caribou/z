@@ -99,3 +99,12 @@ const ass = z.instanceof(RegExp)
 type A = z.infer<typeof PersonSchema> & number
 
 console.log(ass.hint)
+
+console.log(
+  z.array(z.any()).ascending({ strict: true }).safeParse([2, 3, 1, 4]),
+  z.object({}).strict()._schema.get().describe()
+)
+
+const b = z.literal(BigInt(100))
+
+console.log(z.null().nonnullable().hint)

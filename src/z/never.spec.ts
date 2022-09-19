@@ -108,4 +108,19 @@ generateBaseSpec('ZNever', ZNever, {
       expectedIssue: { code: 'any.unknown', message: '"value" is not allowed' },
     },
   },
+  baseMethodsConfig: {
+    nonnullable: {
+      expectedHint: 'never',
+      expectedIssues: {
+        undefined: {
+          code: 'any.required',
+          message: '"value" is required',
+        },
+        null: {
+          code: 'any.unknown',
+          message: '"value" is not allowed',
+        },
+      },
+    },
+  },
 })

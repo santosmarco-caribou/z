@@ -35,4 +35,19 @@ generateBaseSpec('ZVoid', ZVoid, {
     tomorrow: { parse: true },
     isostring: { parse: true },
   },
+  baseMethodsConfig: {
+    nonnullable: {
+      expectedHint: 'void',
+      expectedIssues: {
+        undefined: {
+          code: 'any.required',
+          message: '"value" is required',
+        },
+        null: {
+          code: 'any.invalid',
+          message: '"value" contains an invalid value',
+        },
+      },
+    },
+  },
 })

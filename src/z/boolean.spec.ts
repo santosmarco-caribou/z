@@ -175,6 +175,21 @@ generateBaseSpec('ZBoolean', ZBoolean, {
       spec: z => expect(z.false()).toBeInstanceOf(ZFalse),
     },
   ],
+  baseMethodsConfig: {
+    nonnullable: {
+      expectedHint: 'boolean',
+      expectedIssues: {
+        undefined: {
+          code: 'any.required',
+          message: '"value" is required',
+        },
+        null: {
+          code: 'any.invalid',
+          message: '"value" contains an invalid value',
+        },
+      },
+    },
+  },
 })
 
 generateBaseSpec('ZTrue', ZTrue, {
@@ -575,6 +590,21 @@ generateBaseSpec('ZTrue', ZTrue, {
       },
     },
   },
+  baseMethodsConfig: {
+    nonnullable: {
+      expectedHint: 'true',
+      expectedIssues: {
+        undefined: {
+          code: 'any.required',
+          message: '"value" is required',
+        },
+        null: {
+          code: 'any.only',
+          message: '"value" must be [true]',
+        },
+      },
+    },
+  },
 })
 
 generateBaseSpec('ZFalse', ZFalse, {
@@ -971,6 +1001,21 @@ generateBaseSpec('ZFalse', ZFalse, {
             code: 'any.only',
             message: '"value" must be one of [false, null]',
           },
+        },
+      },
+    },
+  },
+  baseMethodsConfig: {
+    nonnullable: {
+      expectedHint: 'false',
+      expectedIssues: {
+        undefined: {
+          code: 'any.required',
+          message: '"value" is required',
+        },
+        null: {
+          code: 'any.only',
+          message: '"value" must be [false]',
         },
       },
     },

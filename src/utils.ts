@@ -149,19 +149,28 @@ export const freezeDeep = <T>(x: T): ReadonlyDeep<T> => {
 
 /* ---------------------------------- Hints --------------------------------- */
 
-export type ZHintHelpers = {}
+const ZHintHelpers = {
+  unionizeHints: (...hints: string[]): string => {
+    const deunionized = hints.flatMap(h => h.split(' | '))
+    const unionized = [...new Set(deunionized)]
+      .map(h => h.trim())
+      .filter(h => !h)
+      .join(' | ')
+    if (unionized.split(' | ').includes('any')) return 'any'
+    if (unionized.split(' | ').includes('never')) return 'never'
+    if (unionized.split(' | ').includes('unknown')) return 'unknown'
+    return unionized
+  },
 
-const ZHintHelpers = {}
+  isOnlyUnionHint: (typeName: ZType): boolean =>
+    [ZType.Union, ZType.Nullable, ZType.Optional].includes(typeName),
+}
+
+type ZHintHelpers = typeof ZHintHelpers
 
 export const generateZHint = (
   generator: (helpers: ZHintHelpers) => string
-): string => {
-  const hint = generator(ZHintHelpers)
-
-  const colorized = colorizeZHint(hint)
-
-  return colorized
-}
+): string => generator(ZHintHelpers)
 
 export const colorizeZHint = (hint: string): string => {
   return (
@@ -189,7 +198,9 @@ export const colorizeZHint = (hint: string): string => {
 
 export const unionizeHints = (...hints: string[]): string => {
   const deunionized = hints.flatMap(h => h.split(' | '))
-  const unionized = [...new Set(deunionized)].join(' | ')
+  const unionized = [...new Set(deunionized)]
+    .filter(h => !h.match(/^\s*$/))
+    .join(' | ')
   if (unionized.split(' | ').includes('any')) return 'any'
   if (unionized.split(' | ').includes('never')) return 'never'
   if (unionized.split(' | ').includes('unknown')) return 'unknown'
@@ -198,9 +209,6 @@ export const unionizeHints = (...hints: string[]): string => {
 
 export const isComplexHint = (hint: string): boolean =>
   hint.split('\n').length > 1
-
-export const isOnlyUnionHint = (typeName: ZType): boolean =>
-  [ZType.Union, ZType.Nullable, ZType.Optional].includes(typeName)
 
 export const formatHint = (z: AnyZ): string => {
   if (

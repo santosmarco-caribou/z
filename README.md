@@ -4,6 +4,57 @@ ZTs is one more schema declaration and validation library but built on top of th
 
 ---
 
+## All `ZTypes`
+
+```ts
+z.any()
+z.array()
+z.bigint()
+z.binary()
+z.boolean()
+z.brand()
+z.custom()
+z.date()
+z.default()
+z.discriminatedUnion()
+z.enum()
+z.false()
+z.falsy()
+z.function()
+z.glo()
+z.instanceof()
+z.intersection()
+z.literal()
+z.map()
+z.nan()
+z.never()
+z.nonnullable()
+z.nullable()
+z.null()
+z.number()
+z.object()
+z.optional()
+z.preprocess()
+z.primitive()
+z.promise()
+z.propertyKey()
+z.readonlyDeep()
+z.readonly()
+z.record()
+z.set()
+z.string()
+z.symbol()
+z.template()
+z.true()
+z.tuple()
+z.typedArray()
+z.undefined()
+z.union()
+z.uniqsymbol()
+z.unknown()
+z.void()
+```
+
 ## Basic usage
 
 ```ts
@@ -13,7 +64,10 @@ const PersonSchema = z.object({
   firstName: z.string().trim().description("The person's first name"),
   middleName: z.string().trim().optional().summary('Optional'),
   lastName: z.string().trim().tag('name'),
-  nameSuffix: z.enum(['Jr', 'III', 'II', 'I']).optional().notes('To be improved in the future'),
+  nameSuffix: z
+    .enum(['Jr', 'III', 'II', 'I'])
+    .optional()
+    .notes('To be improved in the future'),
   age: z.number().integer().min(18).max(120).examples(42, { value: 99 }),
   dateOfBirth: z.date().after(new Date('January 01, 1900 00:00:00')),
   email: z.string().email(),
@@ -34,9 +88,16 @@ const PersonSchema = z.object({
   childrenNames: z.array(z.string().trim()).length(3).optional(),
   favoriteColorsRgb: z.record(
     z.string().trim(),
-    z.tuple([z.number().between(0, 255), z.number().between(0, 255), z.number().between(0, 255)])
+    z.tuple([
+      z.number().between(0, 255),
+      z.number().between(0, 255),
+      z.number().between(0, 255),
+    ])
   ),
-  favoriteColorsHex: z.record(z.propertykey(), z.string().regex(/^#[0-9a-f]{6}$/i)),
+  favoriteColorsHex: z.record(
+    z.propertykey(),
+    z.string().regex(/^#[0-9a-f]{6}$/i)
+  ),
   vehicle: z.union([
     z.object({
       type: z.literal('car'),

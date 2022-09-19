@@ -66,7 +66,9 @@ export class ZObject<
         Object.entries(this.shape).map(([key, z]) => [key, z?.hint])
       ),
       2
-    ).replaceAll(/"/g, '').replaceAll(/\\n(\w*)/g, '\n  $1')
+    )
+      .replaceAll(/"/g, '')
+      .replaceAll(/\\n(\w*)/g, '\n  $1')
   )
 
   get shape(): Shape {

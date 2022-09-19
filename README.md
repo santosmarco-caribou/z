@@ -63,7 +63,7 @@ Empty types are types that parse only `undefined` or `null`.
 ```ts
 z.undefined()
 z.null()
-z.void() // behaves like `z.undefined()`
+z.void() // behaves just like `z.undefined()`
 ```
 
 ## Catch-all types
@@ -75,11 +75,11 @@ z.any()
 z.unknown()
 ```
 
-> **_BUT,_** here's a caveat: `z.any()` and `z.unknown()` will parse any value indeed, **except** for `undefined`.
+> **_BUT,_** there's a caveat: `z.any()` and `z.unknown()` will parse any value indeed, **except** `undefined`.
 
-This is default behavior since no `ZType` parse `undefined`.
+This is expected behavior since no `ZType` should parse `undefined` by default.
 
-If you want to allow `undefined` values, though, you can use the `.optional()` convenience method:
+If you want to allow `undefined` values, though, you can always use the `.optional()` convenience method:
 
 ```ts
 z.any().optional()
@@ -89,6 +89,66 @@ z.unknown().optional()
 z.optional(z.any())
 z.optional(z.unknown())
 ```
+
+## Never type
+
+`z.never()` is a type that will always fail parsing.
+
+```ts
+z.never().parse(/* anything */) // => throws
+```
+
+## Primitives
+
+### String type
+
+Parses string values.
+
+```ts
+z.string()
+```
+
+You can use one or a combination of the several helper methods available in the `ZString` type to enforce different inputs:
+
+```ts
+z.string().alphanumeric() // or .alphanum()
+z.string().base64()
+z.string().hexadecimal() // or .hex()
+z.string().domain()
+z.string().hostname()
+z.string().ip()
+z.string().uri()
+z.string().dataUri()
+z.string().email()
+z.string().uuid() // or .guid()
+z.string().isoDate()
+z.string().isoDuration()
+z.string().creditCard()
+z.string().min()
+z.string().max()
+z.string().length()
+z.string().pattern() // or .regex()
+
+// Transformation methods
+z.string().lowercase()
+z.string().uppercase()
+z.string().capitalize()
+z.string().uncapitalize()
+z.string().insensitive()
+z.string().trim()
+z.string().replace()
+```
+
+#### `.alphanumeric()` _or `.alphanum()`_
+
+Requires the input to only contain `a-z`, `A-Z`, and `0-9`.
+
+```ts
+z.string().alphanumeric().parse('abc123') // => 'abc123'
+z.string().alphanumeric().parse('abc123!') // => throws
+```
+
+---
 
 ## Basic usage
 

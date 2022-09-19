@@ -17,12 +17,5 @@ export class ZAny extends Z<{
   /* ------------------------------------------------------------------------ */
 
   static create = (): ZAny =>
-    new ZAny(
-      {
-        schema: ZJoi.any().optional(),
-        manifest: {},
-        hooks: {},
-      },
-      {}
-    )
+    new ZAny({ schema: ZJoi.any(), manifest: {}, hooks: {} }, {})
 }

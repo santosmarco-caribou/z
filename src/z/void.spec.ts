@@ -11,29 +11,168 @@ generateBaseSpec('ZVoid', ZVoid, {
   },
   should: {
     undefined: { parse: true },
-    null: { parse: true },
-    true: { parse: true },
-    false: { parse: true },
-    'BigInt(-100)': { parse: true },
-    'BigInt(0)': { parse: true },
-    'BigInt(100)': { parse: true },
-    NaN: { parse: true },
-    A: { parse: true },
-    B: { parse: true },
-    C: { parse: true },
-    '-100.123': { parse: true },
-    '-100': { parse: true },
-    '-10': { parse: true },
-    '-1': { parse: true },
-    '0': { parse: true },
-    '1': { parse: true },
-    '10': { parse: true },
-    '100': { parse: true },
-    '100.123': { parse: true },
-    yesterday: { parse: true },
-    now: { parse: true },
-    tomorrow: { parse: true },
-    isostring: { parse: true },
+    // NOT
+    null: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    true: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    false: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    'BigInt(-100)': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    'BigInt(0)': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    'BigInt(100)': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    NaN: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    A: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    B: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    C: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '-100.123': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '-100': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '-10': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '-1': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '0': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '1': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '10': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '100': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    '100.123': {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    yesterday: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    now: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    tomorrow: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
+    isostring: {
+      parse: false,
+      expectedIssue: {
+        code: 'any.only',
+        message: '"value" must be [undefined]',
+      },
+    },
   },
   baseMethodsConfig: {
     nonnullable: {

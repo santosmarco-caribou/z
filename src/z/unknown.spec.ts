@@ -10,7 +10,10 @@ generateBaseSpec('ZUnknown', ZUnknown, {
     nullish: 'unknown',
   },
   should: {
-    undefined: { parse: true },
+    undefined: {
+      parse: false,
+      expectedIssue: { code: 'any.required', message: '"value" is required' },
+    },
     null: { parse: true },
     true: { parse: true },
     false: { parse: true },

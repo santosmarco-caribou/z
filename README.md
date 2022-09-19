@@ -4,7 +4,7 @@ ZTs is one more schema declaration and validation library but built on top of th
 
 ---
 
-## All `ZTypes`
+## All types
 
 ```ts
 z.any()
@@ -52,6 +52,42 @@ z.union()
 z.uniqsymbol()
 z.unknown()
 z.void()
+```
+
+---
+
+## Empty types
+
+Empty types are types that parse only `undefined` or `null`.
+
+```ts
+z.undefined()
+z.null()
+z.void() // behaves like `z.undefined()`
+```
+
+## Catch-all types
+
+Catch-all types, on the other hand, parse any value.
+
+```ts
+z.any()
+z.unknown()
+```
+
+> **_BUT,_** here's a caveat: `z.any()` and `z.unknown()` will parse any value indeed, **except** for `undefined`.
+
+This is default behavior since no `ZType` parse `undefined`.
+
+If you want to allow `undefined` values, though, you can use the `.optional()` convenience method:
+
+```ts
+z.any().optional()
+z.unknown().optional()
+
+// or
+z.optional(z.any())
+z.optional(z.unknown())
 ```
 
 ## Basic usage

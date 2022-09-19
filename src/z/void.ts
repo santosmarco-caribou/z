@@ -17,12 +17,5 @@ export class ZVoid extends Z<{
   /* ---------------------------------------------------------------------------------------------------------------- */
 
   static create = (): ZVoid =>
-    new ZVoid(
-      {
-        schema: ZJoi.any().optional(),
-        manifest: {},
-        hooks: {},
-      },
-      {}
-    )
+    new ZVoid({ schema: ZJoi.undefined(), manifest: {}, hooks: {} }, {})
 }

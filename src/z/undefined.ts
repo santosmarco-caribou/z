@@ -1,6 +1,6 @@
 import type Joi from 'joi'
 
-import { Z, ZJoi, ZType, ZValidator } from '../_internals'
+import { Z, ZJoi, ZType } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
 /*                                 ZUndefined                                 */
@@ -17,18 +17,5 @@ export class ZUndefined extends Z<{
   /* ------------------------------------------------------------------------ */
 
   static create = (): ZUndefined =>
-    new ZUndefined(
-      {
-        schema: ZValidator.custom(
-          ZJoi.any().optional(),
-          (value, { OK, FAIL }) =>
-            value === undefined
-              ? OK(undefined)
-              : FAIL('any.only', { valids: ['undefined'] })
-        ),
-        manifest: {},
-        hooks: {},
-      },
-      {}
-    )
+    new ZUndefined({ schema: ZJoi.undefined(), manifest: {}, hooks: {} }, {})
 }

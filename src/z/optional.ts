@@ -28,10 +28,7 @@ export class ZOptional<T extends AnyZ> extends Z<{
   static create = <T extends AnyZ>(innerType: T): ZOptional<T> =>
     new ZOptional(
       {
-        schema:
-          innerType._schema.get().$_getFlag('presence') === 'forbidden'
-            ? innerType._schema.get()
-            : innerType._schema.get().optional(),
+        schema: innerType._schema.get().optional(),
         manifest: innerType._manifest.get(),
         hooks: innerType._hooks.get(),
       },

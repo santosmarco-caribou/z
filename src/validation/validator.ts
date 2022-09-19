@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { merge } from 'lodash'
 import type { O } from 'ts-toolbelt'
 import type { Simplify } from 'type-fest'
 
@@ -13,7 +14,17 @@ import { EmptyObject, IsEmptyObject } from '../utils'
 
 /* ---------------------------------- ZJoi ---------------------------------- */
 
-export const ZJoi = Joi.defaults(schema => schema.required())
+export const ZJoi = merge(
+  Joi.defaults(schema => schema.required()),
+  {
+    undefined: () =>
+      Joi.custom((value, helpers) =>
+        value === undefined
+          ? value
+          : helpers.error('any.only', { valids: ['undefined'] })
+      ),
+  }
+)
 
 /* -------------------------------------------------------------------------- */
 

@@ -17,12 +17,5 @@ export class ZNull extends Z<{
   /* ------------------------------------------------------------------------ */
 
   static create = (): ZNull =>
-    new ZNull(
-      {
-        schema: ZJoi.any().valid(null),
-        manifest: {},
-        hooks: {},
-      },
-      {}
-    )
+    new ZNull({ schema: ZJoi.any().valid(null), manifest: {}, hooks: {} }, {})
 }

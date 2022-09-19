@@ -17,12 +17,5 @@ export class ZUnknown extends Z<{
   /* ------------------------------------------------------------------------ */
 
   static create = (): ZUnknown =>
-    new ZUnknown(
-      {
-        schema: ZJoi.any().optional(),
-        manifest: {},
-        hooks: {},
-      },
-      {}
-    )
+    new ZUnknown({ schema: ZJoi.any(), manifest: {}, hooks: {} }, {})
 }

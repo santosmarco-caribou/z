@@ -286,9 +286,6 @@ export type _ZInput<T extends ZDef | AnyBaseZ> = T extends ZDef
 export type TypeOf<T extends AnyZ> = keyof _ZOutput<T> extends typeof ZBrandTag
   ? // Branded types shouldn't be computed
     _ZOutput<T>
-  : _ZOutput<T> extends Date | Map<any, any> | Set<any>
-  ? // Dates, Maps and Sets also shouldn't be computed
-    _ZOutput<T>
   : T extends ZArray<infer E, infer C>
   ? // This is to fix a bug with ZArrays (reason still unknown)
     C extends number

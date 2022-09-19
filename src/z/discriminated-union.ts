@@ -1,49 +1,50 @@
 import Joi from 'joi'
-import { isUndefined } from 'lodash'
 
 import {
   _ZInput,
   _ZOutput,
-  _zShapeToJoiSchemaMap,
   AllowedLiterals,
   AnyZObjectShape,
   Z,
-  ZJoi,
   ZLiteral,
   ZObject,
+  ZObjectOptions,
   ZType,
+  ZUnion,
 } from '../_internals'
-import { unionizeHints } from '../utils'
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                 ZDiscriminatedUnion                                                */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-export type ZDiscriminatedUnionOption<
+export type ZDiscriminatedUnionOptionShape<
   Discriminator extends string,
   DiscriminatorValue extends AllowedLiterals
-> = ZObject<
-  {
-    [K in Discriminator]: ZLiteral<DiscriminatorValue>
-  } & Omit<AnyZObjectShape, Discriminator>
->
+> = { [K in Discriminator]: ZLiteral<DiscriminatorValue> } & AnyZObjectShape
 
 export class ZDiscriminatedUnion<
   Discriminator extends string,
   DiscriminatorValue extends AllowedLiterals,
-  Option extends ZDiscriminatedUnionOption<Discriminator, DiscriminatorValue>
+  Options extends [
+    ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>,
+    ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>,
+    ...ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>[]
+  ]
 > extends Z<{
-  Output: _ZOutput<Option>
-  Input: _ZInput<Option>
-  Schema: Joi.ObjectSchema
-  Options: Option[]
+  Output: _ZOutput<_ToRegularZUnion<Discriminator, DiscriminatorValue, Options>>
+  Input: _ZInput<_ToRegularZUnion<Discriminator, DiscriminatorValue, Options>>
+  Schema: Joi.AnySchema
+  Discriminator: Discriminator
+  Options: _ToRegularZUnion<Discriminator, DiscriminatorValue, Options>
 }> {
   readonly name = ZType.DiscriminatedUnion
-  protected readonly _hint = `${unionizeHints(
-    ...this._props.getOne('options').map(o => o.hint)
-  )}`
+  protected readonly _hint = 's'
 
-  get options(): Option[] {
+  get discriminator(): Discriminator {
+    return this._props.getOne('discriminator')
+  }
+
+  get options(): _ToRegularZUnion<Discriminator, DiscriminatorValue, Options> {
     return this._props.getOne('options')
   }
 
@@ -52,35 +53,35 @@ export class ZDiscriminatedUnion<
   static create = <
     Discriminator extends string,
     DiscriminatorValue extends AllowedLiterals,
-    Types extends [
-      ZDiscriminatedUnionOption<Discriminator, DiscriminatorValue>,
-      ZDiscriminatedUnionOption<Discriminator, DiscriminatorValue>,
-      ...ZDiscriminatedUnionOption<Discriminator, DiscriminatorValue>[]
+    Options extends [
+      ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>,
+      ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>,
+      ...ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>[]
     ]
   >(
     discriminator: Discriminator,
-    types: Types
-  ): ZDiscriminatedUnion<Discriminator, DiscriminatorValue, Types[number]> => {
-    return new ZDiscriminatedUnion(
+    options: { [K in keyof Options]: ZObject<Options[K], ZObjectOptions> }
+  ): ZDiscriminatedUnion<Discriminator, DiscriminatorValue, Options> => {
+    const union = ZUnion.create(options)
+    return new ZDiscriminatedUnion<Discriminator, DiscriminatorValue, Options>(
       {
-        schema: ZJoi.object({
-          [String(discriminator)]: ZJoi.any().valid(
-            ...types.map(t => t.shape[discriminator].value)
-          ),
-        }).append(
-          ZJoi.alternatives().conditional(ZJoi.ref(String(discriminator)), {
-            switch: types
-              .filter(t => !isUndefined(t.shape))
-              .map(t => ({
-                is: ZJoi.any().valid(t.shape?.[discriminator].value),
-                then: ZJoi.object(_zShapeToJoiSchemaMap(t['shape'])),
-              })),
-          })
-        ),
+        schema: union._schema.get(),
         manifest: {},
         hooks: {},
       },
-      { options: types }
+      { discriminator, options: union }
     )
   }
 }
+
+/* -------------------------------------------------------------------------- */
+
+type _ToRegularZUnion<
+  Discriminator extends string,
+  DiscriminatorValue extends AllowedLiterals,
+  Options extends [
+    ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>,
+    ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>,
+    ...ZDiscriminatedUnionOptionShape<Discriminator, DiscriminatorValue>[]
+  ]
+> = ZUnion<{ [K in keyof Options]: ZObject<Options[K], ZObjectOptions> }>

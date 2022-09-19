@@ -61,7 +61,7 @@ type CustomValidationResult =
   | [typeof VALIDATION_OK, any]
   | [typeof VALIDATION_FAIL, AnyZIssueCode, Record<string, any>]
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 export interface ZValidator<Def extends ZDef> extends BaseZ<Def> {}
 
@@ -110,7 +110,7 @@ export class ZValidator<Def extends ZDef> {
     return this
   }
 
-  /* ---------------------------------------------------------------------------------------------------------------- */
+  /* ------------------------------------------------------------------------ */
 
   static custom = <Output, BaseSchema extends Joi.Schema<Output>>(
     baseSchema: BaseSchema,

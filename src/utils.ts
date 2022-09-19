@@ -187,10 +187,7 @@ export const colorizeZHint = (hint: string): string => {
       // string literals
       .replaceAll(/'(\w*)'/g, chalk.yellow("'$1'"))
       // template string ticks (`)
-      .replaceAll(
-        /`([^`]*)`/g,
-        `${chalk.yellow('`')}$1${chalk.yellow('`')}`
-      )
+      .replaceAll(/`([^`]*)`/g, `${chalk.yellow('`')}$1${chalk.yellow('`')}`)
       // template string braces
       .replaceAll(
         /\$\{([^}]*)\}/g,

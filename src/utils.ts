@@ -177,7 +177,7 @@ export const colorizeZHint = (hint: string): string => {
     hint
       // `:` and `?:` in objects
       .replaceAll(/(.)(\??:) /g, `$1${chalk.magenta('$2')} `)
-      // `|` in unions and `$` in intersections
+      // `|` in unions and `&` in intersections
       .replaceAll(/ (\||&) /g, ` ${chalk.magenta('$1')} `)
       // `instanceof` keyword and type
       .replaceAll(
@@ -186,12 +186,22 @@ export const colorizeZHint = (hint: string): string => {
       )
       // string literals
       .replaceAll(/'(\w*)'/g, chalk.yellow("'$1'"))
+      // template string ticks (`)
+      .replaceAll(
+        /`([^`]*)`/g,
+        `${chalk.yellow('`')}$1${chalk.yellow('`')}`
+      )
+      // template string braces
+      .replaceAll(
+        /\$\{([^}]*)\}/g,
+        `${chalk.magenta('${')}$1${chalk.magenta('}')}`
+      )
       // types
       .replaceAll(
         /(null|undefined|string|number|boolean|true|false|symbol|any|never|unknown|void|bigint|Date|Record|Readonly|Map|Set)/g,
         chalk.cyan('$1')
       )
-      // format strings
+      // format strings (e.g., string($alphanumeric))
       .replaceAll(/(\(\$[^)]*\))/g, chalk.italic.gray('$1'))
   )
 }
@@ -222,9 +232,11 @@ export const formatHint = (z: AnyZ): string => {
 
 /* -------------------------------------------------------------------------- */
 
-export const safeJsonStringify = (value: any): string =>
-  JSON.stringify(value, (_, val) =>
-    typeof val === 'bigint' ? `BigInt(${val.toString()})` : val
+export const safeJsonStringify = (value: any, space?: number): string =>
+  JSON.stringify(
+    value,
+    (_, val) => (typeof val === 'bigint' ? `BigInt(${val.toString()})` : val),
+    space
   )
 
 /* ---------------------------------- Tests --------------------------------- */

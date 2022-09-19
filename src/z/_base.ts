@@ -146,8 +146,9 @@ export abstract class Z<Def extends ZDef> {
     return this._hint
   }
 
-  getFormattedHint({ color = true }: ZFormattedHintOptions): string {
-    const formatted = color ? colorizeZHint(this._hint) : this._hint
+  getFormattedHint(options?: ZFormattedHintOptions): string {
+    const formatted =
+      options?.color === false ? this._hint : colorizeZHint(this._hint)
     return formatted
   }
 

@@ -64,8 +64,9 @@ export class ZObject<
     safeJsonStringify(
       Object.fromEntries(
         Object.entries(this.shape).map(([key, z]) => [key, z?.hint])
-      )
-    )
+      ),
+      2
+    ).replaceAll(/"/g, '').replaceAll(/\\n(\w*)/g, '\n  $1')
   )
 
   get shape(): Shape {

@@ -6,6 +6,10 @@ const maxTwo = z.string().array().max(2)
 const justTwo = z.string().array().length(2)
 const intNum = z.string().array().nonempty()
 const nonEmptyMax = z.string().array().nonempty().max(2)
+const ascending = z.number().array().ascending()
+const ascendingStrict = z.number().array().ascending({ strict: true })
+const descending = z.number().array().descending()
+const descendingStrict = z.number().array().descending({ strict: true })
 
 type t1 = z.infer<typeof minTwo>
 assertEqual<string[], t1>(true)
@@ -24,6 +28,10 @@ it('parses valid inputs', () => {
   justTwo.parse(['a', 'a'])
   intNum.parse(['a'])
   nonEmptyMax.parse(['a'])
+  ascending.parse([2, 1])
+  ascendingStrict.parse([1, 2])
+  descending.parse([1, 2])
+  descendingStrict.parse([2, 1])
 })
 
 it('does not parse invalid inputs', () => {
@@ -47,6 +55,12 @@ it('does not parse invalid inputs', () => {
   )
   expect(() => nonEmptyMax.parse(['a', 'a', 'a'])).toThrowError(
     '"value" must contain at most 2 items'
+  )
+  expect(() => ascendingStrict.parse([2, 1])).toThrowError(
+    '"value" must be sorted in ascending order by value'
+  )
+  expect(() => descendingStrict.parse([1, 2])).toThrowError(
+    '"value" must be sorted in descending order by value'
   )
 })
 

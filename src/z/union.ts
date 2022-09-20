@@ -33,26 +33,22 @@ export class ZUnion<T extends [AnyZ, ...AnyZ[]]> extends Z<{
   /* ------------------------------------------------------------------------ */
 
   static create = <T extends [AnyZ, ...AnyZ[]]>(alternatives: T): ZUnion<T> => {
-    const altZType = alternatives.find(
-      alt => alt._schema.get().type === 'alternatives'
+    const flattenedAlternatives = alternatives.flatMap((alt): AnyZ[] =>
+      alt instanceof ZUnion ? alt.alternatives : [alt]
     )
-
-    const schema = altZType
-      ? (altZType._schema.get() as Joi.AlternativesSchema).concat(
-          ZJoi.alternatives(
-            ...alternatives
-              .filter(alt => alt._id !== altZType._id)
-              .map(alt => alt._schema.get())
-          )
-        )
-      : ZJoi.alternatives(...alternatives.map(alt => alt._schema.get()))
 
     return new ZUnion(
       {
         schema: ZValidator.custom(ZJoi.any(), (_value, { OK, FAIL }) => {
-          const { value } = schema.validate(_value)
-          if (value) return OK(value)
-          return FAIL('union.base', { types: alternatives.map(o => o.hint) })
+          const { value, error } = ZJoi.alternatives()
+            .try(...flattenedAlternatives.map(alt => alt._schema.get()))
+            .validate(_value)
+
+          return error
+            ? FAIL('union.base', {
+                types: flattenedAlternatives.map(o => o.hint),
+              })
+            : OK(value)
         }),
         manifest: {},
         hooks: {},

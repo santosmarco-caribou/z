@@ -1,6 +1,6 @@
 import { PartialDeep } from 'type-fest'
 
-import { AnyZIssueCode, Z_ISSUE_MAP } from '../_internals'
+import { ZIssueCode, ZIssueMap } from '../_internals'
 import { mergeObjsAndArrays } from '../utils'
 
 /* -------------------------------------------------------------------------- */
@@ -8,14 +8,14 @@ import { mergeObjsAndArrays } from '../utils'
 /* -------------------------------------------------------------------------- */
 
 export type ZGlobalsOptions = {
-  errorMessages: Record<AnyZIssueCode, string>
+  errorMessages: Record<ZIssueCode, string>
 }
 
 export class ZGlobals {
   private static _instance?: ZGlobals
 
   readonly options: ZGlobalsOptions = {
-    errorMessages: Z_ISSUE_MAP,
+    errorMessages: ZIssueMap,
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function

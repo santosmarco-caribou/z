@@ -4,10 +4,10 @@ import { cloneDeep } from 'lodash'
 import {
   _ZOutput,
   ParseOptions,
-  Z_ISSUE_MAP,
   ZDef,
   ZGlobals,
   ZHooksController,
+  ZIssueMap,
 } from '../_internals'
 import { mergeSafe } from '../utils'
 
@@ -18,7 +18,7 @@ import { mergeSafe } from '../utils'
 export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions &
   Required<ParseOptions> = {
   abortEarly: false,
-  messages: Z_ISSUE_MAP,
+  messages: ZIssueMap,
 }
 
 export interface ZSchemaController<Def extends ZDef> {

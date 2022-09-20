@@ -14,7 +14,6 @@ import {
   ZHooksController,
   ZHooksObject,
   ZIntersection,
-  ZIssueMap,
   ZJoi,
   ZManifest,
   ZManifestController,
@@ -137,7 +136,6 @@ export abstract class Z<Def extends ZDef> {
   readonly _id: string = nanoid()
 
   protected abstract readonly _typeName: Def['TypeName']
-  protected abstract readonly _issueMap: ZIssueMap<Def['TypeName']>
 
   /** @internal */
   protected abstract _hint: string

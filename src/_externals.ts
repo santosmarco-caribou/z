@@ -108,7 +108,7 @@ export {
   customType as custom,
   dateType as date,
   defaultType as default,
-  discriminatedUnionType as discriminatedUnion,
+  discriminatedUnionType as discriminatedunion,
   enumType as enum,
   falseType as false,
   falsyType as falsy,

@@ -1,119 +1,92 @@
 import Joi from 'joi'
 import type { F, L, S } from 'ts-toolbelt'
-import type { RemoveIndexSignature, SetRequired, Simplify } from 'type-fest'
+import type { RemoveIndexSignature, SetRequired } from 'type-fest'
 
 import type { ZType } from '../types'
+import { TypeUtils } from '../utils/types'
 
-/* -------------------------------------------------------------------------- */
-/*                                   ZIssue                                   */
-/* -------------------------------------------------------------------------- */
+/* ------------------------------- ZIssueTags ------------------------------- */
 
-/* -------------------------------- ZIssueTag ------------------------------- */
+export const ZIssueTags = {
+  primitive<Name extends string, Type extends 'string' | 'number' | 'boolean'>(
+    name: Name,
+    type: Type
+  ) {
+    return `{{#${name}:${type}}}` as const
+  },
 
-type _ZIssueTagTypeMap = {
-  string: string
-  number: number
-  boolean: boolean
+  literal<
+    Name extends string,
+    Type extends string | number | boolean,
+    Values extends [Type, ...Type[]]
+  >(name: Name, values: Values) {
+    return `{{#${name}:(${values
+      .map(v => (typeof v === 'string' ? `'${v}'` : v))
+      .join('|')})}}` as const
+  },
+
+  label() {
+    return this.primitive('label', 'string')
+  },
 }
 
-export type ZIssueTagTypeKey = keyof _ZIssueTagTypeMap
-export type ZIssueTagTypeValue<K extends ZIssueTagTypeKey> =
-  _ZIssueTagTypeMap[K]
+/* -------------------------------------------------------------------------- */
+/*                                  ZIssueMap                                 */
+/* -------------------------------------------------------------------------- */
 
-export type ZIssueTag<
-  Label extends string,
-  TypeKey extends ZIssueTagTypeKey
-> = `{{#${Label}:${TypeKey}}}`
-
-export type AnyZIssueTag = ZIssueTag<string, ZIssueTagTypeKey>
-
-export const createZIssueTag = <
-  Label extends string,
-  TypeKey extends ZIssueTagTypeKey
+export const ZIssueMap = (<
+  Map extends Record<
+    `${_FormatZTypeToZIssueMap<ZType>}`,
+    `{{#label:string}} ${string}`
+  >
 >(
-  label: Label,
-  type: TypeKey
-): ZIssueTag<Label, TypeKey> => `{{#${label}:${type}}}`
+  map: F.Narrow<Map>
+) =>
+  map as unknown as Map[keyof Map] extends `${infer IssueMsg}.`
+    ? TypeUtils.Error<`ZIssue messages cannot end with a period: '${IssueMsg}'`>
+    : Map)({
+  'any.base': `${ZIssueTags.label()} failed parsing but no issues were detected`,
+})
 
-/* ------------------------------ ZIssueMessage ----------------------------- */
-
-export type ZIssueMessage<Msg extends string = `${string}.`> =
-  Msg extends `${string}.` ? `${ZIssueTag<'label', 'string'>} ${Msg}` : never
-
-/* -------------------------------- ZIssueMap ------------------------------- */
-
-export type ZIssueMap<TypeName extends ZType = ZType> = Simplify<
-  Record<`${TypeName}.base`, ZIssueMessage> &
-    Partial<Record<`${TypeName}.${string}`, ZIssueMessage>>,
-  { deep: true }
+export type ZIssueMap<TypeName extends ZType = ZType> = Pick<
+  typeof ZIssueMap,
+  Extract<keyof typeof ZIssueMap, _FormatZTypeToZIssueMap<TypeName>>
 >
 
-/* -------------------------------------------------------------------------- */
-
-type _RemoveMapPrefixes<T extends ZType> = {
-  [K in keyof ZIssueMap<T> as S.Join<
-    L.Tail<S.Split<Extract<K, string>, '.'>>,
-    '.'
-  >]: S.Replace<
-    Extract<ZIssueMap<T>[K], string>,
-    `${ZIssueTag<'label', 'string'>} `,
-    ''
-  >
-}
-type _AddMapPrefixes<
-  T extends ZType,
-  Map extends _RemoveMapPrefixes<T>
-> = Simplify<{
-  [K in keyof Map as `${T}.${Extract<K, string>}`]: ZIssueMessage<
-    Extract<Map[K], string>
-  >
-}>
-
-export const createZIssueMap = <
-  TypeName extends ZType,
-  Map extends _RemoveMapPrefixes<TypeName> = _RemoveMapPrefixes<TypeName>
->(
-  typeName: TypeName,
-  map: F.Narrow<Map>
-): _AddMapPrefixes<TypeName, Map> =>
-  Object.fromEntries(
-    Object.entries<string>(map as Map).map(([k, v]) => [
-      `${typeName}.${k}`,
-      `{{#label:string}} ${v}`,
-    ])
-  ) as _AddMapPrefixes<TypeName, Map>
-
-/* ------------------------------- ZIssueCode ------------------------------- */
-
-export type ZIssueCode<
-  TypeName extends ZType = ZType,
-  IssueMap extends ZIssueMap<TypeName> = ZIssueMap<TypeName>
-> = keyof IssueMap
+export type ZIssueCode<TypeName extends ZType = ZType> =
+  keyof ZIssueMap<TypeName>
 
 /* ------------------------------ ZIssueContext ----------------------------- */
 
-type _GetZIssueTags<Msg extends string> = L.Select<
-  S.Split<Msg, ' '>,
-  AnyZIssueTag
+type _GetZIssueTags<Issue extends ZIssueCode> = L.Select<
+  S.Split<ZIssueMap[Issue], ' '>,
+  `{{#${string}:${string}}}`
 >
 
-type _ZIssueContextOptions = {
-  Extras?: boolean
-}
-
+type _ZIssueContextOptions = { Extras?: boolean }
 export type ZIssueContext<
-  Msg extends string,
+  Issue extends ZIssueCode,
   Opts extends _ZIssueContextOptions = { Extras: false }
 > = {
-  [K in keyof _GetZIssueTags<Msg>]: _GetZIssueTags<Msg>[K] extends ZIssueTag<
-    infer TagLabel,
-    infer TagTypeKey
-  >
+  [K in keyof _GetZIssueTags<Issue>]: _GetZIssueTags<Issue>[K] extends `{{#${infer TagName}:${infer TagType}}}`
     ? {
-        [KK in TagLabel]: ZIssueTagTypeValue<TagTypeKey>
+        [KK in TagName]: TagType extends `(${infer LiteralUnion})`
+          ? S.Split<LiteralUnion, '|'>[number]
+          : TagType extends 'string'
+          ? string
+          : TagType extends 'number'
+          ? number
+          : TagType extends 'boolean'
+          ? boolean
+          : never
       }
     : never
-}[keyof _GetZIssueTags<Msg>] &
+}[keyof _GetZIssueTags<Issue>] &
   (Opts['Extras'] extends true
     ? RemoveIndexSignature<SetRequired<Omit<Joi.Context, 'label'>, 'value'>>
     : Record<string, never>)
+
+/* --------------------------------- Helpers -------------------------------- */
+
+type _FormatZTypeToZIssueMap<TypeName extends ZType> =
+  TypeName extends `Z${infer Name}` ? `${Lowercase<Name>}.${string}` : never

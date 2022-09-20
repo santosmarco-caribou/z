@@ -95,8 +95,6 @@ export class ZTemplate<
         .join('')}$`
     )
 
-    console.log({ regex })
-
     return new ZTemplate<T>(
       {
         schema: ZJoi.string().regex(regex),

@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { cloneDeep, mergeWith } from 'lodash'
-import type { L, N, O } from 'ts-toolbelt'
-import type { ReadonlyDeep, ReadonlyTuple } from 'type-fest'
+import type { L, O } from 'ts-toolbelt'
+import type { ReadonlyDeep } from 'type-fest'
 
 import type { _ZInput, _ZOutput, AnyZ } from './_internals'
 import { ZType } from './types'
@@ -23,42 +23,6 @@ export type OmitInternals<T extends O.Object> = Omit<
   T,
   `${'$_' | '_'}${string}`
 >
-
-export type FixedLengthArray<Element, Length extends number> = ReadonlyTuple<
-  Element,
-  Length
->
-export type MinLengthArray<Element, Length extends number> = [
-  ...FixedLengthArray<Element, Length>,
-  ...Element[]
-]
-export type MaxLengthArray<Element, Length extends number> = Partial<
-  FixedLengthArray<Element, Length>
->
-export type MinMaxLengthArray<
-  Element,
-  Min extends number,
-  Max extends number
-> = [...MinLengthArray<Element, Min>] & MaxLengthArray<Element, N.Sub<Max, Min>>
-
-type _ArrayMinMax<
-  T,
-  Min extends number,
-  Max extends number,
-  _A extends (T | undefined)[] = [],
-  _O extends boolean = false
-> = _O extends false
-  ? Min extends _A['length']
-    ? _ArrayMinMax<T, Min, Max, _A, true>
-    : _ArrayMinMax<T, Min, Max, [..._A, T], false>
-  : Max extends _A['length']
-  ? _A
-  : _ArrayMinMax<T, Min, Max, [..._A, T?], false>
-export type ArrayMinMax<
-  T,
-  Min extends number,
-  Max extends number
-> = _ArrayMinMax<T, Min, Max>
 
 export type MapToZOutput<T> = {
   [K in keyof T]: T[K] extends AnyZ ? _ZOutput<T[K]> : never

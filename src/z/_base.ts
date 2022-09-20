@@ -259,6 +259,12 @@ export abstract class Z<Def extends ZDef> {
   ): ZTransform<this, NewOut> {
     return ZTransform.create(this, transform)
   }
+
+  /* ------------------------------------------------------------------------ */
+
+  equals(compare: AnyZ): boolean {
+    return this.name === compare.name
+  }
 }
 
 export type AnyZ<Output = any> = Z<{

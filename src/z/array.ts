@@ -1,5 +1,10 @@
 import type Joi from 'joi'
-import type { Finite, NonNegativeInteger, ReadonlyTuple } from 'type-fest'
+import type {
+  Finite,
+  FixedLengthArray,
+  NonNegativeInteger,
+  ReadonlyTuple,
+} from 'type-fest'
 
 import {
   type _ZInput,
@@ -31,12 +36,16 @@ export type ZArraySortOptions<T extends AnyZ> = ZCheckOptions<
 
 type ZArrayDef<T extends AnyZ, Card extends 'many' | 'atleastone' | number> = {
   Output: Card extends number
-    ? ReadonlyTuple<_ZOutput<T>, Card>
+    ? ReadonlyTuple<_ZOutput<T>, Card> extends readonly [any, ...any[]]
+      ? ReadonlyTuple<_ZOutput<T>, Card>
+      : FixedLengthArray<_ZOutput<T>, Card>
     : Card extends 'atleastone'
     ? [_ZOutput<T>, ..._ZOutput<T>[]]
     : _ZOutput<T>[]
   Input: Card extends number
-    ? ReadonlyTuple<_ZInput<T>, Card>
+    ? ReadonlyTuple<_ZInput<T>, Card> extends readonly [any, ...any[]]
+      ? ReadonlyTuple<_ZInput<T>, Card>
+      : FixedLengthArray<_ZInput<T>, Card>
     : Card extends 'atleastone'
     ? [_ZInput<T>, ..._ZInput<T>[]]
     : _ZInput<T>[]

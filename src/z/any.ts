@@ -1,21 +1,28 @@
-import type Joi from 'joi'
-
-import { Z, ZJoi, ZType } from '../_internals'
+import { createZIssueMap, Z, ZType } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
 /*                                    ZAny                                    */
 /* -------------------------------------------------------------------------- */
 
+const ZAnyIssueMap = createZIssueMap(ZType.Any, {
+  base: 'should have passed parsing, but an unknown error occurred.',
+})
+
 export class ZAny extends Z<{
+  TypeName: ZType.Any
   Output: any
   Input: any
-  Schema: Joi.AnySchema
 }> {
-  readonly name = ZType.Any
+  protected readonly _typeName = ZType.Any
+  protected readonly _issueMap = ZAnyIssueMap
   protected readonly _hint = 'any'
 
   /* ------------------------------------------------------------------------ */
 
   static create = (): ZAny =>
-    new ZAny({ schema: ZJoi.any(), manifest: {}, hooks: {} }, {})
+    new ZAny({
+      checks: [{ validate: (value, { OK, FAIL }) => value === 2 ? FAIL('') : OK(value) }],
+      manifest: {},
+      hooks: {},
+    })
 }

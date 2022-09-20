@@ -9,10 +9,13 @@ import {
   ZArray,
   ZBrand,
   ZBrandTag,
+  ZCheck,
   ZDefault,
   ZHooksController,
   ZHooksObject,
   ZIntersection,
+  ZIssueMap,
+  ZJoi,
   ZManifest,
   ZManifestController,
   ZManifestObject,
@@ -26,13 +29,12 @@ import {
   ZReadonly,
   ZReadonlyDeep,
   ZRequired,
-  ZSchemaController,
   ZTransform,
   ZType,
   ZUnion,
   ZValidator,
 } from '../_internals'
-import { colorizeZHint } from '../utils'
+import { colorizeZHint, WithQuestionMarks } from '../utils'
 
 settings.initFunction = '_init'
 
@@ -41,28 +43,36 @@ settings.initFunction = '_init'
 /* -------------------------------------------------------------------------- */
 
 export type ZDef = {
+  TypeName: ZType
   Output: any
   Input: any
-  Schema: Joi.Schema
+  Options?: Record<string, any>
+  Props?: Record<string, any>
 }
 
 /* ------------------------------ ZDependencies ----------------------------- */
 
+export type _ZChecks<Def extends ZDef> = readonly [
+  ZCheck<Def>,
+  ...ZCheck<Def>[]
+]
+export type _ZManifest<Def extends ZDef> = ZManifestObject<Def['Output']>
+export type _ZHooks<Def extends ZDef> = Partial<ZHooksObject<Def>>
+export type _ZOptions<Def extends ZDef> = CamelCasedProperties<Def['Options']>
+export type _ZProps<Def extends ZDef> = CamelCasedProperties<Def['Props']>
+
 export type ZDependencies<Def extends ZDef> = {
-  schema: Def['Schema']
-  manifest: ZManifestObject<Def['Output']>
-  hooks: Partial<ZHooksObject<Def>>
-}
+  checks: _ZChecks<Def>
+  manifest: _ZManifest<Def>
+  hooks: _ZHooks<Def>
+} & WithQuestionMarks<{
+  options: _ZOptions<Def> extends Record<string, never>
+    ? undefined
+    : _ZOptions<Def>
+  props: _ZProps<Def> extends Record<string, never> ? undefined : _ZProps<Def>
+}>
 
 export type AnyZDependencies = ZDependencies<ZDef>
-
-/* --------------------------------- ZProps --------------------------------- */
-
-export type ZProps<Def extends ZDef> = CamelCasedProperties<
-  Omit<Def, keyof ZDef>
->
-
-export type AnyZProps = ZProps<ZDef>
 
 /* -------------------------------- ZOptions -------------------------------- */
 
@@ -82,10 +92,14 @@ export type ZFormattedHintOptions = {
 export interface BaseZ<Def extends ZDef> {
   readonly $_output: Def['Output']
   readonly $_input: Def['Input']
-  readonly _schema: ZSchemaController<Def>
-  readonly _manifest: ZManifestController<Def>
-  readonly _hooks: ZHooksController<Def>
-  readonly _props: ZPropsController<Def>
+
+  readonly _checks: _ZChecks<Def>
+  readonly _manifest: _ZManifest<Def>
+  readonly _hooks: _ZHooks<Def>
+  readonly _options: _ZOptions<Def>
+  readonly _props: _ZProps<Def>
+
+  readonly _validator: ZValidator<Def, { checks: ZDependencies<Def>['checks'] }>
 }
 
 export type AnyBaseZ = BaseZ<ZDef>
@@ -94,14 +108,13 @@ export type AnyBaseZ = BaseZ<ZDef>
 /*                                      Z                                     */
 /* -------------------------------------------------------------------------- */
 
-export interface Z<Def extends ZDef>
-  extends BaseZ<Def>,
-    ZValidator<Def>,
-    ZParser<Def>,
-    ZManifest<Def>,
-    ZOpenApi<Def> {}
+// export interface Z<Def extends ZDef>
+//   extends BaseZ<Def>,
+//     ZParser<Def>,
+//     ZManifest<Def>,
+//     ZOpenApi<Def> {}
 
-@mix(ZValidator, ZParser, ZManifest, ZOpenApi)
+@mix(ZParser, ZManifest, ZOpenApi)
 export abstract class Z<Def extends ZDef> {
   /** @internal */
   readonly $_output!: Def['Output']
@@ -109,7 +122,8 @@ export abstract class Z<Def extends ZDef> {
   readonly $_input!: Def['Input']
 
   /** @internal */
-  readonly _schema: ZSchemaController<Def>
+  private _schema: Joi.Schema = ZJoi.any()
+
   /** @internal */
   readonly _manifest: ZManifestController<Def>
   /** @internal */
@@ -117,27 +131,22 @@ export abstract class Z<Def extends ZDef> {
   /** @internal */
   readonly _props: ZPropsController<Def>
 
+  readonly _validator: ZValidator<Def, { checks: ZDependencies<Def>['checks'] }>
+
   /** @internal */
   readonly _id: string = nanoid()
 
-  /**
-   * The unique name of the `ZType`.
-   */
-  abstract readonly name: ZType
+  protected abstract readonly _typeName: Def['TypeName']
+  protected abstract readonly _issueMap: ZIssueMap<Def['TypeName']>
+
   /** @internal */
   protected abstract _hint: string
 
   /** @internal */
-  constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {
-    const { schema, manifest, hooks } = deps
+  constructor(deps: ZDependencies<Def>) {
+    const { checks, manifest, hooks } = deps
 
-    this._schema = ZSchemaController(schema)
-    this._manifest = ZManifestController(manifest)
-    this._hooks = ZHooksController({
-      beforeParse: hooks.beforeParse ?? [],
-      afterParse: hooks.afterParse ?? [],
-    })
-    this._props = ZPropsController(props)
+    this._validator = ZValidator.create<Def>(this._schema).addChecks(...checks)
   }
 
   /* --------------------------------- Hint --------------------------------- */
@@ -298,3 +307,6 @@ export type TypeOf<T extends AnyZ> = keyof _ZOutput<T> extends typeof ZBrandTag
     ? ReadonlyTuple<_ZOutput<E>, C>
     : _ZOutput<T>
   : A.Compute<_ZOutput<T>, 'deep'>
+
+type A = Capitalize<string>
+const a: A = 'SarBar'

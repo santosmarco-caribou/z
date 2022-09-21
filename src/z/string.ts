@@ -17,6 +17,11 @@ import { type MaybeArray, capitalize, uncapitalize } from '../utils'
 /* -------------------------------------------------------------------------- */
 
 export type ZStringBase64BaseOptions = {
+  /**
+   * Whether to require the input to be properly padded with `=`.
+   *
+   * @default true
+   */
   paddingRequired?: boolean
 }
 
@@ -28,6 +33,12 @@ export type ZStringDomainTldsOptions = {
 export type ZStringBase64Options = ZCheckOptions<
   'string.base64',
   ZStringBase64BaseOptions & {
+    /**
+     * Whether to use the URI-safe base64 format,
+     * which replaces `+` with `-`, and `\` with `_`.
+     *
+     * @default false
+     */
     urlSafe?: boolean
   }
 >

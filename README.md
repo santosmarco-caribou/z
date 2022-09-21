@@ -155,8 +155,23 @@ z.string().alphanumeric().parse('abc123!') // => throws
 Requires the input to be a valid `base64` string.
 
 ```ts
-z.string().base64().parse('VE9PTUFOWVNFQ1JFVFM=') // => 'abc123'
+z.string().base64().parse('VE9PTUFOWVNFQ1JFVFM=') // => 'VE9PTUFOWVNFQ1JFVFM='
 z.string().base64().parse('VE9PTUFOWVNFQ1JFVFM') // => throws
+```
+
+You can optionally pass some options to customize the validation:
+
+- `paddingRequired` (default: `true`): Whether to require the input to be properly padded with `=`.
+- `urlSafe` (default: `false`): Whether to use the URI-safe base64 format, which replaces `+` with `-`, and `\` with `_`.
+
+```ts
+const paddingRequiredSchema = z.string().base64({ paddingRequired: true })
+paddingRequiredSchema.validate('VE9PTUFOWVNFQ1JFVFM') // => throws
+paddingRequiredSchema.validate('VE9PTUFOWVNFQ1JFVFM=') // 'VE9PTUFOWVNFQ1JFVFM='
+
+const paddingOptionalSchema = z.string().base64({ paddingRequired: false })
+paddingOptionalSchema.validate('VE9PTUFOWVNFQ1JFVFM') // => 'VE9PTUFOWVNFQ1JFVFM'
+paddingOptionalSchema.validate('VE9PTUFOWVNFQ1JFVFM=') // 'VE9PTUFOWVNFQ1JFVFM='
 ```
 
 ---

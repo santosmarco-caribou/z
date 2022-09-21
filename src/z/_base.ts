@@ -10,29 +10,32 @@ import {
   ZBrand,
   ZBrandTag,
   ZDefault,
-  ZHooksController,
+  ZHooksManager,
   ZHooksObject,
   ZIntersection,
   ZManifest,
-  ZManifestController,
+  ZManifestManager,
   ZManifestObject,
   ZNonNullable,
   ZNullable,
   ZOpenApi,
   ZOptional,
   ZParser,
+  ZPreferencesManager,
+  ZPreferencesObject,
   ZPromise,
-  ZPropsController,
+  ZPropsManager,
   ZReadonly,
   ZReadonlyDeep,
   ZRequired,
-  ZSchemaController,
+  ZSchemaManager,
   ZTransform,
   ZType,
   ZUnion,
   ZValidator,
 } from '../_internals'
 import { colorizeZHint } from '../utils'
+import { TypeUtils } from '../utils/types'
 
 settings.initFunction = '_init'
 
@@ -82,10 +85,12 @@ export type ZFormattedHintOptions = {
 export interface BaseZ<Def extends ZDef> {
   readonly $_output: Def['Output']
   readonly $_input: Def['Input']
-  readonly _schema: ZSchemaController<Def>
-  readonly _manifest: ZManifestController<Def>
-  readonly _hooks: ZHooksController<Def>
-  readonly _props: ZPropsController<Def>
+
+  readonly _schema: ZSchemaManager<Def>
+  readonly _manifest: ZManifestManager<Def>
+  readonly _hooks: ZHooksManager<Def>
+  readonly _props: ZPropsManager<Def>
+  readonly _preferences: ZPreferencesManager
 }
 
 export type AnyBaseZ = BaseZ<ZDef>
@@ -109,13 +114,15 @@ export abstract class Z<Def extends ZDef> {
   readonly $_input!: Def['Input']
 
   /** @internal */
-  readonly _schema: ZSchemaController<Def>
+  readonly _schema: ZSchemaManager<Def>
   /** @internal */
-  readonly _manifest: ZManifestController<Def>
+  readonly _manifest: ZManifestManager<Def>
   /** @internal */
-  readonly _hooks: ZHooksController<Def>
+  readonly _hooks: ZHooksManager<Def>
   /** @internal */
-  readonly _props: ZPropsController<Def>
+  readonly _props: ZPropsManager<Def>
+  /** @internal */
+  readonly _preferences: ZPreferencesManager
 
   /** @internal */
   readonly _id: string = nanoid()
@@ -131,13 +138,14 @@ export abstract class Z<Def extends ZDef> {
   constructor(deps: ZDependencies<Def>, props: ZProps<Def>) {
     const { schema, manifest, hooks } = deps
 
-    this._schema = ZSchemaController(schema)
-    this._manifest = ZManifestController(manifest)
-    this._hooks = ZHooksController({
+    this._schema = ZSchemaManager(schema)
+    this._manifest = ZManifestManager(manifest)
+    this._hooks = ZHooksManager({
       beforeParse: hooks.beforeParse ?? [],
       afterParse: hooks.afterParse ?? [],
     })
-    this._props = ZPropsController(props)
+    this._props = ZPropsManager(props)
+    this._preferences = ZPreferencesManager(this._schema)
   }
 
   /* --------------------------------- Hint --------------------------------- */
@@ -150,6 +158,20 @@ export abstract class Z<Def extends ZDef> {
     const formatted =
       options?.color === false ? this._hint : colorizeZHint(this._hint)
     return formatted
+  }
+
+  /* ------------------------------ Preferences ----------------------------- */
+
+  preferences(): TypeUtils.ReadonlyDeep<ZPreferencesObject>
+  preferences(prefs: TypeUtils.PartialDeep<ZPreferencesObject>): this
+  preferences(
+    prefs?: TypeUtils.PartialDeep<ZPreferencesObject>
+  ): TypeUtils.ReadonlyDeep<ZPreferencesObject> | this {
+    if (prefs) {
+      this._preferences.update(prefs)
+      return this
+    }
+    return this._preferences.get()
   }
 
   /* ------------------------------------------------------------------------ */

@@ -15,11 +15,18 @@ import type { OmitInternals } from '../utils'
 
 /* --------------------------------- ZIssue --------------------------------- */
 
+export type ZIssueContext = {
+  label: string
+  key?: string
+  [x: string]: any
+}
+
 export type ZIssue<Def extends ZDef = ZDef> = {
   code: Simplify<ZIssueCode<Def['Schema']>>
   message: string
   path: Array<string | number>
   received: any
+  context: ZIssueContext
 }
 
 /* -------------------------------------------------------------------------- */
@@ -47,6 +54,10 @@ export class ZError<Def extends ZDef = ZDef> extends Error {
       message: message,
       path: path,
       received: context?.value,
+      context: {
+        ...omit(context, 'value'),
+        label: context?.label ?? 'value',
+      },
     }))
 
     this.typeName = _z.name

@@ -1,10 +1,10 @@
 import type { ZDef, ZManifestObject } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
-/*                             ZManifestController                            */
+/*                              ZManifestManager                              */
 /* -------------------------------------------------------------------------- */
 
-export interface ZManifestController<Def extends ZDef> {
+export interface ZManifestManager<Def extends ZDef> {
   get(): ZManifestObject<Def['Output']>
   update<K extends keyof ZManifestObject<Def['Output']>>(
     key: K,
@@ -12,9 +12,9 @@ export interface ZManifestController<Def extends ZDef> {
   ): this
 }
 
-export const ZManifestController = <Def extends ZDef>(
+export const ZManifestManager = <Def extends ZDef>(
   manifest: ZManifestObject<Def['Output']>
-): ZManifestController<Def> => {
+): ZManifestManager<Def> => {
   const $_manifest = manifest
 
   return {

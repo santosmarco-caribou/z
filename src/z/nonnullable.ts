@@ -60,6 +60,13 @@ export class ZNonNullable<T extends AnyZ> extends Z<{
             : innerType.name === ZType.Null
             ? ZNever.create()._schema.get()
             : innerSchema.required().disallow(null),
+        /*
+        schema: ZValidator.custom(innerSchema, (value, { OK, FAIL }) =>
+          value === undefined || value === null
+            ? FAIL('nonnullable.base')
+            : OK(value)
+        ),
+        */
         manifest: innerType._manifest.get() as ZManifestObject<
           Exclude<_ZOutput<T>, null | undefined>
         >,

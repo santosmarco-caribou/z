@@ -17,7 +17,8 @@ export const Z_ISSUE_MAP = {
     '{{#label}} failed custom validation because {{#error.message}}',
   'any.default': '{{#label}} threw an error when running default method',
   'any.failover': '{{#label}} threw an error when running failover method',
-  'any.invalid': '{{#label}} contains an invalid value',
+  'any.invalid':
+    '{{#label}} cannot be {if(#invalids.length == 1, "", "any of ")}{{#invalids}}',
   'any.only':
     '{{#label}} must be {if(#valids.length == 1, "", "one of ")}{{#valids}}',
   'any.ref': '{{#label}} {{#arg}} references {{:#ref}} which {{#reason}}',

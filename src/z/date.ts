@@ -61,7 +61,7 @@ export class ZDate<
    * Requires the input to be strictly a `Date` object.
    */
   strict(): ZDate<{ strict: true }> {
-    this._schema.updatePreferences({ convert: false })
+    this._preferences.update({ convert: false })
     return new ZDate<{ strict: true }>(
       {
         schema: this._schema.get(),

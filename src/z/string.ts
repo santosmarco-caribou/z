@@ -436,7 +436,7 @@ export class ZString<
       : Opts['convert']
   }> {
     const convert = options?.convert ?? this._props.getOne('options').convert
-    this._schema.updatePreferences({ convert: false })
+    this._preferences.update({ convert: false })
 
     this._addCheck('string.lowercase', v => v.lowercase(), {
       message: options?.message,
@@ -477,7 +477,7 @@ export class ZString<
       : Opts['convert']
   }> {
     const convert = options?.convert ?? this._props.getOne('options').convert
-    this._schema.updatePreferences({ convert: false })
+    this._preferences.update({ convert: false })
 
     this._addCheck('string.uppercase', v => v.uppercase(), {
       message: options?.message,

@@ -86,7 +86,7 @@ export class ZArray<
    * @param {ZArraySortOptions} [options] - Options for this rule.
    */
   ascending(options?: ZArraySortOptions<T>): this {
-    options?.strict && this._schema.updatePreferences({ convert: false })
+    options?.strict && this._preferences.update({ convert: false })
     this._addCheck(
       'array.sort',
       v =>
@@ -109,7 +109,7 @@ export class ZArray<
    * @param {ZArraySortOptions} [options] - Options for this rule.
    */
   descending(options?: ZArraySortOptions<T>): this {
-    options?.strict && this._schema.updatePreferences({ convert: false })
+    options?.strict && this._preferences.update({ convert: false })
     this._addCheck(
       'array.sort',
       v =>

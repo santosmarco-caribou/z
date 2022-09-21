@@ -1,7 +1,7 @@
 import type { _ZOutput, ZDef } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
-/*                              ZHooksController                              */
+/*                                ZHooksManager                               */
 /* -------------------------------------------------------------------------- */
 
 export type ZHook<I = any, O = any> = {
@@ -18,7 +18,7 @@ export type AnyZHooksObject = ZHooksObject<ZDef>
 
 /* -------------------------------------------------------------------------- */
 
-export interface ZHooksController<Def extends ZDef> {
+export interface ZHooksManager<Def extends ZDef> {
   get(): ZHooksObject<Def>
   getByTrigger<T extends keyof ZHooksObject<Def>>(
     trigger: T
@@ -34,9 +34,9 @@ export interface ZHooksController<Def extends ZDef> {
   ): Parameters<ZHooksObject<Def>[T][number]['handler']>[0]
 }
 
-export const ZHooksController = <Def extends ZDef>(
+export const ZHooksManager = <Def extends ZDef>(
   hooks: ZHooksObject<Def>
-): ZHooksController<Def> => {
+): ZHooksManager<Def> => {
   const $_hooks = hooks
 
   return {

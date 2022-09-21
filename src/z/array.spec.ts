@@ -14,11 +14,11 @@ const descendingStrict = z.number().array().descending({ strict: true })
 type t1 = z.infer<typeof minTwo>
 assertEqual<string[], t1>(true)
 
-type t3 = z.infer<typeof justTwo>
-assertEqual<readonly [string, string], t3>(true)
+type t2 = z.infer<typeof justTwo>
+assertEqual<readonly [string, string], t2>(true)
 
-type t2 = z.infer<typeof nonEmptyMax>
-assertEqual<[string, ...string[]], t2>(true)
+type t3 = z.infer<typeof nonEmptyMax>
+assertEqual<[string, ...string[]], t3>(true)
 
 it('parses valid inputs', () => {
   minTwo.parse(['a', 'a'])

@@ -1,3 +1,4 @@
+import Joi from 'joi'
 import { z } from '.'
 
 const AddressSchema = z.object({
@@ -41,3 +42,9 @@ const PersonSchema = z.object({
 })
 
 type Person = z.infer<typeof PersonSchema>
+
+// console.log(z.null().or(z.number().or(z.boolean())))
+
+console.log(z.any().safeParse(new Promise(() => {})))
+
+// console.log(Joi.any().validate(() => {}))

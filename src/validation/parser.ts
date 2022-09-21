@@ -39,10 +39,10 @@ export class ZParser<Def extends ZDef> {
     input: unknown,
     options?: ParseOptions
   ): ParseResult<_ZOutput<Def>, Def> {
-    const { error, value } = this._schema.createValidator(this._hooks)(
-      input,
-      options
-    )
+    const { error, value } = this._schema.createValidator(
+      this._preferences,
+      this._hooks
+    )(input, options)
     if (error) return this._FAIL(error)
     else return this._OK(value)
   }

@@ -3,18 +3,18 @@ import { mergeWith } from 'lodash'
 import type { ZDef, ZProps } from '../_internals'
 
 /* -------------------------------------------------------------------------- */
-/*                              ZPropsController                              */
+/*                                ZPropsManager                               */
 /* -------------------------------------------------------------------------- */
 
-export interface ZPropsController<Def extends ZDef> {
+export interface ZPropsManager<Def extends ZDef> {
   getAll(): ZProps<Def>
   getOne<P extends keyof ZProps<Def>>(prop: P): ZProps<Def>[P]
   update(fn: (curr: ZProps<Def>) => ZProps<Def>): this
 }
 
-export const ZPropsController = <Def extends ZDef>(
+export const ZPropsManager = <Def extends ZDef>(
   props: ZProps<Def>
-): ZPropsController<Def> => {
+): ZPropsManager<Def> => {
   const $_props = props
 
   return {

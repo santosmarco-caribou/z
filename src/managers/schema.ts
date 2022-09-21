@@ -1,41 +1,40 @@
 import Joi from 'joi'
-import { cloneDeep } from 'lodash'
 
 import {
   _ZOutput,
   ParseOptions,
-  Z_ISSUE_MAP,
   ZDef,
   ZGlobals,
-  ZHooksController,
+  ZHooksManager,
+  ZPreferencesManager,
 } from '../_internals'
-import { mergeSafe } from '../utils'
+import { ObjectUtils } from '../utils/objects'
 
 /* -------------------------------------------------------------------------- */
-/*                              ZSchemaController                             */
+/*                               ZSchemaManager                               */
 /* -------------------------------------------------------------------------- */
 
 export const DEFAULT_VALIDATION_OPTIONS: Joi.ValidationOptions &
   Required<ParseOptions> = {
   abortEarly: false,
-  messages: Z_ISSUE_MAP,
 }
 
-export interface ZSchemaController<Def extends ZDef> {
+export interface ZSchemaManager<Def extends ZDef> {
   get(): Def['Schema']
   update(fn: (curr: Def['Schema']) => Def['Schema']): this
-  updatePreferences(prefs: Joi.ValidationOptions): this
+  $_updatePreferences(prefs: Joi.ValidationOptions): this
   createValidator(
-    hooksController: ZHooksController<Def>
+    prefs: ZPreferencesManager,
+    hooks: ZHooksManager<Def>
   ): (
     input: unknown,
     options: ParseOptions | undefined
   ) => Joi.ValidationResult<_ZOutput<Def>>
 }
 
-export const ZSchemaController = <Def extends ZDef>(
+export const ZSchemaManager = <Def extends ZDef>(
   schema: Def['Schema']
-): ZSchemaController<Def> => {
+): ZSchemaManager<Def> => {
   let $_schema = schema
 
   return {
@@ -48,23 +47,24 @@ export const ZSchemaController = <Def extends ZDef>(
       return this
     },
 
-    updatePreferences(prefs: Joi.ValidationOptions) {
-      this.update(s => s.preferences(prefs))
-      return this
-    },
-
-    createValidator(hooksController: ZHooksController<Def>) {
+    createValidator(
+      prefs: ZPreferencesManager,
+      hooks: ZHooksManager<Def>
+    ): (
+      input: unknown,
+      options: ParseOptions | undefined
+    ) => Joi.ValidationResult<_ZOutput<Def>> {
       return (
         input: unknown,
         options: ParseOptions | undefined
       ): Joi.ValidationResult<_ZOutput<Def>> => {
-        const mergedOpts = mergeSafe(
-          { messages: cloneDeep(ZGlobals.get().options.errorMessages) },
+        const mergedOpts = ObjectUtils.mergeDeepSafe(
+          { messages: ZGlobals.get().preferences().messages },
+          prefs.get(),
           options ?? {}
         )
 
-        const clonedInput = cloneDeep(input)
-        const _input = hooksController.apply('beforeParse', clonedInput)
+        const _input = hooks.apply('beforeParse', input)
 
         const result = $_schema.validate(
           _input,
@@ -72,13 +72,22 @@ export const ZSchemaController = <Def extends ZDef>(
         ) as Joi.ValidationResult<_ZOutput<Def>>
 
         if (result.value) {
-          const clonedResult = cloneDeep(result.value)
-          const _output = hooksController.apply('afterParse', clonedResult)
+          const _output = hooks.apply('afterParse', result.value)
           return { ...result, value: _output }
         }
 
         return result
       }
+    },
+
+    /**
+     * Intended to be used by the `PreferencesManager` only.
+     *
+     * @internal
+     */
+    $_updatePreferences(prefs: Joi.ValidationOptions) {
+      this.update(s => s.preferences(prefs))
+      return this
     },
   }
 }
